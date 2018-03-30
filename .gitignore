@@ -1,0 +1,7 @@
+.cache
+v/
+.idea
+__pycache__
+tmp
+.coverage
+pyide-client/jquery*

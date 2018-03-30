@@ -1,0 +1,101 @@
+/*.empty {*/
+    /*height: 13px;*/
+/*}*/
+.keyword {
+    color: blue;
+    font-weight: bold;
+}
+.string {
+    color: green;
+}
+.comment {
+    color: gray;
+}
+.number {
+    color: blue;
+}
+.py_class{
+    color: red;
+    text-decoration: underline;
+    font-weight: bold;
+}
+.content-line {
+    white-space:pre;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+body {
+     /*TODO research it*/
+    font-family: "DejaVu Sans Mono";
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+div {
+    /*outline: none;*/
+}
+
+.cursor {
+    animation: 1s blink step-end infinite;
+}
+#to-remove {
+    -moz-user-select: none;
+}
+
+@keyframes "blink" {
+  from, to {
+      background: #ff7b80;
+
+  }
+  50% {
+    background: transparent;
+  }
+}
+
+
+.autocomplete {
+    background: yellow;
+    /*top: 0;*/
+    /*left: 0;*/
+    position: fixed;
+    z-index: 1;
+}
+
+#active-autocomplete {
+    background: red;
+    color: black;
+}
+
+#body div:nth-child(even) {
+    background: #f9fbff;
+}
+#body div:nth-child(odd) {
+    background: #f0ffef
+}
+
+#frame_file_list {
+    width: 30%;
+    /*margin: 0;*/
+    /*padding: 0;*/
+    box-sizing: border-box;
+    display: block;
+    height: 100%;
+    float: right;
+
+}
+#frame_code_list {
+    float: left;
+    display: block;
+    height: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    width: 70%;
+}
