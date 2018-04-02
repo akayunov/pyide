@@ -1,2 +1,2 @@
-sys_path_prepend = '/home/akayunov/pyide/server/test'
-#sys_path_prepend = '/opt/securisync/be-active/lib/'
+import os
+sys_path_prepend = os.path.join(os.path.dirname(__file__), '..', '..', 'test/server/astparser')

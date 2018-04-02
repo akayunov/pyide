@@ -11,7 +11,7 @@ app = tornado.web.Application([
     (r'/server/command', Command),
     (r'/server/filelisting', FileListing),
     (r'/server/code/(.*)', Code),
-    (r'/client/(.*)', tornado.web.StaticFileHandler, dict(path='/home/akayunov/pyide/src/pyide-client')),
+    (r'/client/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', 'pyide-client'))),
 ],
 **settings
 )

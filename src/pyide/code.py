@@ -104,7 +104,7 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 
 class Code(tornado.web.RequestHandler):
     def get(self, path):
-        path = '/' + path
+        path = configuration.sys_path_prepend + '/' + path
 
         if os.path.isdir(path):
             for file_path in get_next_file(path):
