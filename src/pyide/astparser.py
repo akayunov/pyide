@@ -172,12 +172,12 @@ class AstParser:
         self.convert_to_scope_id_structure()
         # debug_print
         from pprint import pprint
-        print('line_structure')
-        pprint(self.line_structure)
-        print('scope_id_structure')
-        pprint(self.scope_id_structure)
-        print('child_parent_scope_id_links')
-        pprint(self.child_parent_scope_id_links)
+        # print('line_structure')
+        # pprint(self.line_structure)
+        # print('scope_id_structure')
+        # pprint(self.scope_id_structure)
+        # print('child_parent_scope_id_links')
+        # pprint(self.child_parent_scope_id_links)
         # import pdb;pdb.set_trace()
 
     def get_lineno(self, line_number):

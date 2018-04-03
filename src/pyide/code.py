@@ -138,7 +138,7 @@ class Code(tornado.web.RequestHandler):
 
     def post(self, path):
         body = json.loads(self.request.body)
-        print(body)
+        # print(body)
         if body['type'] == 'parse':
             t_struct_adjusted = []
             for i in tokenize.tokenize(BytesIO(body['code_string'].encode('utf8')).readline):
@@ -161,7 +161,7 @@ class Code(tornado.web.RequestHandler):
                 t_struct_adjusted.append(
                     TokenInfo(type=i.type, string=i.string, start=(body['code_line_number'], i.start[1]), end=(body['code_line_number'], i.end[1]), line=i.line)
                 )
-            pprint(t_struct_adjusted)
+            # pprint(t_struct_adjusted)
             token_string = ''
             if t_struct_adjusted[-1].string == '.':
                 # ищем имена
@@ -185,7 +185,7 @@ class Code(tornado.web.RequestHandler):
                 # чо возвращать то последнии символы не имя переменно нечего дополять
                 pass
 
-            print({"result": result})
+            # print({"result": result})
             self.write(
                 json.dumps({
                     "result": result,
@@ -198,7 +198,7 @@ class Code(tornado.web.RequestHandler):
                 if i.end[1] >= body['cursor_position']:
                     token_info = i
                     break
-            print(token_info.string, token_info.start[0], token_info.start[1])
+            # print(token_info.string, token_info.start[0], token_info.start[1])
             # import pdb;
             # pdb.set_trace()
             node = AST_PARSER['/' + path].get_assign_node_information_by_namespace_id(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
