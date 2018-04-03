@@ -133,7 +133,7 @@ class Code(tornado.web.RequestHandler):
                     </head>
                     <body><div id="body">
                     
-                    '''.format(path) + (result if result else '<div tabindex="1" class="content-line"><span class="cursor" id="to-remove" > </span></div>') + '''</div></body></html>'''
+                    '''.format(path) + result + '''</div></body></html>'''
                    )
 
     def post(self, path):

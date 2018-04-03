@@ -3,7 +3,7 @@ var Cursor = {
     _isElementOnViewPort: function (el) {
         var rect = el.getBoundingClientRect(),
             windowHeight = window.innerHeight;
-        return (rect.top > 0 && rect.bottom < windowHeight );
+        return (rect.top >= 0 && rect.bottom <= windowHeight );
     },
     _createCursor: function (cursorParentElement, textBefore, cursorLetter, textAfter) {
         if ($(cursorParentElement).parent().attr('class') === 'cursor') {
@@ -169,7 +169,8 @@ var Cursor = {
     },
     moveRight: function () {
         var cursorInfo = this._getCursorPosition();
-        if (cursorInfo['cursorPosition'] < $(cursorInfo['contentLineElement']).text().length) {
+        var cursorToAdd = $('#to-remove').length ? 1 : 0;
+        if (cursorInfo['cursorPosition'] < $(cursorInfo['contentLineElement']).text().length - cursorToAdd) {
             this._setCursorShift(cursorInfo['cursorPosition'] + 1, $(cursorInfo['contentLineElement']));
         }
         else if ($(cursorInfo['contentLineElement']).next().length) {

@@ -104,7 +104,10 @@ class AstParser:
         }
 
         # for while for easy add remove lines
-        self.content = content
+        if not content.endswith(b'\n'):
+            self.content = content + b'\n'
+        else:
+            self.content = content
         # TODO move it on class level
         self.parsers = {
             _ast.FunctionDef: self.parse_function,
