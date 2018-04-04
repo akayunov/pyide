@@ -24,11 +24,11 @@ services:
 
     volumes:
       - type: bind
-        source: /opt/pyide/src
+        source: ../src
         target: /opt/pyide/src
         read_only: true
       - type: bind
-        source: /opt/pyide/test
+        source: ../test
         target: /opt/pyide/test
         read_only: true
     deploy:
