@@ -174,7 +174,7 @@ class AstParser:
         self.parsers[ast_tree.__class__](ast_tree)
         self.convert_to_scope_id_structure()
         # debug_print
-        from pprint import pprint
+        # from pprint import pprint
         # print('line_structure')
         # pprint(self.line_structure)
         # print('scope_id_structure')
@@ -308,7 +308,7 @@ class AstParser:
 
         result = []
         while namespace_id:
-            result += list(filter(lambda x: x.startswith(token_string),self.scope_id_structure.get(namespace_id, {}).keys()))
+            result += list(filter(lambda x: x.startswith(token_string), self.scope_id_structure.get(namespace_id, {}).keys()))
             if owner_attribute_string:
                 break
             namespace_id = self.child_parent_scope_id_links[namespace_id]['parent_scope_id']

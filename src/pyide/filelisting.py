@@ -1,9 +1,9 @@
 import os
 import tornado.web
 
-from pyide.configuration import sys_path_prepend
+from pyide.configuration import SYS_PATH_PREPEND
 
-output = '''
+OUTPUT = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,9 +23,9 @@ output = '''
 class FileListing(tornado.web.RequestHandler):
     def get(self):
         result = ''
-        for root, dirs, files in os.walk(sys_path_prepend):
+        for root, dirs, files in os.walk(SYS_PATH_PREPEND):
             for d_dir in dirs:
                 result += '<div class=folderlink ><a href="http://localhost:31415/server/code{}">{}</a></div>'.format(os.path.join(root, d_dir), os.path.join(root, d_dir))
-            for f_file in (f for f in files if not f.endswith('pyc') ):
+            for f_file in (f for f in files if not f.endswith('pyc')):
                 result += '<div><a class=filelink href="http://localhost:31415/server/code{}">{}</a></div>'.format(os.path.join(root, f_file), os.path.join(root, f_file))
-        self.write(output.format(result))
+        self.write(OUTPUT.format(result))

@@ -151,11 +151,11 @@ def test_backspace_delete(driver_ff_function, code_base_url):
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.END + Keys.DELETE)
     actions.perform()
-    assert text_first_line_before[2:][:-1] + test_second_line_before.lstrip() ==\
-           driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')
+    assert text_first_line_before[2:][:-1] + test_second_line_before.lstrip() == \
+        driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')
 
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.ARROW_DOWN + Keys.HOME + Keys.BACKSPACE)
     actions.perform()
     assert text_first_line_before[2:][:-1] + test_second_line_before.lstrip()[:-1] + test_third_line_before.lstrip() == \
-           driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')
+        driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')

@@ -6,9 +6,10 @@ echo ${PROJECT_DIR}
 
 # lint tests
 docker run -it --rm -v ${PROJECT_DIR}:/opt/pyide:ro registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
-'echo "Run pycodestyle" && pycodestyle "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests" || \
- echo "Run pyflakes"    && pyflakes    "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests" || \
- echo "Run pylint"      && pylint      "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests"'
+'echo "Run pycodestyle" && pycodestyle                         "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests" || \
+ echo "Run pyflakes"    && pyflakes                            "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests" || \
+ echo "Run pylint"      && pylint --rcfile=/opt/pyide/pylintrc "/opt/pyide/src/pyide" "/opt/pyide/test/client" "/opt/pyide/test/server/tests"    \
+'
 
 
 # functional test

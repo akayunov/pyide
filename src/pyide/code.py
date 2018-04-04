@@ -1,26 +1,24 @@
 import os.path
-import tornado.web
 import keyword
-import uuid
-import tokenize
 import token
 import json
-from pprint import pprint
 from io import BytesIO
-from pyide.astparser import AstParser
-from pyide.exception import NotFound
-from pyide import configuration
-from collections import namedtuple
+import tokenize
 from tokenize import TokenInfo
+import tornado.web
+from pyide.astparser import AstParser
+from pyide import configuration
+
 
 AST_PARSER = {}
+
 
 def mark_token(k, current_position, ast_parser):
     # tabulation
     padding = ''
     if current_position == 0:
         tab_length = k.start[1] - current_position
-        for i in range(int(tab_length/4)):
+        for i in range(int(tab_length / 4)):
             padding += '<span class="padding_{}">    </span>'.format(i)
     else:
         padding = (' ' * (k.start[1] - current_position))
@@ -51,7 +49,7 @@ def mark_token(k, current_position, ast_parser):
 
 
 def get_module_name(path):
-    return path.replace(configuration.sys_path_prepend, '').strip('/').replace('/', '.').replace('.py', '')
+    return path.replace(configuration.SYS_PATH_PREPEND, '').strip('/').replace('/', '.').replace('.py', '')
 
 
 # TODO move in init stage
@@ -104,15 +102,15 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 
 class Code(tornado.web.RequestHandler):
     def get(self, path):
-        path = configuration.sys_path_prepend + '/' + path
+        path = configuration.SYS_PATH_PREPEND + '/' + path
 
         if os.path.isdir(path):
             for file_path in get_next_file(path):
-                with open(file_path, 'rb') as f:
-                    ast_parser = AstParser(f.read(), None)
+                with open(file_path, 'rb') as code_file:
+                    ast_parser = AstParser(code_file.read(), None)
         else:
-            with open(path, 'rb') as f:
-                ast_parser = AstParser(f.read(), None)
+            with open(path, 'rb') as code_file:
+                ast_parser = AstParser(code_file.read(), None)
 
         AST_PARSER[path] = ast_parser
         ast_parser.parse_content()
@@ -131,10 +129,8 @@ class Code(tornado.web.RequestHandler):
                         <script src="/client/autocomplete.js"></script>
                         <script src="/client/main.js"></script>
                     </head>
-                    <body><div id="body">
-                    
-                    '''.format(path) + result + '''</div></body></html>'''
-                   )
+                    <body><div id="body">'''.format(path) + result + '''</div></body></html>'''
+                  )
 
     def post(self, path):
         body = json.loads(self.request.body)
@@ -166,13 +162,15 @@ class Code(tornado.web.RequestHandler):
             if t_struct_adjusted[-1].string == '.':
                 # ищем имена
                 result += AST_PARSER['/' + path].get_autocomlete(token_string='',
-                    owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0], col_offset=t_struct_adjusted[-1].start[1]
-                )
+                                                                 owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
+                                                                 col_offset=t_struct_adjusted[-1].start[1]
+                                                                )
                 token_string = ''
             elif t_struct_adjusted[-2].string == '.':
                 # ищем атрибуты предыдущего имени
                 result += AST_PARSER['/' + path].get_autocomlete(
-                    t_struct_adjusted[-1].string, owner_attribute_string=t_struct_adjusted[-3].string, line_number=t_struct_adjusted[-1].start[0], col_offset=t_struct_adjusted[-1].start[1]
+                    t_struct_adjusted[-1].string, owner_attribute_string=t_struct_adjusted[-3].string, line_number=t_struct_adjusted[-1].start[0],
+                    col_offset=t_struct_adjusted[-1].start[1]
                 )
                 token_string = t_struct_adjusted[-1].string
             elif t_struct_adjusted[-1].type == token.NAME:

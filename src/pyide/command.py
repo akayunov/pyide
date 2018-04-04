@@ -1,7 +1,6 @@
 import tornado.web
 
-
-output = '''
+OUTPUT = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,6 +19,7 @@ output = '''
 
 '''
 
+
 class Command(tornado.web.RequestHandler):
-    def get(self):
-        self.write(output)
+    def get(self, *args, **kwargs):
+        self.write(OUTPUT)
