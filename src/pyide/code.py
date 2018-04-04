@@ -16,6 +16,7 @@ AST_PARSER = {}
 def mark_token(k, current_position, ast_parser):
     # tabulation
     padding = ''
+    tagged_string = ''
     if current_position == 0:
         tab_length = k.start[1] - current_position
         for i in range(int(tab_length / 4)):
@@ -24,28 +25,29 @@ def mark_token(k, current_position, ast_parser):
         padding = (' ' * (k.start[1] - current_position))
 
     if keyword.iskeyword(k.string):
-        return padding + '<span class=keyword>' + k.string + '</span>'
+        tagged_string = padding + '<span class=keyword>' + k.string + '</span>'
     else:
         if k.exact_type == 3:
             # STRING
-            return padding + '<span class=string>' + k.string + '</span>'
+            tagged_string = padding + '<span class=string>' + k.string + '</span>'
         elif k.exact_type == 54:
             # COMMENT
-            return padding + '<span class=comment>' + k.string + '</span>'
+            tagged_string = padding + '<span class=comment>' + k.string + '</span>'
         elif k.exact_type == 2:
             # NUMBER
-            return padding + '<span class=number>' + k.string + '</span>'
+            tagged_string = padding + '<span class=number>' + k.string + '</span>'
         elif k.exact_type == 1:
             # NAME
             # parent_node_info = ast_parser.get_assign_node_information_by_token(k.string, k.start[0], k.start[1])
-            # parent_node_info = ast_parser.get_assign_node_information_by_namespace_id(k.string, k.start[0], k.start[1])
+            # parent_node_info = ast_parser.get_assign_node_information(k.string, k.start[0], k.start[1])
             node = ast_parser.get_node(k.string, k.start[0], k.start[1])
             # return padding + '<span parent_id="{}" id="{}">'.format(
             #     parent_node_info.id if parent_node_info else None,
             #     node.id if node else None) + k.string + '</span>'
-            return padding + '<span class="{}">'.format(node.type if node else 'unknown') + k.string + '</span>'
+            tagged_string = padding + '<span class="{}">'.format(node.type if node else 'unknown') + k.string + '</span>'
         else:
-            return padding + k.string
+            tagged_string = padding + k.string
+    return tagged_string
 
 
 def get_module_name(path):
@@ -117,20 +119,21 @@ class Code(tornado.web.RequestHandler):
         # import pdb;pdb.set_trace()
         result = tokenize_source(ast_parser.tokenizer_structure, path)
 
-        self.write('''
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title> {}</title>
-                        <link rel="stylesheet" href="/client/style.css">
-                        <script src="/client/jquery-3.2.1.min.js"></script>
-                        <script src="/client/cursor.js"></script>
-                        <script src="/client/autocomplete.js"></script>
-                        <script src="/client/main.js"></script>
-                    </head>
-                    <body><div id="body">'''.format(path) + result + '''</div></body></html>'''
-                  )
+        self.write(
+            '''
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title> {}</title>
+                    <link rel="stylesheet" href="/client/style.css">
+                    <script src="/client/jquery-3.2.1.min.js"></script>
+                    <script src="/client/cursor.js"></script>
+                    <script src="/client/autocomplete.js"></script>
+                    <script src="/client/main.js"></script>
+                </head>
+                <body><div id="body">'''.format(path) + result + '''</div></body></html>'''
+        )
 
     def post(self, path):
         body = json.loads(self.request.body)
@@ -161,10 +164,11 @@ class Code(tornado.web.RequestHandler):
             token_string = ''
             if t_struct_adjusted[-1].string == '.':
                 # ищем имена
-                result += AST_PARSER['/' + path].get_autocomlete(token_string='',
-                                                                 owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
-                                                                 col_offset=t_struct_adjusted[-1].start[1]
-                                                                )
+                result += AST_PARSER['/' + path].get_autocomlete(
+                    token_string='',
+                    owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
+                    col_offset=t_struct_adjusted[-1].start[1]
+                )
                 token_string = ''
             elif t_struct_adjusted[-2].string == '.':
                 # ищем атрибуты предыдущего имени
@@ -199,7 +203,7 @@ class Code(tornado.web.RequestHandler):
             # print(token_info.string, token_info.start[0], token_info.start[1])
             # import pdb;
             # pdb.set_trace()
-            node = AST_PARSER['/' + path].get_assign_node_information_by_namespace_id(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
+            node = AST_PARSER['/' + path].get_assign_node_information(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
             if node:
                 self.write(
                     json.dumps({

@@ -15,7 +15,7 @@ def test_empty(driver_ff_function, code_base_url):
     assert ' ' == driver_ff_function.find_element_by_id('to-remove').text
 
 
-def test_without_new_line_at_the_end(driver_ff_function, code_base_url):
+def test_new_line_at_the_end(driver_ff_function, code_base_url):
     driver_ff_function.get(code_base_url + 'resourses/onelinewithoutnewline.py')
     element = driver_ff_function.find_element_by_css_selector('[tabindex="1"]')
     element.send_keys(Keys.END)
@@ -32,7 +32,7 @@ def test_move_right(driver_ff_function, code_base_url):
     assert 'h' == driver_ff_function.find_element_by_class_name('cursor').text
 
     with pytest.raises(NoSuchElementException, message='Message: Unable to locate element: [id="to-remove"]'):
-        driver_ff_function.find_element_by_id('to-remove').text
+        driver_ff_function.find_element_by_id('to-remove').text  # pylint: disable=expression-not-assigned
 
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.ARROW_RIGHT)
@@ -91,7 +91,7 @@ def test_move_left(driver_ff_function, code_base_url):
     actions.send_keys(Keys.ARROW_LEFT)
     actions.perform()
     with pytest.raises(NoSuchElementException, message='Message: Unable to locate element: [id="to-remove"]'):
-        driver_ff_function.find_element_by_id('to-remove').text
+        driver_ff_function.find_element_by_id('to-remove').text  # pylint: disable=expression-not-assigned
     assert 'h' == driver_ff_function.find_element_by_class_name('cursor').text
 
 

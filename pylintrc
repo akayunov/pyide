@@ -2,4 +2,10 @@
 max-line-length=180
 
 [MESSAGES CONTROL]
-disable=missing-docstring,fixme
+disable=missing-docstring,import-error,too-few-public-methods,too-many-public-methods,misplaced-comparison-constant,too-many-branches,broad-except,too-many-arguments,too-many-instance-attributes,too-many-nested-blocks,no-else-return,fixme
+
+[SIMILARITIES]
+min-similarity-lines=25
+
+[BASIC]
+good-names=id,k,i

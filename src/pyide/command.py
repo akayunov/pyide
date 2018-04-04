@@ -21,5 +21,5 @@ OUTPUT = '''
 
 
 class Command(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
+    def get(self):
         self.write(OUTPUT)

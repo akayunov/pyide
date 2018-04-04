@@ -1,12 +1,12 @@
 import traceback
 import ast
 import operator
-import _ast
 import tokenize
 import token
 from io import BytesIO
 import keyword
 import uuid
+import _ast
 
 
 # descriptor to get lineno by attribute acces without any []
@@ -28,25 +28,25 @@ class LineNo:
         return self.node_lineno
 
     def __eq__(self, other):
-        if type(other) is int:
+        if isinstance(other, int):
             return self.node_lineno == other
-        elif type(other) is LineNo:
+        elif isinstance(other, LineNo):
             return self.node_lineno == other.node_lineno
         else:
             raise TypeError('Uncomparable types')
 
     def __lt__(self, other):
-        if type(other) is int:
+        if isinstance(other, int):
             return self.node_lineno < other
-        elif type(other) is LineNo:
+        elif isinstance(other, LineNo):
             return self.node_lineno < other.node_lineno
         else:
             raise TypeError('Uncomparable types')
 
     def __gt__(self, other):
-        if type(other) is int:
+        if isinstance(other, int):
             return self.node_lineno > other
-        elif type(other) is LineNo:
+        elif isinstance(other, LineNo):
             return self.node_lineno > other.node_lineno
         else:
             raise TypeError('Uncomparable types')
@@ -93,6 +93,7 @@ class AstParser:
         self.line_structure = {}  # key is line number, value is dictionary: keys are node_strings, values = NodeInfo() objects
         self.scope_id_structure = {}  # additional structure - keys - scope_id, values - dict: keys - token_strings, values - NodeInfo()
 
+        self.tokenizer_structure = []
         # tree of scopes - link any scope_id to it parent, needed in search of name from bottom to up in scope tree
         # easy to modify just add new and don't think about old ones
         self.child_parent_scope_id_links = {
@@ -153,7 +154,7 @@ class AstParser:
             _ast.Global: self.parse_global
         }
 
-    def parse_content(self, start_line=1):
+    def parse_content(self):
         ast_tree = ast.parse(self.content)
         self.tokenizer_structure = list(tokenize.tokenize(BytesIO(self.content).readline))
 
@@ -243,7 +244,7 @@ class AstParser:
         while node.owner:
             node = node.owner
         # owner_node_info = self.get_assign_node_information_by_token(node.string, node.lineno.lineno, node.col_offset)
-        owner_node_info = self.get_assign_node_information_by_namespace_id(node.string, node.lineno.lineno, node.col_offset)
+        owner_node_info = self.get_assign_node_information(node.string, node.lineno.lineno, node.col_offset)
         if not owner_node_info:
             return None
         assign_owner_value_node_info = self.pass_through_assign_chain(owner_node_info)
@@ -252,7 +253,7 @@ class AstParser:
             # - will be deep recursion for next string FIX IT
             return None
         # owner_node_info_type_definition = self.get_assign_node_information_by_token(
-        owner_node_info_type_definition = self.get_assign_node_information_by_namespace_id(
+        owner_node_info_type_definition = self.get_assign_node_information(
             assign_owner_value_node_info.string, assign_owner_value_node_info.lineno.lineno, assign_owner_value_node_info.col_offset
         )
         if not owner_node_info_type_definition:
@@ -280,7 +281,7 @@ class AstParser:
     #                     return self.scope_id_structure[scope_id][token_string][0]
     #             scope_id = self.child_parent_scope_id_links[scope_id]['parent_scope_id']
 
-    def get_assign_node_information_by_namespace_id(self, token_string, line_number: int, col_offset: int):
+    def get_assign_node_information(self, token_string, line_number: int, col_offset: int):
         namespace_id = None
         for _namespace_id, namespace_prop in sorted(self.child_parent_scope_id_links.items(), key=lambda x: operator.itemgetter('lineno')(x[1])):
             if namespace_prop['col_offset'] <= col_offset:
@@ -296,14 +297,14 @@ class AstParser:
                     return self.scope_id_structure[namespace_id][token_string][0]
             namespace_id = self.child_parent_scope_id_links[namespace_id]['parent_scope_id']
 
-    def get_autocomlete(self, token_string, owner_attribute_string=None, line_number: int=0, col_offset: int=0):
+    def get_autocomlete(self, token_string, owner_attribute_string=None, line_number: int = 0, col_offset: int = 0):
         if not owner_attribute_string:
             namespace_id = None
             for _namespace_id, namespace_prop in sorted(self.child_parent_scope_id_links.items(), key=lambda x: operator.itemgetter('lineno')(x[1])):
                 if namespace_prop['col_offset'] <= col_offset:
                     namespace_id = _namespace_id
         else:
-            attribute_owner_node = self.get_assign_node_information_by_namespace_id(owner_attribute_string, line_number, col_offset)
+            attribute_owner_node = self.get_assign_node_information(owner_attribute_string, line_number, col_offset)
             namespace_id = attribute_owner_node.child_scope_id
 
         result = []
@@ -320,6 +321,7 @@ class AstParser:
             for node in reversed(node_info):
                 if node.col_offset <= col_offset:
                     return node
+        return None
 
     # def shift_lines(self, start_line, line_count):
     #     if line_count > 0:
@@ -335,7 +337,7 @@ class AstParser:
     #                 self.created_lineno[line_number + line_count].node_lineno += line_count
     #                 # del self.created_lineno[line_number]
 
-    def add_lines(self, lines, start_line_number, replace=0):
+    def add_lines(self, lines, start_line_number):
         # self.shift_lines(start_line_number, len(lines) - replace)
         # for line_number, line in enumerate(lines, start_line_number):
         #     ast.parse()
@@ -356,9 +358,9 @@ class AstParser:
 
     def parse_class(self, node):
         # TODO looks like function def ttry to merge
-        for n, decorator in enumerate(node.decorator_list):
+        for _, decorator in enumerate(node.decorator_list):
             self.parsers[decorator.__class__](decorator)
-        with ScopeContextManager(self, node) as s:
+        with ScopeContextManager(self, node) as scope:
             for body_obj in node.body:
                 self.parsers[body_obj.__class__](body_obj)
         node_line = node.lineno + len(node.decorator_list)
@@ -371,16 +373,16 @@ class AstParser:
                 node_id=str(uuid.uuid4()),
                 scope_id=self.scope_id,
                 parent_scope_id=self.parent_scope_id,
-                child_scope_id=s.new_scope_id,
+                child_scope_id=scope.new_scope_id,
                 lineno=self.get_lineno(node_line)
             ))
 
     def parse_function(self, node):
-        for n, decorator in enumerate(node.decorator_list):
+        for _, decorator in enumerate(node.decorator_list):
             self.parsers[decorator.__class__](decorator)
         if node.returns:
             self.parsers[node.returns.__class__](node.returns)
-        with ScopeContextManager(self, node) as s:
+        with ScopeContextManager(self, node) as scope:
             for argument in node.args.args:
                 self.parsers[argument.__class__](argument)
             for body_obj in node.body:
@@ -395,7 +397,7 @@ class AstParser:
                 node_id=str(uuid.uuid4()),
                 scope_id=self.scope_id,
                 parent_scope_id=self.parent_scope_id,
-                child_scope_id=s.new_scope_id,
+                child_scope_id=scope.new_scope_id,
                 lineno=self.get_lineno(node_line)
             ))
 
@@ -542,6 +544,7 @@ class AstParser:
 
     def parse_attribute(self, node: ast.Attribute):
         value_node_info = self.parsers[node.value.__class__](node.value)
+        node_info = None
         if value_node_info:
             node_info = NodeInfo(
                 node_string=node.attr,
@@ -555,10 +558,11 @@ class AstParser:
                 lineno=self.get_lineno(node.lineno)
             )
             self.line_structure[self.get_lineno(node.lineno)][node.attr].append(node_info)
-            return node_info
+            node_info = node_info
         else:
             # for builtins we will be here
             pass
+        return node_info
 
     def parse_raise(self, node: ast.Raise):
         self.parsers[node.exc.__class__](node.exc)
