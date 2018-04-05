@@ -1,3 +1,4 @@
+"use strict";
 $(document).ready(function () {
     $("div[tabindex='1']").focus();
     Cursor.init();

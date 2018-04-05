@@ -2,4 +2,3 @@ v/
 .idea
 __pycache__
 tmp
-pyide-client/jquery*

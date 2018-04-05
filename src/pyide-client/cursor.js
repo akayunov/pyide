@@ -1,3 +1,4 @@
+"use strict";
 var Cursor = {
     position: 1,
     _isElementOnViewPort: function (el) {
