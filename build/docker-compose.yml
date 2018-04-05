@@ -16,15 +16,9 @@ services:
         aliases:
           - pyide
 
-    ports:
-      - "31415:31415"
-
     logging:
       driver: "json-file"
 
-    environment:
-      PYTHONPATH: /opt/pyide/src
-    command: ['python3', '-m', 'pyide', '-d', '--coverage']
     volumes:
       - type: bind
         source: ../src
@@ -34,9 +28,20 @@ services:
         source: ../test/server/resourses
         target: /opt/pyide/test/server/resourses
         read_only: true
+      - type: bind
+        source: ../tmp
+        target: /opt/pyide/tmp
     deploy:
       mode: replicated
       replicas: 1
       restart_policy:
         condition: none
       endpoint_mode: vip
+
+# diff from release
+    ports:
+      - "31415:31415"
+
+    environment:
+      PYTHONPATH: /opt/pyide/src
+    command: ['python3', '-m', 'pyide']
