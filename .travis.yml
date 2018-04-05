@@ -1,0 +1,18 @@
+services:
+  - docker
+
+install: true
+
+before_script:
+  - docker swarm init
+  - cd
+  - git clone https://github.com/akayunov/pyide.git
+
+script:
+  - cd ~/pyide
+  - docker stack deploy --prune -c build/docker-compose.yml PYIDE
+  - ./test/run-test.sh all
+
+after_success: true
+
+after_failure: true
