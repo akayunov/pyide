@@ -22,6 +22,9 @@ services:
     logging:
       driver: "json-file"
 
+    environment:
+      PYTHONPATH: /opt/pyide/src
+    command: ['python3', '-m', 'pyide', '-d', '--coverage']
     volumes:
       - type: bind
         source: ../src

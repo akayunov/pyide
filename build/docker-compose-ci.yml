@@ -1,0 +1,40 @@
+version: "3.4"
+
+networks:
+  pyide:
+    attachable: true
+
+services:
+  pyide:
+
+    hostname: pyide
+
+    image: registry.hub.docker.com/akayunov/pyide:latest
+
+    networks:
+      pyide:
+        aliases:
+          - pyide
+
+    ports:
+      - "31415:31415"
+
+    logging:
+      driver: "json-file"
+
+    command: ['python3', '-m', 'pyide', '-d', '--coverage']
+    volumes:
+      - type: bind
+        source: ../src
+        target: /opt/pyide/src
+        read_only: true
+      - type: bind
+        source: ../test/server/resourses
+        target: /opt/pyide/test/server/resourses
+        read_only: true
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: none
+      endpoint_mode: vip

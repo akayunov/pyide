@@ -1,3 +1,4 @@
+"use strict";
 var AutoComplete = {
     show: function () {
         var cursorInfo = Cursor._getCursorPosition();
