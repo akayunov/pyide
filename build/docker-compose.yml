@@ -28,9 +28,6 @@ services:
         source: ../test/server/resourses
         target: /opt/pyide/test/server/resourses
         read_only: true
-      - type: bind
-        source: ../tmp
-        target: /opt/pyide/tmp
     deploy:
       mode: replicated
       replicas: 1
