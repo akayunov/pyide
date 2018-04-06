@@ -6,7 +6,7 @@ main() {
 
     script_dir_name="`dirname \"$0\"`"              # relative
     PROJECT_DIR="`( cd \"${script_dir_name}/../\" && pwd )`"  # absolutized and normalized
-    echo ${PROJECT_DIR}
+    echo 'PROJECT DIR: ' ${PROJECT_DIR}
 
   case ${cmd} in
     "all") test_lint && test_functional;;
@@ -43,14 +43,18 @@ test_coverage(){
     docker run -it --rm -v "$PROJECT_DIR":/opt/pyide --add-host="pyide:127.0.0.1" --network='none' -e COVERAGE_PROCESS_START="/opt/pyide/.coveragerc" \
     -e COVERAGE_FILE="/opt/pyide/tmp/.coverage" registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
     'cd /opt/pyide/src && \
-     (python3 -m pyide --coverage 2>/dev/null 1>/dev/null &) && \
-     pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test /opt/pyide/test/client
+     (python3 -c "import coverage, signal, sys; signal.signal(signal.SIGINT, lambda x, y: sys.exit()); coverage.process_startup(); import pyide; pyide.main()" 2>/dev/null 1>/dev/null &) && \
+     pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test --cov-report= /opt/pyide/test/client && \
+     killall -2 python3 && \
+     sleep 1
     '
     # send report
     docker run -it --rm -v "$PROJECT_DIR":/opt/pyide -e COVERALLS_REPO_TOKEN="w6LHqcB4LPnEK3RfkEFY4C9F7SPFwqGFN" \
     registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
     'cd /opt/pyide/tmp && \
      coverage combine  && \
+     coverage report  && \
+     coverage html  && \
      coveralls
     '
 }
