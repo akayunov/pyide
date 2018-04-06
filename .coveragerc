@@ -4,3 +4,4 @@ concurrency=multiprocessing
 data_file=/opt/pyide/tmp/.coverage
 omit =
     /usr/*
+repo_token: N3dBjsT1Hdpr8qAprP4OhzPUBypAm93NO

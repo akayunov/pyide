@@ -48,8 +48,7 @@ test_coverage(){
      killall -2 python3 && \
      sleep 1 && \
      cd /opt/pyide/tmp && \
-     coverage combine && \
-     coveralls
+     coverage combine
     '
 }
 
