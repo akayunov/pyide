@@ -36,5 +36,5 @@ def main():
 
 
 if __name__ == '__main__':
-    ret_code = create_daemon()
+    create_daemon()
     main()
