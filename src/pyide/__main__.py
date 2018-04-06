@@ -1,9 +1,9 @@
 import argparse
 import os
+import traceback
 import tornado.ioloop
 import tornado.web
 
-from pyide.daemonize import create_daemon
 from pyide.command import Command
 from pyide.code import Code
 from pyide.filelisting import FileListing
@@ -35,6 +35,7 @@ def main():
     tornado.ioloop.IOLoop.current().start()
 
 
-if __name__ == '__main__':
-    create_daemon()
+try:
     main()
+except Exception as e:
+    print(traceback.format_exc())

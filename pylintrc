@@ -8,7 +8,7 @@ disable=missing-docstring,import-error,too-few-public-methods,too-many-public-me
 min-similarity-lines=25
 
 [BASIC]
-good-names=id,k,i,e,fd
+good-names=id,k,i,e
 
 [MASTER]
 ignore=__pycache__

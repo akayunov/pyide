@@ -43,7 +43,7 @@ test_coverage(){
     docker run -it --rm -v "$PROJECT_DIR":/opt/pyide --add-host="pyide:127.0.0.1" --network='none' -e COVERAGE_PROCESS_START="/opt/pyide/.coveragerc" \
     -e COVERAGE_FILE="/opt/pyide/tmp/.coverage" registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
     'cd /opt/pyide/src && \
-     python3 -m pyide --coverage && \
+     (python3 -m pyide --coverage 2>/dev/null 1>/dev/null &) && \
      pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test /opt/pyide/test/client && \
      killall -2 python3 && \
      sleep 1 && \
