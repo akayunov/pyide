@@ -1,0 +1,6 @@
+[run]
+branch = True
+concurrency=multiprocessing
+data_file=/opt/pyide/tmp/.coverage
+omit =
+    /usr/*

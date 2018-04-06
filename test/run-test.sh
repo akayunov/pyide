@@ -12,11 +12,13 @@ main() {
     "all") test_lint && test_functional;;
     "func") test_functional;;
     "lint") test_lint;;
+    "cov") test_coverage;;
     *) echo "Run as: $0 command
 Possible commands:
   all     - run all tests
   func    - run functional tests
   lint    - run lint tests
+  cov     - run coverage
   "; exit;;
   esac
 }
@@ -34,6 +36,21 @@ test_functional(){
     # functional test
     docker run -it --rm -v "$PROJECT_DIR"/test:/opt/pyide/test:ro -v "$PROJECT_DIR"/tmp:/opt/pyide/tmp  --network=PYIDE_pyide \
         registry.hub.docker.com/akayunov/pyide-test:latest pytest /opt/pyide/test/client
+}
+
+test_coverage(){
+    # get coverage
+    docker run -it --rm -v "$PROJECT_DIR":/opt/pyide --add-host="pyide:127.0.0.1" --network='none' -e COVERAGE_PROCESS_START="/opt/pyide/.coveragerc" \
+    -e COVERAGE_FILE="/opt/pyide/tmp/.coverage" registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
+    'cd /opt/pyide/src && \
+     python3 -m pyide --coverage && \
+     pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test /opt/pyide/test/client && \
+     killall -2 python3 && \
+     sleep 1 && \
+     cd /opt/pyide/tmp && \
+     coverage combine && \
+     coveralls
+    '
 }
 
 main "$@"
