@@ -3,16 +3,28 @@
 main() {
     local cmd=$1
     shift
+    local push_cov=$1
+    shift
 
     script_dir_name="`dirname \"$0\"`"              # relative
     PROJECT_DIR="`( cd \"${script_dir_name}/../\" && pwd )`"  # absolutized and normalized
     echo 'PROJECT DIR: ' ${PROJECT_DIR}
 
+  case ${push_cov} in
+    "") ;;
+    "push") ;;
+    *) echo "Run as: $0 cov
+Possible options:
+  push  - push coverage on coveralls.io
+  ''    - get local coverage only(see ./tmp)
+  "; exit;;
+  esac
+
   case ${cmd} in
     "all") test_lint && test_functional;;
     "func") test_functional;;
     "lint") test_lint;;
-    "cov") test_coverage;;
+    "cov") test_coverage $push_cov;;
     *) echo "Run as: $0 command
 Possible commands:
   all     - run all tests
@@ -49,14 +61,14 @@ test_coverage(){
      sleep 1
     '
     # send report
+    local command='cd /opt/pyide/tmp && coverage combine  && coverage report  && coverage html '
+    if [ $1 ]
+    then
+        command="$command &&  coveralls"
+    fi
     docker run -it --rm -v "$PROJECT_DIR":/opt/pyide -e COVERALLS_REPO_TOKEN="w6LHqcB4LPnEK3RfkEFY4C9F7SPFwqGFN" \
-    registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
-    'cd /opt/pyide/tmp && \
-     coverage combine  && \
-     coverage report  && \
-     coverage html  && \
-     coveralls
-    '
+    registry.hub.docker.com/akayunov/pyide-test:latest bash -c "$command"
+
 }
 
 main "$@"
