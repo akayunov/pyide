@@ -12,6 +12,7 @@ script:
   - cd ~/pyide
   - docker stack deploy --prune -c build/docker-compose.yml PYIDE
   - ./test/run-test.sh all
+  - ./test/run-test.sh cov
 
 after_success: true
 

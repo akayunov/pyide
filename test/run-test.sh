@@ -25,7 +25,7 @@ Possible commands:
 
 test_lint(){
     # lint tests
-    docker run -it --rm -v ${PROJECT_DIR}:/opt/pyide:ro registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
+    docker run -it --rm -v ${PROJECT_DIR}:/opt/pyide:ro --network='none' registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
     'echo "Run pycodestyle" && pycodestyle                         /opt/pyide/src/pyide /opt/pyide/test/client   /opt/pyide/test/server/tests && \
      echo "Run pyflakes"    && pyflakes                            /opt/pyide/src/pyide /opt/pyide/test/client   /opt/pyide/test/server/tests && \
      echo "Run pylint"      && pylint --rcfile=/opt/pyide/pylintrc /opt/pyide/src/pyide /opt/pyide/test/client/* /opt/pyide/test/server/tests/*  \
@@ -44,11 +44,14 @@ test_coverage(){
     -e COVERAGE_FILE="/opt/pyide/tmp/.coverage" registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
     'cd /opt/pyide/src && \
      (python3 -m pyide --coverage 2>/dev/null 1>/dev/null &) && \
-     pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test /opt/pyide/test/client && \
-     killall -2 python3 && \
-     sleep 1 && \
-     cd /opt/pyide/tmp && \
-     coverage combine
+     pytest  --cov-config=/opt/pyide/.coveragerc --cov=/opt/pyide/src --cov=/opt/pyide/test /opt/pyide/test/client
+    '
+    # send report
+    docker run -it --rm -v "$PROJECT_DIR":/opt/pyide -e COVERALLS_REPO_TOKEN="w6LHqcB4LPnEK3RfkEFY4C9F7SPFwqGFN" \
+    registry.hub.docker.com/akayunov/pyide-test:latest bash -c \
+    'cd /opt/pyide/tmp && \
+     coverage combine  && \
+     coveralls
     '
 }
 

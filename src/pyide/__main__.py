@@ -1,6 +1,5 @@
 import argparse
 import os
-import traceback
 import tornado.ioloop
 import tornado.web
 
@@ -35,7 +34,4 @@ def main():
     tornado.ioloop.IOLoop.current().start()
 
 
-try:
-    main()
-except Exception as e:
-    print(traceback.format_exc())
+main()
