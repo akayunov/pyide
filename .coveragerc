@@ -1,6 +1,6 @@
 [run]
 branch = True
 concurrency=multiprocessing
-data_file=/opt/pyide/tmp/.coverage
+data_file=$PROJECT_DIR_ON_GUEST/tmp/.coverage
 omit =
     /usr/*
