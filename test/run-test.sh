@@ -24,7 +24,7 @@ Possible options:
     "all") test_lint && test_functional;;
     "func") test_functional;;
     "lint") test_lint;;
-    "cov") test_coverage $push_cov;;
+    "cov") test_coverage ${push_cov};;
     *) echo "Run as: $0 command
 Possible commands:
   all     - run all tests
