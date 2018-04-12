@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-def test_init_1(driver_ff_function, pyide_base_url):
+def test_init(driver_ff_function, pyide_base_url):
     driver_ff_function.get(pyide_base_url)
     testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
     testmodule1.click()
