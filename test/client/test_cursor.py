@@ -1,30 +1,47 @@
+import time
 import pytest
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 
-def test_init(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_init_1(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
     assert 'i' == driver_ff_function.find_element_by_class_name('cursor').text
 
 
-def test_empty(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/empty.py')
+def test_empty(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    empty_py = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'empty')))
+    empty_py.click()
+    time.sleep(1)
     assert ' ' == driver_ff_function.find_element_by_class_name('cursor').text
     assert ' ' == driver_ff_function.find_element_by_id('to-remove').text
 
 
-def test_new_line_at_the_end(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/onelinewithoutnewline.py')
+def test_new_line_at_the_end(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    onelinewithoutnewline = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'onelinewithoutnewline')))
+    onelinewithoutnewline.click()
+    time.sleep(1)
     element = driver_ff_function.find_element_by_css_selector('[tabindex="1"]')
     element.send_keys(Keys.END)
     assert ' ' == driver_ff_function.find_element_by_class_name('cursor').text
     assert ' ' == driver_ff_function.find_element_by_id('to-remove').text
 
 
-def test_move_right(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_move_right(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
 
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.ARROW_RIGHT * 31)
@@ -63,8 +80,12 @@ def test_move_right(driver_ff_function, code_base_url):
     assert '61' == driver_ff_function.execute_script('''return document.getElementsByClassName('cursor')[0].parentNode''').get_attribute('tabIndex')
 
 
-def test_move_left(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_move_left(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
 
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.ARROW_LEFT * 5)
@@ -95,8 +116,12 @@ def test_move_left(driver_ff_function, code_base_url):
     assert 'h' == driver_ff_function.find_element_by_class_name('cursor').text
 
 
-def test_page_up_down(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_page_up_down(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
 
     actions = ActionChains(driver_ff_function)
     actions.send_keys(Keys.PAGE_UP)
@@ -119,8 +144,12 @@ def test_page_up_down(driver_ff_function, code_base_url):
     assert 'i' == driver_ff_function.find_element_by_class_name('cursor').text
 
 
-def test_enter(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_enter(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
 
     text_first_line_before = driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')
     actions = ActionChains(driver_ff_function)
@@ -131,8 +160,12 @@ def test_enter(driver_ff_function, code_base_url):
     assert text_first_line_before == driver_ff_function.execute_script(''' return document.querySelector('[tabindex="2"]').textContent ''')
 
 
-def test_backspace_delete(driver_ff_function, code_base_url):
-    driver_ff_function.get(code_base_url + 'resourses/testmodule1.py')
+def test_backspace_delete(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+
+    WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="2"]')))
 
     text_first_line_before = driver_ff_function.execute_script(''' return document.querySelector('[tabindex="1"]').textContent ''')
     test_second_line_before = driver_ff_function.execute_script(''' return document.querySelector('[tabindex="2"]').textContent ''')

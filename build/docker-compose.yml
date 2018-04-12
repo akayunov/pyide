@@ -18,6 +18,8 @@ services:
 
     logging:
       driver: "json-file"
+      options:
+        mode: non-blocking
 
     volumes:
       - type: bind
@@ -41,4 +43,4 @@ services:
 
     environment:
       PYTHONPATH: /opt/pyide/src
-    command: ['python3', '-m', 'pyide']
+    command: ['python3', '-u', '-m', 'pyide', '-d']

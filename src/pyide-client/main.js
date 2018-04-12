@@ -2,13 +2,14 @@
 $(document).ready(function () {
     $("div[tabindex='1']").focus();
     Cursor.init();
+    FileListing.init();
 
     var pressedKeys = {};
 
-    $('div#body').on('keyup', 'div', function (event) {
+    $('div#code').on('keyup', 'div', function (event) {
         pressedKeys[event.keyCode] = false;
     });
-    $('div#body').on('keydown', 'div', function (event) {
+    $('div#code').on('keydown', 'div', function (event) {
         pressedKeys[event.keyCode] = true;
         console.log('keydown' + event.keyCode);
 
@@ -131,7 +132,7 @@ $(document).ready(function () {
     });
 
     // TODO move to one selector
-    $('div#body').on('click', 'div', function () {
+    $('div#code').on('click', 'div', function () {
         Cursor.setByClick();
         AutoComplete.hide();
         if (pressedKeys['17']) {
@@ -159,19 +160,38 @@ $(document).ready(function () {
         AutoComplete.hide();
     });
 
-
-    $(".filelink").click(
+    $('#filelisting').on('click', '.filelink',
         function (event) {
             console.log(event.target.attributes['href'].value);
-            console.log(window.top.frames[0]);
-            window.top.frames[0].location = event.target.attributes['href'].value;
+            // show file
+            $.ajax({
+                method: "GET",
+                url: event.target.attributes['href'].value,
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8'
+            }).done(function (response) {
+                Array.from(document.getElementById('code').children).forEach(
+                    function (element){
+                        element.remove()
+                    }
+                );
+                response.forEach(
+                    function(element){
+                        document.getElementById('code').appendChild($(element)[0])
+                    }
+                );
+                Cursor._setCursorShift(1, document.querySelector('[tabindex="1"]'));
+                document.querySelector('[tabindex="1"]').focus();
+            }).fail(function (jqXHR, textStatus) {
+                console.log('все сломалось в get CODE' , jqXHR, textStatus)
+            });
             event.preventDefault()
         }
     );
 
-    $(".folderlink").click(
+    $('#filelisting').on('click', '.folderlink',
         function (event) {
-            event.preventDefault()
+            FileListing.get(event)
         }
     );
 });

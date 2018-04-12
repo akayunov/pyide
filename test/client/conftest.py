@@ -8,8 +8,8 @@ from selenium import webdriver
 
 
 @pytest.fixture(scope='session')
-def code_base_url():
-    return 'http://pyide:31415/server/code/'
+def pyide_base_url():
+    return 'http://pyide:31415/client/pyide.html'
 
 
 @pytest.fixture(scope='function')

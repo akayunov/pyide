@@ -66,7 +66,7 @@ def get_next_file(path):
 def tokenize_source(tokenize_structure, file_name, current_line=1):
     current_position = 0
     string = ''
-    result = ''
+    result = []
 
     for k in tokenize_structure:
         # print(k)
@@ -92,7 +92,7 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
             else:
                 string = f'<div tabindex="{current_line}" class="content-line">' + string + '</div>'
 
-            result += string
+            result.append(string)
             string = ''
             current_position = 0
             current_line = k.start[0]
@@ -105,7 +105,6 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 class Code(tornado.web.RequestHandler):
     def get(self, path):
         path = configuration.SYS_PATH_PREPEND + '/' + path
-
         if os.path.isdir(path):
             for file_path in get_next_file(path):
                 with open(file_path, 'rb') as code_file:
@@ -119,21 +118,7 @@ class Code(tornado.web.RequestHandler):
         # import pdb;pdb.set_trace()
         result = tokenize_source(ast_parser.tokenizer_structure, path)
 
-        self.write(
-            '''
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title> {}</title>
-                    <link rel="stylesheet" href="/client/style.css">
-                    <script src="/client/jquery-3.2.1.min.js"></script>
-                    <script src="/client/cursor.js"></script>
-                    <script src="/client/autocomplete.js"></script>
-                    <script src="/client/main.js"></script>
-                </head>
-                <body><div id="body">'''.format(path) + result + '''</div></body></html>'''
-        )
+        self.write(json.dumps(result))
 
     def post(self, path):
         body = json.loads(self.request.body)

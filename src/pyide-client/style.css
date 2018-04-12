@@ -73,12 +73,51 @@ div {
     color: black;
 }
 
-#body div:nth-child(even) {
+#code {
+    display: inline-block;
+    height: 100%;
+    width: 1600px;
+}
+#filelisting {
+    display: inline-block;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    border: groove;
+    width: 300px;
+    height: 100%;
+}
+#code div:nth-child(even) {
     background: #f9fbff;
 }
-#body div:nth-child(odd) {
+#code div:nth-child(odd) {
     background: #f0ffef
 }
+
+.triange-img{
+    margin: 0;
+    border: 0;
+    padding: 0;
+    height: 19px;
+    width: 19px;
+    transform: rotate(90deg);
+}
+
+.folderlink {
+}
+.filelink > a {
+    text-decoration: none;
+}
+
+[class^="padding_"]{
+    white-space:pre;
+}
+
+a {color:#0000FF;}      /* unvisited link */
+a:visited {color:#0000FF;}  /* visited link */
+a:hover {color:#0000FF;}  /* mouse over link */
+a:active {color:#0000FF;}  /* selected link */
+
 
 #frame_file_list {
     width: 30%;

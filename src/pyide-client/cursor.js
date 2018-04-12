@@ -104,7 +104,17 @@ var Cursor = {
         this._createCursor(cursorParentElement, text_before, cursor_letter, text_after);
     },
     init: function () {
+        if (!$('.content-line').length){
+            var divEl = document.createElement('div');
+            divEl.tabIndex = 1;
+            divEl.className = 'content-line';
+            var spanEl = document.createElement('span');
+            spanEl.textContent ='\n';
+            divEl.appendChild(spanEl);
+            document.getElementById('code').appendChild(divEl);
+        }
         this._setCursorShift(1, $('.content-line')[0]);
+        $('.content-line')[0].focus();
     },
     putSymbol: function (char) {
         $('.cursor').before($(document.createTextNode(char)));

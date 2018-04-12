@@ -1,31 +1,25 @@
+import json
 import os
 import tornado.web
-
 from pyide.configuration import SYS_PATH_PREPEND
-
-OUTPUT = '''
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title> JS test/CSS test</title>
-    <script src="/client/jquery-3.2.1.min.js"></script>
-    <script src="/client/test.js"></script>
-    <link rel="stylesheet" href="/client/style.css">
-</head>
-<body>
-{}
-</body>
-</html>
-'''
 
 
 class FileListing(tornado.web.RequestHandler):
-    def get(self):
-        result = ''
-        for root, dirs, files in os.walk(SYS_PATH_PREPEND):
-            for d_dir in dirs:
-                result += '<div class=folderlink ><a href="http://localhost:31415/server/code{}">{}</a></div>'.format(os.path.join(root, d_dir), os.path.join(root, d_dir))
-            for f_file in (f for f in files if not f.endswith('pyc')):
-                result += '<div><a class=filelink href="http://localhost:31415/server/code{}">{}</a></div>'.format(os.path.join(root, f_file), os.path.join(root, f_file))
-        self.write(OUTPUT.format(result))
+    def get(self, path):
+        result = []
+        for root, dirs, files in os.walk((SYS_PATH_PREPEND + path)):
+            padding_size = path.count('/')
+            print('padding', padding_size, path, root, dirs, files)
+            for d_dir in sorted(dirs):
+                d_dir_path = os.path.join(root, d_dir).replace(SYS_PATH_PREPEND + '/', '')
+                result.append(
+                    '''<div class=folderlink ><img class="triange-img" style="transform: rotate(90deg);" src="/client/triangle.png"><span class="padding_{}">{}</span>\
+<a href="/server/filelisting/{}">{}</a></div>'''.format(padding_size, '  ' * padding_size, d_dir_path, d_dir)
+                )
+            for f_file in sorted(f for f in files if not f.endswith('pyc')):
+                f_file_path = os.path.join(root, f_file).replace(SYS_PATH_PREPEND + '/', '')
+                result.append(
+                    '''<div class=filelink   ><img class="triange-img" style="transform: rotate(90deg);"src="/client/blank.png"><span class="padding_{}">{}</span>\
+<a href="/server/code/{}">{}</a></div>'''.format(padding_size, '  ' * padding_size, f_file_path, f_file))
+            break
+        self.write(json.dumps(result))

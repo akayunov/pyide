@@ -3,8 +3,6 @@
 main() {
     local cmd=$1
     shift
-    local push_cov=$1
-    shift
 
     script_dir_name="`dirname \"$0\"`"              # relative
 
@@ -14,22 +12,11 @@ main() {
     echo 'PROJECT_DIR_ON_HOST:  ' ${PROJECT_DIR_ON_HOST}
     echo 'PROJECT_DIR_ON_GUEST: ' ${PROJECT_DIR_ON_GUEST}
 
-  case ${push_cov} in
-    "") ;;
-    "push") ;;
-    *) echo "Run as: $0 cov
-
-Possible options:
-  push  - push coverage on coveralls.io
-  ''    - get local coverage only(see ./tmp)
-  "; exit;;
-  esac
-
   case ${cmd} in
     "all") test_lint && test_functional && test_coverage;;
-    "func") test_functional;;
+    "func") test_functional "$@";;
     "lint") test_lint;;
-    "cov") test_coverage ${push_cov};;
+    "cov") test_coverage;;
     *) echo "Run as: $0 command
 
 Possible commands:
@@ -54,15 +41,37 @@ test_lint(){
 }
 
 test_functional(){
+    if [ -z $(docker stack ls   --format '{{ lower .Name}}' | grep  pyide) ]
+    then
+        docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
+    else
+        echo 'Sighuping container...'
+        docker kill -s SIGHUP $(docker ps -a -f ancestor=akayunov/pyide:latest --format={{.ID}})
+    fi
+
     # functional test
     docker run -it --rm \
         -v "${PROJECT_DIR_ON_HOST}/test":${PROJECT_DIR_ON_GUEST}/test:ro \
         -v "${PROJECT_DIR_ON_HOST}/tmp":${PROJECT_DIR_ON_GUEST}/tmp \
         --network=PYIDE_pyide \
-        registry.hub.docker.com/akayunov/pyide-test:latest pytest ${PROJECT_DIR_ON_GUEST}/test/client
+        registry.hub.docker.com/akayunov/pyide-test:latest pytest $@ ${PROJECT_DIR_ON_GUEST}/test/client
 }
 
 test_coverage(){
+    local push_cov=$1
+    shift
+
+    case ${push_cov} in
+    "") ;;
+    "push") ;;
+    *) echo "Run as: $0 cov
+
+Possible options:
+  push  - push coverage on coveralls.io
+  ''    - get local coverage only(see ./tmp)
+  "; exit;;
+    esac
+
     # get coverage
     docker run -it --rm \
         -v "${PROJECT_DIR_ON_HOST}":${PROJECT_DIR_ON_GUEST} \
