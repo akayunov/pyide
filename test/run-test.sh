@@ -13,10 +13,10 @@ main() {
     echo 'PROJECT_DIR_ON_GUEST: ' ${PROJECT_DIR_ON_GUEST}
 
   case ${cmd} in
-    "all") test_lint && test_functional && test_coverage;;
+    "all") test_lint && test_functional && (test_coverage $@);;
     "func") test_functional "$@";;
     "lint") test_lint;;
-    "cov") test_coverage;;
+    "cov") test_coverage "$@";;
     *) echo "Run as: $0 command
 
 Possible commands:
@@ -43,12 +43,24 @@ test_lint(){
 test_functional(){
     if [ -z $(docker stack ls   --format '{{ lower .Name}}' | grep  pyide) ]
     then
+        echo 'Deploy stack'
         docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
     else
         echo 'Sighuping container...'
         docker kill -s SIGHUP $(docker ps -a -f ancestor=akayunov/pyide:latest --format={{.ID}})
     fi
 
+    local n=0
+    while  [ "$n" -lt 15 ] && ! curl http://pyide:31415/client/pyide.html --max-time 2 &>/dev/null ; do
+        echo 'Attemp to connect to server: ' ${n}  && sleep 1
+        n=$((n+1))
+    done
+
+    if ! curl http://localhost:31415/client/pyide.html --max-time 2 &>/dev/null
+    then
+        echo 'Stack does not start, exit.'
+        exit 0
+    fi
     # functional test
     docker run -it --rm \
         -v "${PROJECT_DIR_ON_HOST}/test":${PROJECT_DIR_ON_GUEST}/test:ro \
@@ -89,7 +101,7 @@ Possible options:
             "
     # send report
     local command="cd ${PROJECT_DIR_ON_GUEST}/tmp && coverage combine  && coverage report  && coverage html "
-    if [ $1 ]
+    if [ ${push_cov} ]
     then
         command="${command} &&  coveralls"
     fi
