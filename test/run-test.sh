@@ -54,7 +54,7 @@ test_functional(){
     fi
 
     local n=0
-    while  [ "$n" -lt 90 ] && [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]] ; do
+    while  [ "$n" -lt 60 ] && [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]] ; do
         echo 'Attemp to connect to server: ' ${n}  && sleep 1
         n=$((n+1))
     done
@@ -62,6 +62,7 @@ test_functional(){
     if [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
         echo 'Stack does not start, exit.'
+        echo $(docker service logs PYIDE_pyide)
         exit 0
     fi
     # functional test
