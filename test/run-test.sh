@@ -40,7 +40,7 @@ test_lint(){
             "
 }
 
-test_functional(){
+check_stack(){
     if [[ $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
         echo 'Sighuping container...'
@@ -65,6 +65,10 @@ test_functional(){
         echo $(docker service logs PYIDE_pyide)
         exit 0
     fi
+}
+
+test_functional(){
+    check_stack
     # functional test
     docker run -it --rm \
         -v "${PROJECT_DIR_ON_HOST}/test":${PROJECT_DIR_ON_GUEST}/test:ro \
@@ -76,6 +80,8 @@ test_functional(){
 test_coverage(){
     local push_cov=$1
     shift
+
+    check_stack
 
     case ${push_cov} in
     "") ;;
