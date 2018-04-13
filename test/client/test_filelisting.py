@@ -5,7 +5,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 def test_init(driver_ff_function, pyide_base_url):
     driver_ff_function.get(pyide_base_url)
-    driver_ff_function.get(pyide_base_url)
     package1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'package1')))
     package1.click()
 
