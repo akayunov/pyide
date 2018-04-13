@@ -41,22 +41,25 @@ test_lint(){
 }
 
 test_functional(){
-    if [ -z $(docker stack ls   --format '{{ lower .Name}}' | grep  pyide) ]
+    if [[ $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
-        echo 'Deploy stack'
-        docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
-    else
         echo 'Sighuping container...'
         docker kill -s SIGHUP $(docker ps -a -f ancestor=akayunov/pyide:latest --format={{.ID}})
+
+    else
+        echo 'Redeploy stack'
+        docker stack rm PYIDE
+        sleep 2;
+        docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
     fi
 
     local n=0
-    while  [ "$n" -lt 15 ] && ! curl http://pyide:31415/client/pyide.html --max-time 2 &>/dev/null ; do
+    while  [ "$n" -lt 90 ] && [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]] ; do
         echo 'Attemp to connect to server: ' ${n}  && sleep 1
         n=$((n+1))
     done
 
-    if ! curl http://localhost:31415/client/pyide.html --max-time 2 &>/dev/null
+    if [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
         echo 'Stack does not start, exit.'
         exit 0
