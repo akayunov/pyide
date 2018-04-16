@@ -19,6 +19,7 @@ main() {
     "cov") test_coverage "$@";;
     "reinit") reinit;;
     "telnet") telnet_db;;
+    "log") log;;
     *) echo "Run as: $0 command
 
 Possible commands:
@@ -28,6 +29,7 @@ Possible commands:
   cov     - run coverage
   reinit  - reinit stack
   telnet  - remote debug
+  log     - show logs
   "; exit 255;;
   esac
 }
@@ -68,7 +70,7 @@ check_stack(){
     fi
 
     local n=0
-    while  [ "$n" -lt 60 ] && [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]] ; do
+    while  [ "$n" -lt 15 ] && [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]] ; do
         echo 'Attemp to connect to server: ' ${n}  && sleep 1
         n=$((n+1))
     done
@@ -79,6 +81,10 @@ check_stack(){
         echo $(docker service logs PYIDE_pyide)
         exit 255
     fi
+}
+
+log (){
+    docker service logs -f --tail=100 PYIDE_pyide
 }
 
 test_functional(){
