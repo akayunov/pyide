@@ -78,7 +78,7 @@ check_stack(){
     if [[ ! $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
         echo 'Stack does not start, exit.'
-        echo $(docker service logs PYIDE_pyide)
+        docker service logs PYIDE_pyide
         exit 255
     fi
 }
