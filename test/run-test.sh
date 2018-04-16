@@ -28,7 +28,7 @@ Possible commands:
   cov     - run coverage
   reinit  - reinit stack
   telnet  - remote debug
-  "; exit;;
+  "; exit 255;;
   esac
 }
 
@@ -77,7 +77,7 @@ check_stack(){
     then
         echo 'Stack does not start, exit.'
         echo $(docker service logs PYIDE_pyide)
-        exit 0
+        exit 255
     fi
 }
 
@@ -105,7 +105,7 @@ test_coverage(){
 Possible options:
   push  - push coverage on coveralls.io
   ''    - get local coverage only(see ./tmp)
-  "; exit;;
+  "; exit 255;;
     esac
 
     # get coverage
