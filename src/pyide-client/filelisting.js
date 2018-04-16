@@ -3,6 +3,7 @@
 //
 // }
 var FileListing = {
+    curentFile: '',
     init: function(event) {
         $.ajax({
             method: "GET",

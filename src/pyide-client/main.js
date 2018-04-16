@@ -55,6 +55,7 @@ $(document).ready(function () {
         }
         else if (event.keyCode === 32) { // space
             Cursor.putSymbol(event.key);
+            AutoComplete.hide();
             var cloneElement = $(event.target).clone();
             var cursor = cloneElement.find('.cursor');
             if (cursor.attr('id') === "to-remove") {
@@ -63,7 +64,7 @@ $(document).ready(function () {
             var codeString = cloneElement.text();
             $.ajax({
                 method: "POST",
-                url: window.location,
+                url: FileListing.curentFile,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
                 data: JSON.stringify({
@@ -72,7 +73,7 @@ $(document).ready(function () {
                     "type": "parse"
                 })
             }).done(function (response) {
-                var $newElement = $(response.code_string);
+                var $newElement = $(response.code_string[0]);
                 $(event.target).replaceWith($newElement);
                 // если починить ссе баги на курсор то можно будет тернарный опереатор убрать
                 Cursor._setCursorShift(Cursor.position <= $newElement.text().length ? Cursor.position : $newElement.text().length, $newElement);
@@ -182,10 +183,12 @@ $(document).ready(function () {
                 );
                 Cursor._setCursorShift(1, document.querySelector('[tabindex="1"]'));
                 document.querySelector('[tabindex="1"]').focus();
+                FileListing.curentFile = event.target.attributes['href'].value;
             }).fail(function (jqXHR, textStatus) {
                 console.log('все сломалось в get CODE' , jqXHR, textStatus)
             });
-            event.preventDefault()
+            event.preventDefault();
+            Tags.init(event);
         }
     );
 

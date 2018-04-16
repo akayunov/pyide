@@ -2,9 +2,10 @@
 var AutoComplete = {
     show: function () {
         var cursorInfo = Cursor._getCursorPosition();
+        console.log('CUR fie', FileListing.curentFile, cursorInfo['textBeforeCursor']);
         $.ajax({
             method: "POST",
-            url: window.location,
+            url: FileListing.curentFile,
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({

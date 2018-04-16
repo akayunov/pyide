@@ -104,6 +104,8 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 
 class Code(tornado.web.RequestHandler):
     def get(self, path):
+        from pyide.rdb import Rdb;
+        Rdb().set_trace();
         path = configuration.SYS_PATH_PREPEND + '/' + path
         if os.path.isdir(path):
             for file_path in get_next_file(path):
@@ -121,6 +123,7 @@ class Code(tornado.web.RequestHandler):
         self.write(json.dumps(result))
 
     def post(self, path):
+        path = configuration.SYS_PATH_PREPEND + '/' + path
         body = json.loads(self.request.body)
         # print(body)
         if body['type'] == 'parse':
@@ -130,7 +133,7 @@ class Code(tornado.web.RequestHandler):
                     TokenInfo(type=i.type, string=i.string, start=(body['code_line_number'], i.start[1]), end=(body['code_line_number'], i.end[1]), line=i.line)
                 )
             t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
-            code_sting = tokenize_source(t_struct_adjusted, file_name='/' + path, current_line=body['code_line_number'])
+            code_sting = tokenize_source(t_struct_adjusted, file_name=path, current_line=body['code_line_number'])
             # print(code_sting)
             self.write(
                 json.dumps({'code_string': code_sting})
@@ -149,7 +152,7 @@ class Code(tornado.web.RequestHandler):
             token_string = ''
             if t_struct_adjusted[-1].string == '.':
                 # ищем имена
-                result += AST_PARSER['/' + path].get_autocomlete(
+                result += AST_PARSER[path].get_autocomlete(
                     token_string='',
                     owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
                     col_offset=t_struct_adjusted[-1].start[1]
@@ -157,14 +160,14 @@ class Code(tornado.web.RequestHandler):
                 token_string = ''
             elif t_struct_adjusted[-2].string == '.':
                 # ищем атрибуты предыдущего имени
-                result += AST_PARSER['/' + path].get_autocomlete(
+                result += AST_PARSER[path].get_autocomlete(
                     t_struct_adjusted[-1].string, owner_attribute_string=t_struct_adjusted[-3].string, line_number=t_struct_adjusted[-1].start[0],
                     col_offset=t_struct_adjusted[-1].start[1]
                 )
                 token_string = t_struct_adjusted[-1].string
             elif t_struct_adjusted[-1].type == token.NAME:
                 # ищем атрибуты предыдущего имени
-                result += AST_PARSER['/' + path].get_autocomlete(
+                result += AST_PARSER[path].get_autocomlete(
                     t_struct_adjusted[-1].string, line_number=t_struct_adjusted[-1].start[0], col_offset=t_struct_adjusted[-1].start[1]
                 )
                 token_string = t_struct_adjusted[-1].string
@@ -188,7 +191,7 @@ class Code(tornado.web.RequestHandler):
             # print(token_info.string, token_info.start[0], token_info.start[1])
             # import pdb;
             # pdb.set_trace()
-            node = AST_PARSER['/' + path].get_assign_node_information(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
+            node = AST_PARSER[path].get_assign_node_information(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
             if node:
                 self.write(
                     json.dumps({

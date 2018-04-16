@@ -72,11 +72,28 @@ div {
     background: red;
     color: black;
 }
+#tags {
+    display: inline-block;
+    height: 100%;
+    width: 300px;
+    bottom: 0;
+    position: fixed;
+    left: 0;
+    border: groove;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
 
 #code {
     display: inline-block;
     height: 100%;
-    width: 1600px;
+    width: 1300px;
+    bottom: 0;
+    position: fixed;
+    border: groove;
+    left: 306px;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 #filelisting {
     display: inline-block;
@@ -86,6 +103,8 @@ div {
     border: groove;
     width: 300px;
     height: 100%;
+    overflow-y: scroll;
+    overflow-x: scroll;
 }
 #code div:nth-child(even) {
     background: #f9fbff;
@@ -118,23 +137,3 @@ a:visited {color:#0000FF;}  /* visited link */
 a:hover {color:#0000FF;}  /* mouse over link */
 a:active {color:#0000FF;}  /* selected link */
 
-
-#frame_file_list {
-    width: 30%;
-    /*margin: 0;*/
-    /*padding: 0;*/
-    box-sizing: border-box;
-    display: block;
-    height: 100%;
-    float: right;
-
-}
-#frame_code_list {
-    float: left;
-    display: block;
-    height: 100%;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    width: 70%;
-}
