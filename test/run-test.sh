@@ -17,6 +17,8 @@ main() {
     "func") test_functional "$@";;
     "lint") test_lint;;
     "cov") test_coverage "$@";;
+    "reinit") reinit "$@";;
+    "telnet") telnet_db  "$@";;
     *) echo "Run as: $0 command
 
 Possible commands:
@@ -24,6 +26,8 @@ Possible commands:
   func    - run functional tests
   lint    - run lint tests
   cov     - run coverage
+  reinit  - reinit stack
+  telnet  - remote debug
   "; exit;;
   esac
 }
@@ -40,6 +44,19 @@ test_lint(){
             "
 }
 
+telnet_db(){
+    docker run -it --rm \
+        --network=PYIDE_pyide \
+        registry.hub.docker.com/akayunov/pyide-test:latest telnet pyide 5555
+}
+
+reinit(){
+    echo 'Redeploy stack'
+    docker stack rm PYIDE
+    sleep 2;
+    docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
+}
+
 check_stack(){
     if [[ $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
@@ -47,10 +64,7 @@ check_stack(){
         docker kill -s SIGHUP $(docker ps -a -f ancestor=akayunov/pyide:latest --format={{.ID}})
 
     else
-        echo 'Redeploy stack'
-        docker stack rm PYIDE
-        sleep 2;
-        docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
+        reinit
     fi
 
     local n=0
@@ -74,7 +88,7 @@ test_functional(){
         -v "${PROJECT_DIR_ON_HOST}/test":${PROJECT_DIR_ON_GUEST}/test:ro \
         -v "${PROJECT_DIR_ON_HOST}/tmp":${PROJECT_DIR_ON_GUEST}/tmp \
         --network=PYIDE_pyide \
-        registry.hub.docker.com/akayunov/pyide-test:latest pytest $@ ${PROJECT_DIR_ON_GUEST}/test/client
+        registry.hub.docker.com/akayunov/pyide-test:latest pytest -s $@ ${PROJECT_DIR_ON_GUEST}/test/client
 }
 
 test_coverage(){

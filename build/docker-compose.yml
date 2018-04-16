@@ -30,6 +30,9 @@ services:
         source: ../test/server/resourses
         target: /opt/pyide/test/server/resourses
         read_only: true
+      - type: bind
+        source: ../tmp
+        target: /opt/pyide/tmp
     deploy:
       mode: replicated
       replicas: 1
@@ -40,7 +43,9 @@ services:
 # diff from release
     ports:
       - "31415:31415"
+      - "5555:5555"
 
     environment:
       PYTHONPATH: /opt/pyide/src
-    command: ['python3', '-u', '-m', 'pyide', '-d']
+      PYTHONUNBUFFERED: 'true'
+    command: ['python3', '-m', 'pyide', '-d']
