@@ -17,8 +17,8 @@ main() {
     "func") test_functional "$@";;
     "lint") test_lint;;
     "cov") test_coverage "$@";;
-    "reinit") reinit "$@";;
-    "telnet") telnet_db  "$@";;
+    "reinit") reinit;;
+    "telnet") telnet_db;;
     *) echo "Run as: $0 command
 
 Possible commands:

@@ -1,4 +1,8 @@
-#===============================================================================
+import pdb
+import socket
+import sys
+import signal
+
 #  DESCRIPTION:  Remote debugger
 #        USAGE:  1. Add the following lines into the program:
 #                   from pyide.rdb import Rdb;Rdb().set_trace();
@@ -6,12 +10,6 @@
 #                3, telnet <hostname> 5555
 #                4. Use all usual pdb's commands
 #                5. Hit 'c' (continue) pdb's command when you finished debugging
-#===============================================================================
-
-import pdb
-import socket
-import sys
-import signal
 
 
 class Rdb(pdb.Pdb):
@@ -24,10 +22,10 @@ class Rdb(pdb.Pdb):
             try:
                 self.skt.bind(('0.0.0.0', port))
                 break
-            except:
+            except Exception:
                 port += 1
         self.skt.listen(1)
-        (clientsocket, address) = self.skt.accept()
+        (clientsocket, _) = self.skt.accept()
         handle = clientsocket.makefile('rw')
         pdb.Pdb.__init__(self, completekey='tab', stdin=handle, stdout=handle)
         sys.stdout = sys.stdin = handle
@@ -44,5 +42,6 @@ class Rdb(pdb.Pdb):
 
 def start(sig, frame):
     Rdb().set_trace(frame)
+
 
 signal.signal(signal.SIGUSR1, start)

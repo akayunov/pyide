@@ -104,8 +104,6 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 
 class Code(tornado.web.RequestHandler):
     def get(self, path):
-        from pyide.rdb import Rdb;
-        Rdb().set_trace();
         path = configuration.SYS_PATH_PREPEND + '/' + path
         if os.path.isdir(path):
             for file_path in get_next_file(path):
