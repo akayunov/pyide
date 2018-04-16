@@ -5,6 +5,7 @@ import tornado.web
 
 from pyide.command import Command
 from pyide.code import Code
+from pyide.tags import Tags
 from pyide.filelisting import FileListing
 
 
@@ -21,6 +22,7 @@ def main():
             (r'/server/command', Command),
             (r'/server/filelisting(.*)', FileListing),
             (r'/server/code/(.*)', Code),
+            (r'/server/tags/(.*)', Tags),
             (r'/client/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', 'pyide-client'))),
         ],
         **settings
