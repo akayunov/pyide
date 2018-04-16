@@ -2,7 +2,7 @@ FROM debian:buster-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get -y install libgtk-3-0 libdbus-glib-1-2 libxt6 python3 python3-pip git
+RUN apt-get update && apt-get -y install libgtk-3-0 libdbus-glib-1-2 libxt6 python3 python3-pip git telnet
 RUN pip3 install -U pip
 
 COPY requirement-test.txt /tmp
