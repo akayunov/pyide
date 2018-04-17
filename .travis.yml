@@ -4,14 +4,19 @@ services:
 install: true
 
 before_script:
+  - cd
+
   - docker swarm init
   - docker pull registry.hub.docker.com/akayunov/pyide:latest
   - docker pull registry.hub.docker.com/akayunov/pyide-test:latest
-  - cd
+
   - git clone https://github.com/akayunov/pyide.git
+
+  - mkdir ~/pyide/tmp
 
 script:
   - cd ~/pyide
+
   - ./test/run-test.sh all push
 
 after_success: true

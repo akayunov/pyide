@@ -5,8 +5,8 @@
 
 pyide
 
-to test
-1) install docker
-    docker swarm init
-2) git clone https://github.com/akayunov/pyide.git && cd pyide
-3) ./test/run-test.sh all
+Instalation
+    see .travis.yml
+
+Testing
+ ./test/run-test.sh all
