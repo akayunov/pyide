@@ -17,7 +17,7 @@ class Tags(tornado.web.RequestHandler):
             else:
                 img_type = 'blank'
             result.append(
-                '''<div class=tags ><img class="triange-img" style="transform: rotate(90deg);" src="/client/{}.png"><span class="padding_{}">{}</span>\
+                '''<div class=tags ><img class="triange-img" style="transform: rotate(90deg);" src="/client/resourses/{}.png"><span class="padding_{}">{}</span>\
                 <span>{}</span></div>'''.format(img_type, padding_size, '  ' * padding_size, tag_name)
             )
         self.write(json.dumps(result))
