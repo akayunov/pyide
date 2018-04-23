@@ -55,7 +55,7 @@ telnet_db(){
 reinit(){
     echo 'Redeploy stack'
     docker stack rm PYIDE
-    sleep 2;
+    while [ $(docker network ls --filter=Name=PYIDE_pyide -q) ] ; do echo 'Deleting network'; sleep 1 ; done
     docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
 }
 
@@ -63,7 +63,7 @@ check_stack(){
     if [[ $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
     then
         echo 'Sighuping container...'
-        docker kill -s SIGHUP $(docker ps -a -f ancestor=akayunov/pyide:latest --format={{.ID}})
+        docker kill -s SIGHUP $(docker ps -a  --filter label=name=pyide --format={{.ID}})
 
     else
         reinit
