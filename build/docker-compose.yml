@@ -39,6 +39,8 @@ services:
       restart_policy:
         condition: none
       endpoint_mode: vip
+    labels:
+      name: "pyide"
 
 # diff from release
     ports:
