@@ -1,10 +1,15 @@
-"use strict";
+;"use strict";
 $(document).ready(function () {
     $("div[tabindex='1']").focus();
-    Cursor.init();
-    FileListing.init();
+    let cursor = new TxtCursor();
+    cursor.init();
 
-    var pressedKeys = {};
+    let tags = new Tags();
+    let fileListing = new FileListing();
+    fileListing.init();
+
+    let autoComlete = new AutoComplete();
+    let pressedKeys = {};
 
     $('div#code').on('keyup', 'div', function (event) {
         pressedKeys[event.keyCode] = false;
@@ -14,54 +19,51 @@ $(document).ready(function () {
         console.log('keydown' + event.keyCode);
 
         if (event.keyCode === 13) { // enter key
-            Cursor.addNewRow();
+            cursor.addNewRow();
             event.preventDefault();
         }
         else if (event.keyCode === 9) { // tab key
             if ($('#active-autocomplete').length) {
-                var insertedText = $('#active-autocomplete').find('#autocomplete-postfix').text();
-                for (var i = 0; i < insertedText.length; i++) {
-                    Cursor.putSymbol(insertedText[i]);
+                let insertedText = $('#active-autocomplete').find('#autocomplete-postfix').text();
+                for (let i = 0; i < insertedText.length; i++) {
+                    cursor.putSymbol(insertedText[i]);
                 }
-                AutoComplete.hide();
+                autoComlete.hide();
             }
             else {
-                Cursor.putSymbol(' ');
-                Cursor.putSymbol(' ');
-                Cursor.putSymbol(' ');
-                Cursor.putSymbol(' ');
+                cursor.putTab();
             }
             event.preventDefault();
         }
         else if (event.keyCode === 38) { // up arrow
             if ($('.autocomplete').length) {
-                AutoComplete.hlPrev();
+                autoComlete.hlPrev();
             }
             else {
-                Cursor.upRow();
+                cursor.upRow();
             }
             event.preventDefault();
         }
         else if (event.keyCode === 40) { // down arrow
             if ($('.autocomplete').length) {
-                AutoComplete.hlNext();
+                autoComlete.hlNext();
             }
             else {
-                Cursor.downRow();
+                cursor.downRow();
             }
             event.preventDefault();
         }
         else if (event.keyCode === 16) {
         }
         else if (event.keyCode === 32) { // space
-            Cursor.putSymbol(event.key);
-            AutoComplete.hide();
-            var cloneElement = $(event.target).clone();
-            var cursor = cloneElement.find('.cursor');
-            if (cursor.attr('id') === "to-remove") {
-                cursor.replaceWith($(document.createTextNode('')));
+            cursor.putSymbol(event.key);
+            autoComlete.hide();
+            let cloneElement = $(event.target).clone();
+            let cursorEl = cloneElement.find('.cursor');
+            if (cursorEl.attr('id') === "to-remove") {
+                cursorEl.replaceWith($(document.createTextNode('')));
             }
-            var codeString = cloneElement.text();
+            let codeString = cloneElement.text();
             $.ajax({
                 method: "POST",
                 url: FileListing.curentFile,
@@ -73,10 +75,10 @@ $(document).ready(function () {
                     "type": "parse"
                 })
             }).done(function (response) {
-                var $newElement = $(response.code_string[0]);
+                let $newElement = $(response.code_string[0]);
                 $(event.target).replaceWith($newElement);
                 // если починить ссе баги на курсор то можно будет тернарный опереатор убрать
-                Cursor._setCursorShift(Cursor.position <= $newElement.text().length ? Cursor.position : $newElement.text().length, $newElement);
+                cursor._setCursorShift(cursor.position <= $newElement.text().length ? cursor.position : $newElement.text().length, $newElement);
                 $newElement.focus();
             }).fail(function () {
                 console.log('все сломалось')
@@ -85,27 +87,27 @@ $(document).ready(function () {
             event.preventDefault();
         }
         else if (event.keyCode === 33) { // PageUP
-            Cursor.pageUp();
+            cursor.pageUp();
             event.preventDefault();
         }
         else if (event.keyCode === 34) { // PageDown
-            Cursor.pageDown();
+            cursor.pageDown();
             event.preventDefault();
         }
         else if (event.keyCode === 35) { // end
-            Cursor.moveEnd();
+            cursor.moveEnd();
             event.preventDefault();
         }
         else if (event.keyCode === 36) { // home
-            Cursor.moveHome();
+            cursor.moveHome();
             event.preventDefault();
         }
         else if (event.keyCode === 37) { // row left
-            Cursor.moveLeft();
+            cursor.moveLeft();
             event.preventDefault();
         }
         else if (event.keyCode === 39) { // row rigth
-            Cursor.moveRight();
+            cursor.moveRight();
             event.preventDefault();
         }
         else if (event.keyCode === 16) {  // shift
@@ -117,25 +119,25 @@ $(document).ready(function () {
         else if (event.keyCode === 116) {  // F5
         }
         else if (event.keyCode === 8) { // backspace
-            Cursor.deleteSymbolBefore();
-            AutoComplete.show();
+            cursor.deleteSymbolBefore();
+            autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
             event.preventDefault();
         }
         else if (event.keyCode === 46) { // delete
-            Cursor.deleteSymbolUnder();
+            cursor.deleteSymbolUnder();
             event.preventDefault();
         }
         else {
-            Cursor.putSymbol(event.key);
-            AutoComplete.show();
+            cursor.putSymbol(event.key);
+            autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
             event.preventDefault();
         }
     });
 
     // TODO move to one selector
     $('div#code').on('click', 'div', function () {
-        Cursor.setByClick();
-        AutoComplete.hide();
+        cursor.setByClick();
+        autoComlete.hide();
         if (pressedKeys['17']) {
             $.ajax({
                 method: "POST",
@@ -149,16 +151,16 @@ $(document).ready(function () {
                     "type": "gotodefinition"
                 })
             }).done(function (response) {
-                var contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]');
+                let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]');
                 contentLIne.scrollIntoView(true);
-                Cursor._setCursorShift(1, contentLIne);
+                cursor._setCursorShift(1, contentLIne);
             }).fail(function () {
                 console.log('все сломалось в го ту дефинишин')
             });
         }
     });
     $(window).scroll(function () {
-        AutoComplete.hide();
+        autoComlete.hide();
     });
 
     $('#filelisting').on('click', '.filelink',
@@ -181,20 +183,26 @@ $(document).ready(function () {
                         document.getElementById('code').appendChild($(element)[0])
                     }
                 );
-                Cursor._setCursorShift(1, document.querySelector('[tabindex="1"]'));
+                cursor._setCursorShift(1, document.querySelector('[tabindex="1"]'));
                 document.querySelector('[tabindex="1"]').focus();
-                FileListing.curentFile = event.target.attributes['href'].value;
+                fileListing.curentFile = event.target.attributes['href'].value;
             }).fail(function (jqXHR, textStatus) {
                 console.log('все сломалось в get CODE' , jqXHR, textStatus)
             });
             event.preventDefault();
-            Tags.init(event);
+            tags.init(event);
+            if (event.target.attributes['href'].value.endsWith('.py')){
+                cursor = new PyCursor();
+            }
+            else {
+                cursor = new TxtCursor();
+            }
         }
     );
 
     $('#filelisting').on('click', '.folderlink',
         function (event) {
-            FileListing.get(event)
+            fileListing.get(event)
         }
     );
 });

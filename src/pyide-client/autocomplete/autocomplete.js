@@ -1,11 +1,10 @@
-"use strict";
-var AutoComplete = {
-    show: function () {
-        var cursorInfo = Cursor._getCursorPosition();
-        console.log('CUR fie', FileListing.curentFile, cursorInfo['textBeforeCursor']);
+;"use strict";
+class AutoComplete {
+    show (cursorInfo, curentFile) {
+        console.log('CUR fie', curentFile, cursorInfo['textBeforeCursor']);
         $.ajax({
             method: "POST",
-            url: FileListing.curentFile,
+            url: curentFile,
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({
@@ -15,13 +14,13 @@ var AutoComplete = {
             })
         }).done(function (response) {
             $('.autocomplete').remove();
-            var rect = $('.cursor')[0].getBoundingClientRect();
-            var $divElement = $('<div class="autocomplete" style="top:' + rect.bottom + 'px;left:' + rect.left + 'px"></div>');
-            var flag = false;
-            var list = response.result;
-            var prefix = response.prefix;
+            let rect = $('.cursor')[0].getBoundingClientRect();
+            let $divElement = $('<div class="autocomplete" style="top:' + rect.bottom + 'px;left:' + rect.left + 'px"></div>');
+            let flag = false;
+            let list = response.result;
+            let prefix = response.prefix;
             list.forEach(function (element) {
-                var postfix = element.slice(prefix.length, element.length);
+                let postfix = element.slice(prefix.length, element.length);
                 if (!flag) {
                     $divElement.append($('<div id="active-autocomplete"><span>' + prefix + '</span>'
                         + '<span id="autocomplete-postfix">' + postfix + '</span></div>'));
@@ -39,13 +38,13 @@ var AutoComplete = {
                 AutoComplete.hide();
                 console.log('все сломалось в автокомплите: ' + textStatus)
             });
-    },
-    hide: function () {
+    }
+    hide() {
         $('.autocomplete').remove();
-    },
-    hlNext: function () {
-        var $currentElement = $('#active-autocomplete');
-        var $nextElement = $currentElement.next();
+    }
+    hlNext (){
+        let $currentElement = $('#active-autocomplete');
+        let $nextElement = $currentElement.next();
         if ($nextElement.length) {
             $currentElement.removeAttr('id');
             $nextElement.attr('id', 'active-autocomplete');
@@ -54,21 +53,18 @@ var AutoComplete = {
             $currentElement.removeAttr('id');
             $($('.autocomplete').contents()[0]).attr('id', 'active-autocomplete')
         }
-    },
-    hlPrev : function () {
-        var $currentElement = $('#active-autocomplete');
-        var $nextElement = $currentElement.prev();
+    }
+    hlPrev() {
+        let $currentElement = $('#active-autocomplete');
+        let $nextElement = $currentElement.prev();
         if ($nextElement.length) {
             $currentElement.removeAttr('id');
             $nextElement.attr('id', 'active-autocomplete');
         }
         else {
             $currentElement.removeAttr('id');
-            var allAutoCompleteSuggetions = $('.autocomplete').contents();
+            let allAutoCompleteSuggetions = $('.autocomplete').contents();
             $(allAutoCompleteSuggetions[allAutoCompleteSuggetions.length - 1]).attr('id', 'active-autocomplete')
         }
     }
-};
-$(document).ready(function () {
-    window.AutoComplete = AutoComplete;
-});
+}

@@ -1,23 +1,28 @@
-"use strict";
-var Cursor = {
-    position: 1,
-    _isElementOnViewPort: function (el) {
-        var rect = el.getBoundingClientRect(),
+;"use strict";
+
+class TxtCursor {
+    constructor() {
+        this.position = 1
+    }
+
+    static _isElementOnViewPort(el) {
+        let rect = el.getBoundingClientRect(),
             windowHeight = window.innerHeight;
         return (rect.top >= 0 && rect.bottom <= windowHeight );
-    },
-    _createCursor: function (cursorParentElement, textBefore, cursorLetter, textAfter) {
+    }
+
+    _createCursor(cursorParentElement, textBefore, cursorLetter, textAfter) {
         if ($(cursorParentElement).parent().attr('class') === 'cursor') {
             console.log('a nichego ne budu delat');
             return;
         }
-        var $oldCursor = $('.cursor');
-        var oldCursorLetter = $oldCursor.text();
+        let $oldCursor = $('.cursor');
+        let oldCursorLetter = $oldCursor.text();
         if ($oldCursor.attr('id') === "to-remove") {
             oldCursorLetter = '';
         }
         $oldCursor.replaceWith($(document.createTextNode(oldCursorLetter)));
-        var $textBeforeElement = $(document.createTextNode(textBefore));
+        let $textBeforeElement = $(document.createTextNode(textBefore));
         $(cursorParentElement).replaceWith($textBeforeElement);
         if (cursorLetter === '\n') {
             $textBeforeElement.after($(document.createTextNode(cursorLetter + textAfter)));
@@ -27,10 +32,11 @@ var Cursor = {
             $textBeforeElement.after($(document.createTextNode(textAfter)));
             $textBeforeElement.after($('<span class="cursor">' + cursorLetter + '</span>'));
         }
-    },
-    _getCursorPosition: function () {
-        var textBeforeCursor = '';
-        var stop = false;
+    }
+
+    _getCursorPosition() {
+        let textBeforeCursor = '';
+        let stop = false;
 
         function closure() {
             function getText(index, element) {
@@ -57,7 +63,7 @@ var Cursor = {
             return getText;
         }
 
-        var contentLineElement = $('.cursor').parents('.content-line');
+        let contentLineElement = $('.cursor').parents('.content-line');
         $(contentLineElement).contents().each(closure());
         // console.log('text before', textBeforeCursor.slice(0, textBeforeCursor.length - 1));
         return {
@@ -65,12 +71,13 @@ var Cursor = {
             "cursorPosition": textBeforeCursor.length,
             "textBeforeCursor": textBeforeCursor.slice(0, textBeforeCursor.length - 1)
         }
-    },
-    _setCursorShift: function (cursorShiftSize, contentLineElement) {
+    };
+
+    _setCursorShift(cursorShiftSize, contentLineElement) {
         this.position = cursorShiftSize;
-        var textBeforeCursor = '';
-        var cursorParentElement = null;
-        var stop = false;
+        let textBeforeCursor = '';
+        let cursorParentElement = null;
+        let stop = false;
 
         function closure() {
             function getText(index, element) {
@@ -95,39 +102,43 @@ var Cursor = {
 
         $(contentLineElement).contents().each(closure());
         cursorShiftSize = Math.abs(cursorShiftSize);
-        var textCursorParentElement = $(cursorParentElement).text();
-        var text_before = textCursorParentElement.slice(0, textCursorParentElement.length - cursorShiftSize - 1);
-        var cursor_letter = textCursorParentElement.slice(
+        let textCursorParentElement = $(cursorParentElement).text();
+        let text_before = textCursorParentElement.slice(0, textCursorParentElement.length - cursorShiftSize - 1);
+        let cursor_letter = textCursorParentElement.slice(
             textCursorParentElement.length - cursorShiftSize - 1, textCursorParentElement.length - cursorShiftSize
         );
-        var text_after = textCursorParentElement.slice(textCursorParentElement.length - cursorShiftSize);
+        let text_after = textCursorParentElement.slice(textCursorParentElement.length - cursorShiftSize);
         this._createCursor(cursorParentElement, text_before, cursor_letter, text_after);
-    },
-    init: function () {
-        if (!$('.content-line').length){
-            var divEl = document.createElement('div');
+    };
+
+    init() {
+        if (!$('.content-line').length) {
+            let divEl = document.createElement('div');
             divEl.tabIndex = 1;
             divEl.className = 'content-line';
-            var spanEl = document.createElement('span');
-            spanEl.textContent ='\n';
+            let spanEl = document.createElement('span');
+            spanEl.textContent = '\n';
             divEl.appendChild(spanEl);
             document.getElementById('code').appendChild(divEl);
         }
         this._setCursorShift(1, $('.content-line')[0]);
         $('.content-line')[0].focus();
-    },
-    putSymbol: function (char) {
+    };
+
+    putSymbol(char) {
         $('.cursor').before($(document.createTextNode(char)));
         // TODO странно это ведь если я перешел на строку вверх нпример и начал набирать то позиция то будет не +=1 а длина строки плюс 1
         // строка то может быть короче
         this.position += 1;
-    },
-    deleteSymbolBefore: function () {
+    };
+
+    deleteSymbolBefore() {
         this.moveLeft();
         this.deleteSymbolUnder();
-    },
-    deleteSymbolUnder: function () {
-        var cursor = $('.cursor');
+    };
+
+    deleteSymbolUnder() {
+        let cursor = $('.cursor');
         if (cursor.attr('id') === 'to-remove') {
             cursor.parents('.content-line').contents().each(
                 function (index, element) {
@@ -145,10 +156,11 @@ var Cursor = {
         $(cursor).text('');
         $(cursor).parents('.content-line').focus();
         this.moveRight();
-    },
-    upRow: function () {
-        var cursorInfo = this._getCursorPosition();
-        var positionPrev = this.position;
+    };
+
+    upRow() {
+        let cursorInfo = this._getCursorPosition();
+        let positionPrev = this.position;
         if ($(cursorInfo['contentLineElement']).prev().length) {
             this._setCursorShift(
                 this.position < $(cursorInfo['contentLineElement']).prev().text().length ? this.position : $(cursorInfo['contentLineElement']).prev().text().length,
@@ -156,10 +168,11 @@ var Cursor = {
             $(cursorInfo['contentLineElement']).prev().focus();
         }
         this.position = positionPrev;
-    },
-    downRow: function () {
-        var cursorInfo = this._getCursorPosition();
-        var positionPrev = this.position;
+    };
+
+    downRow() {
+        let cursorInfo = this._getCursorPosition();
+        let positionPrev = this.position;
         if ($(cursorInfo['contentLineElement']).next().length) {
             this._setCursorShift(
                 this.position < $(cursorInfo['contentLineElement']).next().text().length ? this.position : $(cursorInfo['contentLineElement']).next().text().length,
@@ -168,44 +181,49 @@ var Cursor = {
             $(cursorInfo['contentLineElement']).next().focus();
         }
         this.position = positionPrev;
-    },
-    moveLeft: function () {
-        var cursorInfo = this._getCursorPosition();
+    };
+
+    moveLeft() {
+        let cursorInfo = this._getCursorPosition();
         if (cursorInfo['cursorPosition'] > 1) {
             this._setCursorShift(cursorInfo['cursorPosition'] - 1, $(cursorInfo['contentLineElement']));
         }
         else if ($(cursorInfo['contentLineElement']).prev().length) {
             this._setCursorShift($(cursorInfo['contentLineElement']).prev().text().length, $(cursorInfo['contentLineElement']).prev());
         }
-    },
-    moveRight: function () {
-        var cursorInfo = this._getCursorPosition();
-        var cursorToAdd = $('#to-remove').length ? 1 : 0;
+    };
+
+    moveRight() {
+        let cursorInfo = this._getCursorPosition();
+        let cursorToAdd = $('#to-remove').length ? 1 : 0;
         if (cursorInfo['cursorPosition'] < $(cursorInfo['contentLineElement']).text().length - cursorToAdd) {
             this._setCursorShift(cursorInfo['cursorPosition'] + 1, $(cursorInfo['contentLineElement']));
         }
         else if ($(cursorInfo['contentLineElement']).next().length) {
             this._setCursorShift(1, $(cursorInfo['contentLineElement']).next());
         }
-    },
-    moveHome: function () {
-        var cursorInfo = this._getCursorPosition();
+    };
+
+    moveHome() {
+        let cursorInfo = this._getCursorPosition();
         if (cursorInfo['cursorPosition'] !== 1) {
             this._setCursorShift(1, $(cursorInfo['contentLineElement']));
         }
-    },
-    moveEnd: function () {
-        var cursorInfo = this._getCursorPosition();
+    };
+
+    moveEnd() {
+        let cursorInfo = this._getCursorPosition();
         if (cursorInfo['cursorPosition'] !== $(cursorInfo['contentLineElement']).text().length) {
             this._setCursorShift($(cursorInfo['contentLineElement']).text().length, $(cursorInfo['contentLineElement']));
         }
-    },
-    pageDown: function () {
-        var contentLines = $('.content-line'),
+    };
+
+    pageDown() {
+        let contentLines = $('.content-line'),
             lastElement = contentLines[0];
-        var positionPrev = this.position;
-        for (var i = 0; i < contentLines.length; i++) {
-            if (this._isElementOnViewPort(contentLines[i])) {
+        let positionPrev = this.position;
+        for (let i = 0; i < contentLines.length; i++) {
+            if (TxtCursor._isElementOnViewPort(contentLines[i])) {
                 if (parseInt(lastElement.getAttribute('tabIndex')) < parseInt(contentLines[i].getAttribute('tabIndex'))) {
                     lastElement = contentLines[i];
                 }
@@ -216,13 +234,14 @@ var Cursor = {
             this.position < $(lastElement).text().length ? this.position : $(lastElement).text().length,
             lastElement);
         this.position = positionPrev;
-    },
-    pageUp: function () {
-        var contentLines = $('.content-line'),
+    };
+
+    pageUp() {
+        let contentLines = $('.content-line'),
             lastElement = contentLines[contentLines.length - 1];
-        var positionPrev = this.position;
-        for (var i = 0; i < contentLines.length; i++) {
-            if (this._isElementOnViewPort(contentLines[i])) {
+        let positionPrev = this.position;
+        for (let i = 0; i < contentLines.length; i++) {
+            if (TxtCursor._isElementOnViewPort(contentLines[i])) {
                 if (parseInt(lastElement.getAttribute('tabIndex')) > parseInt(contentLines[i].getAttribute('tabIndex'))) {
                     lastElement = contentLines[i];
                 }
@@ -231,31 +250,33 @@ var Cursor = {
         lastElement.scrollIntoView(false);
         this._setCursorShift(this.position < $(lastElement).text().length ? this.position : $(lastElement).text().length, lastElement);
         this.position = positionPrev;
-    },
-    setByClick: function () {
-        var sel_obj = window.getSelection();
-        var $anchor_node = $(sel_obj.anchorNode);
+    };
+
+    setByClick() {
+        let sel_obj = window.getSelection();
+        let $anchor_node = $(sel_obj.anchorNode);
         if ($anchor_node[0].nodeType !== Node.TEXT_NODE) {
             return;
         }
-        var text_before = $anchor_node.text().slice(0, sel_obj.anchorOffset);
-        var cursor_letter = $anchor_node.text().slice(sel_obj.anchorOffset, sel_obj.anchorOffset + 1);
-        var text_after = $anchor_node.text().slice(sel_obj.anchorOffset + 1);
+        let text_before = $anchor_node.text().slice(0, sel_obj.anchorOffset);
+        let cursor_letter = $anchor_node.text().slice(sel_obj.anchorOffset, sel_obj.anchorOffset + 1);
+        let text_after = $anchor_node.text().slice(sel_obj.anchorOffset + 1);
         if (!cursor_letter && text_before) {
             cursor_letter = text_before.slice(text_before.length - 1);
             text_before = text_before.slice(0, text_before.length - 1);
         }
         this._createCursor($anchor_node, text_before, cursor_letter, text_after);
         this.position = this._getCursorPosition()['cursorPosition'];
-    },
-    addNewRow: function () {
-        var $targetContentLine = $('.cursor').parents('.content-line'),
+    };
+
+    addNewRow() {
+        let $targetContentLine = $('.cursor').parents('.content-line'),
             $nextContentLine = $targetContentLine.clone();
         $targetContentLine.after($nextContentLine);
 
         $targetContentLine.contents().each(
             (function closure() {
-                var start = false;
+                let start = false;
 
                 function removeTextNodes(index, element) {
                     if (element.className === 'cursor') {
@@ -278,7 +299,7 @@ var Cursor = {
         // послетакого остаеться много елементов пустых - как бы от них избавиться
         $nextContentLine.contents().each(
             (function closure() {
-                var stop = false;
+                let stop = false;
 
                 function removeTextNodes(index, element) {
                     if (element.nodeType === Node.TEXT_NODE && !stop) {
@@ -304,10 +325,10 @@ var Cursor = {
             }
         );
         this.position = this._getCursorPosition()['cursorPosition'];
+    };
+
+    putTab() {
+        this.putSymbol('\t');
     }
+}
 
-};
-
-$(document).ready(function () {
-    window.Cursor = Cursor;
-});
