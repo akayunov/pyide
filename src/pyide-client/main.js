@@ -141,19 +141,19 @@ $(document).ready(function () {
         if (pressedKeys['17']) {
             $.ajax({
                 method: "POST",
-                url: window.location,
+                url: fileListing.curentFile,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
                 data: JSON.stringify({
                     "code_string": $($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0]).text(),
-                    "cursor_position": Cursor._getCursorPosition()['cursorPosition'],
+                    "cursor_position": cursor._getCursorPosition()['cursorPosition'],
                     "code_line_number": parseInt($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0].getAttribute('tabIndex')),
                     "type": "gotodefinition"
                 })
             }).done(function (response) {
                 let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]');
                 contentLIne.scrollIntoView(true);
-                cursor._setCursorShift(1, contentLIne);
+                cursor._setCursorShift(response.cursor_position + 1, contentLIne);
             }).fail(function () {
                 console.log('все сломалось в го ту дефинишин')
             });

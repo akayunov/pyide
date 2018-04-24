@@ -226,8 +226,8 @@ class AstParser:
         #
         # a().b().c()
         # if we try to find out which type is c when this function return a as origin object
-        while node.value:
-            node = node.value
+        while node.owner:
+            node = node.owner
         return node
 
     def get_scope_id_for_attribute(self, node: NodeInfo):
@@ -282,11 +282,16 @@ class AstParser:
     #             scope_id = self.child_parent_scope_id_links[scope_id]['parent_scope_id']
 
     def get_assign_node_information(self, token_string, line_number: int, col_offset: int):
-        namespace_id = None
-        for _namespace_id, namespace_prop in sorted(self.child_parent_scope_id_links.items(), key=lambda x: operator.itemgetter('lineno')(x[1])):
-            if namespace_prop['col_offset'] <= col_offset:
-                namespace_id = _namespace_id
-        origin_namespace_id = namespace_id
+        if self.line_structure[line_number][token_string][0].type == 'attribute':
+            attribute_owner = self.pass_through_attribute_chain(self.line_structure[line_number][token_string][0])
+            namespace_id = self.get_assign_node_information(attribute_owner.string, attribute_owner.lineno, attribute_owner.col_offset).child_scope_id
+            origin_namespace_id = namespace_id
+        else:
+            namespace_id = None
+            for _namespace_id, namespace_prop in sorted(self.child_parent_scope_id_links.items(), key=lambda x: operator.itemgetter('lineno')(x[1])):
+                if namespace_prop['col_offset'] <= col_offset:
+                    namespace_id = _namespace_id
+            origin_namespace_id = namespace_id
 
         while namespace_id:
             if self.scope_id_structure.get(namespace_id, {}).get(token_string):

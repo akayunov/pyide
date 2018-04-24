@@ -189,7 +189,7 @@ class Code(tornado.web.RequestHandler):
             # print(token_info.string, token_info.start[0], token_info.start[1])
             # import pdb;
             # pdb.set_trace()
-            node = AST_PARSER[path].get_assign_node_information(token_info.string, line_number=token_info.start[0], col_offset=token_info.start[1])
+            node = AST_PARSER[path].get_assign_node_information(token_info.string, line_number=body['code_line_number'], col_offset=token_info.start[1])
             if node:
                 self.write(
                     json.dumps({

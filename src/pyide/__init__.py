@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import tornado.ioloop
 import tornado.web
@@ -9,6 +10,10 @@ from pyide.tags import Tags
 from pyide.filelisting import FileListing
 
 
+LOGGER = logging.getLogger('tornado.access')
+LOGGER.setLevel(logging.WARN)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Pyide args')
     parser.add_argument('-p', '--port', metavar='port', type=int, default=31415, help='Listen port number')
@@ -16,6 +21,8 @@ def main():
     args = parser.parse_args()
 
     settings = {'debug': args.debug}
+    if args.debug:
+        LOGGER.setLevel(logging.DEBUG)
 
     app = tornado.web.Application(
         [
