@@ -1,6 +1,12 @@
 ;"use strict";
 class AutoComplete {
+    constructor () {
+        $(window).scroll(function () {
+            this.hide();
+        })
+    }
     show (cursorInfo, curentFile) {
+        let autoC = this;
         console.log('CUR fie', curentFile, cursorInfo['textBeforeCursor']);
         $.ajax({
             method: "POST",
@@ -35,7 +41,7 @@ class AutoComplete {
             $('body').append($divElement);
         })
             .fail(function (jqXHR, textStatus) {
-                AutoComplete.hide();
+                autoC.hide();
                 console.log('все сломалось в автокомплите: ' + textStatus)
             });
     }

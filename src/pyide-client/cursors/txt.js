@@ -122,7 +122,7 @@ class TxtCursor {
             document.getElementById('code').appendChild(divEl);
         }
         this._setCursorShift(1, $('.content-line')[0]);
-        $('.content-line')[0].focus();
+        $("div[tabindex='1']").focus();
     };
 
     putSymbol(char) {

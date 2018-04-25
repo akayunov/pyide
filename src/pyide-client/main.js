@@ -58,32 +58,7 @@ $(document).ready(function () {
         else if (event.keyCode === 32) { // space
             cursor.putSymbol(event.key);
             autoComlete.hide();
-            let cloneElement = $(event.target).clone();
-            let cursorEl = cloneElement.find('.cursor');
-            if (cursorEl.attr('id') === "to-remove") {
-                cursorEl.replaceWith($(document.createTextNode('')));
-            }
-            let codeString = cloneElement.text();
-            $.ajax({
-                method: "POST",
-                url: FileListing.curentFile,
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify({
-                    "code_string": codeString,
-                    "code_line_number": parseInt(event.target.getAttribute('tabIndex')),
-                    "type": "parse"
-                })
-            }).done(function (response) {
-                let $newElement = $(response.code_string[0]);
-                $(event.target).replaceWith($newElement);
-                // если починить ссе баги на курсор то можно будет тернарный опереатор убрать
-                cursor._setCursorShift(cursor.position <= $newElement.text().length ? cursor.position : $newElement.text().length, $newElement);
-                $newElement.focus();
-            }).fail(function () {
-                console.log('все сломалось')
-            });
-
+            cursor.lineParse(event, fileListing.curentFile);
             event.preventDefault();
         }
         else if (event.keyCode === 33) { // PageUP
