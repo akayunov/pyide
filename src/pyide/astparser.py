@@ -282,7 +282,7 @@ class AstParser:
     #             scope_id = self.child_parent_scope_id_links[scope_id]['parent_scope_id']
 
     def get_assign_node_information(self, token_string, line_number: int, col_offset: int):
-        if self.line_structure[line_number][token_string][0].type == 'attribute':
+        if self.line_structure[line_number].get(token_string) and self.line_structure[line_number][token_string][0].type == 'attribute':
             attribute_owner = self.pass_through_attribute_chain(self.line_structure[line_number][token_string][0])
             namespace_id = self.get_assign_node_information(attribute_owner.string, attribute_owner.lineno, attribute_owner.col_offset).child_scope_id
             origin_namespace_id = namespace_id

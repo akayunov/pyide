@@ -31,6 +31,7 @@ def main():
             (r'/server/code/(.*)', Code),
             (r'/server/tags/(.*)', Tags),
             (r'/client/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', 'pyide-client'))),
+            (r'/favicon.ico(.*)?', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', 'pyide-client', 'resourses', 'favicon.ico'))),
         ],
         **settings
     )
