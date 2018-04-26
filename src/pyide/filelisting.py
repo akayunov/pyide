@@ -9,7 +9,6 @@ class FileListing(tornado.web.RequestHandler):
         result = []
         for root, dirs, files in os.walk((SYS_PATH_PREPEND + path)):
             padding_size = path.count('/')
-            print('padding', padding_size, path, root, dirs, files)
             for d_dir in sorted(dirs):
                 d_dir_path = os.path.join(root, d_dir).replace(SYS_PATH_PREPEND + '/', '')
                 result.append(
