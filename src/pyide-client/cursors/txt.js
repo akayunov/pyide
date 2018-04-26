@@ -2,7 +2,19 @@
 
 class TxtCursor {
     constructor() {
-        this.position = 1
+        this.position = 1;
+
+        if (!$('.content-line').length) {
+            let divEl = document.createElement('div');
+            divEl.tabIndex = 1;
+            divEl.className = 'content-line';
+            let spanEl = document.createElement('span');
+            spanEl.textContent = '\n';
+            divEl.appendChild(spanEl);
+            document.getElementById('code').appendChild(divEl);
+        }
+        this._setCursorShift(1, $('.content-line')[0]);
+        $("div[tabindex='1']").focus();
     }
 
     static _isElementOnViewPort(el) {
@@ -13,7 +25,8 @@ class TxtCursor {
 
     _createCursor(cursorParentElement, textBefore, cursorLetter, textAfter) {
         if ($(cursorParentElement).parent().attr('class') === 'cursor') {
-            console.log('a nichego ne budu delat');
+            console.log('a nichego ne budu delat', new Error().stack);
+
             return;
         }
         let $oldCursor = $('.cursor');
@@ -109,20 +122,6 @@ class TxtCursor {
         );
         let text_after = textCursorParentElement.slice(textCursorParentElement.length - cursorShiftSize);
         this._createCursor(cursorParentElement, text_before, cursor_letter, text_after);
-    };
-
-    init() {
-        if (!$('.content-line').length) {
-            let divEl = document.createElement('div');
-            divEl.tabIndex = 1;
-            divEl.className = 'content-line';
-            let spanEl = document.createElement('span');
-            spanEl.textContent = '\n';
-            divEl.appendChild(spanEl);
-            document.getElementById('code').appendChild(divEl);
-        }
-        this._setCursorShift(1, $('.content-line')[0]);
-        $("div[tabindex='1']").focus();
     };
 
     putSymbol(char) {

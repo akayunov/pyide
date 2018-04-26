@@ -1,30 +1,58 @@
 ;"use strict";
-$(document).ready(function () {
-    $("div[tabindex='1']").focus();
+document.addEventListener('DOMContentLoaded', function() {
     let cursor = new TxtCursor();
-    cursor.init();
 
     let tags = new Tags();
+
     let fileListing = new FileListing();
-    fileListing.init();
 
     let autoComlete = new AutoComplete();
+
     let pressedKeys = {};
 
-    $('div#code').on('keyup', 'div', function (event) {
+    document.getElementById('code').onkeyup = function (event) {
         pressedKeys[event.keyCode] = false;
-    });
-    $('div#code').on('keydown', 'div', function (event) {
+        event.preventDefault();
+    };
+
+
+    document.getElementById('code').onclick = function (event) {
+        cursor.setByClick();
+        autoComlete.hide();
+        if (pressedKeys['17']) {
+            cursor.goToDefinition(fileListing.curentFile)
+        }
+        event.preventDefault();
+    };
+
+    document.getElementById('filelisting').onclick = function (event) {
+        if (event.target.parentElement.className === 'filelink'){
+            fileListing.showFile(event);
+            tags.init(event);
+            if (event.target.attributes['href'].value.endsWith('.py')) {
+                cursor = new PyCursor();
+            }
+            else {
+                cursor = new TxtCursor();
+            }
+        }
+        else if (event.target.parentElement.className === 'folderlink'){
+            fileListing.get(event);
+        }
+
+        event.preventDefault();
+    };
+
+    document.getElementById('code').onkeydown = function (event) {
         pressedKeys[event.keyCode] = true;
-        console.log('keydown' + event.keyCode);
 
         if (event.keyCode === 13) { // enter key
             cursor.addNewRow();
             event.preventDefault();
         }
         else if (event.keyCode === 9) { // tab key
-            if ($('#active-autocomplete').length) {
-                let insertedText = $('#active-autocomplete').find('#autocomplete-postfix').text();
+            if ( document.getElementById('active-autocomplete')) {
+                let insertedText = document.getElementById('active-autocomplete').children[1].textContent;
                 for (let i = 0; i < insertedText.length; i++) {
                     cursor.putSymbol(insertedText[i]);
                 }
@@ -36,7 +64,7 @@ $(document).ready(function () {
             event.preventDefault();
         }
         else if (event.keyCode === 38) { // up arrow
-            if ($('.autocomplete').length) {
+            if (document.getElementsByClassName('autocomplete').length) {
                 autoComlete.hlPrev();
             }
             else {
@@ -45,7 +73,7 @@ $(document).ready(function () {
             event.preventDefault();
         }
         else if (event.keyCode === 40) { // down arrow
-            if ($('.autocomplete').length) {
+            if (document.getElementsByClassName('autocomplete').length) {
                 autoComlete.hlNext();
             }
             else {
@@ -107,77 +135,5 @@ $(document).ready(function () {
             autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
             event.preventDefault();
         }
-    });
-
-    // TODO move to one selector
-    $('div#code').on('click', 'div', function () {
-        cursor.setByClick();
-        autoComlete.hide();
-        if (pressedKeys['17']) {
-            $.ajax({
-                method: "POST",
-                url: fileListing.curentFile,
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify({
-                    "code_string": $($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0]).text(),
-                    "cursor_position": cursor._getCursorPosition()['cursorPosition'],
-                    "code_line_number": parseInt($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0].getAttribute('tabIndex')),
-                    "type": "gotodefinition"
-                })
-            }).done(function (response) {
-                let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]');
-                contentLIne.scrollIntoView(true);
-                cursor._setCursorShift(response.cursor_position + 1, contentLIne);
-            }).fail(function () {
-                console.log('все сломалось в го ту дефинишин')
-            });
-        }
-    });
-    $(window).scroll(function () {
-        autoComlete.hide();
-    });
-
-    $('#filelisting').on('click', '.filelink',
-        function (event) {
-            console.log(event.target.attributes['href'].value);
-            // show file
-            $.ajax({
-                method: "GET",
-                url: event.target.attributes['href'].value,
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8'
-            }).done(function (response) {
-                Array.from(document.getElementById('code').children).forEach(
-                    function (element){
-                        element.remove()
-                    }
-                );
-                response.forEach(
-                    function(element){
-                        document.getElementById('code').appendChild($(element)[0])
-                    }
-                );
-                cursor._setCursorShift(1, document.querySelector('[tabindex="1"]'));
-                document.querySelector('[tabindex="1"]').focus();
-                fileListing.curentFile = event.target.attributes['href'].value;
-            }).fail(function (jqXHR, textStatus) {
-                console.log('все сломалось в get CODE' , jqXHR, textStatus)
-            });
-            event.preventDefault();
-            tags.init(event);
-            if (event.target.attributes['href'].value.endsWith('.py')){
-                cursor = new PyCursor();
-            }
-            else {
-                cursor = new TxtCursor();
-            }
-        }
-    );
-
-    $('#filelisting').on('click', '.folderlink',
-        function (event) {
-            fileListing.get(event)
-        }
-    );
+    };
 });

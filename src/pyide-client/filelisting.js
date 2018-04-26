@@ -3,18 +3,17 @@
 class FileListing {
     constructor() {
         this.curentFile = '';
-    }
-
-    init(event) {
+        let self = this;
         $.ajax({
             method: "GET",
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
-            url: event === undefined ? '/server/filelisting' : event.target.href
+            url: '/server/filelisting'
         }).done(function (response) {
             response.forEach(
                 function (element) {
-                    document.getElementById('filelisting').appendChild($(element)[0]);
+                    let node = $(element)[0];
+                    document.getElementById('filelisting').appendChild(node);
                 }
             );
             // console.log('folder listing respone', response)
@@ -41,10 +40,10 @@ class FileListing {
                 contentType: 'application/json; charset=utf-8',
                 url: event.target.href
             }).done(function (response) {
-                console.log('folder listing respone', response, parentDiv);
                 response.forEach(function (element) {
-                    console.log('element', element);
                     $(parentDiv).append($(element));
+                    let node = $(element)[0];
+                    document.getElementById('filelisting').appendChild(node);
                 });
             }).fail(function (jqXHR, textStatus) {
                 console.log('все сломалось в folder listing', jqXHR, textStatus)
@@ -55,5 +54,31 @@ class FileListing {
         }
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    showFile(event) {
+        let self = this;
+        $.ajax({
+            async: false,
+            method: "GET",
+            url: event.target.attributes['href'].value,
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8'
+        }).done(function (response) {
+            Array.from(document.getElementById('code').children).forEach(
+                function (element) {
+                    console.log('CACAC', element);
+                    element.remove()
+                }
+            );
+            response.forEach(
+                function (element) {
+                    document.getElementById('code').appendChild($(element)[0])
+                }
+            );
+            self.curentFile = event.target.attributes['href'].value;
+        }).fail(function (jqXHR, textStatus) {
+            console.log('все сломалось в get CODE', jqXHR, textStatus)
+        });
     }
 }
