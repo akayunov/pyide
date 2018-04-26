@@ -19,3 +19,5 @@ def test_line_parse_basic(driver_ff_function, pyide_base_url):
     assert 'pass' == driver_ff_function.execute_script(''' return document.querySelector('[tabindex="10"]').childNodes[0]''').text
     assert 'SPAN' == driver_ff_function.execute_script(''' return document.querySelector('[tabindex="10"]').childNodes[0].tagName''')
     assert 'keyword' == driver_ff_function.execute_script(''' return document.querySelector('[tabindex="10"]').childNodes[0].className''')
+
+# тест на то что если после пробела быстро нажать еще букву то она после парсинга пропадет

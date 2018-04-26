@@ -35,3 +35,19 @@ def test_basic(driver_ff_function, pyide_base_url):
 
     with pytest.raises(NoSuchElementException, message='Message: Unable to locate element: [id="active-autocomplete"]'):
         driver_ff_function.find_element_by_id('active-autocomplete')
+
+
+def test_class_attribute_autocomlete(driver_ff_function, pyide_base_url):
+    driver_ff_function.get(pyide_base_url)
+    testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
+    testmodule1.click()
+    element = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.CSS_SELECTOR, '[tabindex="22"]')))
+    element.click()
+    actions = ActionChains(driver_ff_function)
+    actions.send_keys(Keys.ENTER + 'Tratata.')
+    actions.perform()
+
+    time.sleep(2)
+
+    assert 'repeate' == driver_ff_function.execute_script(''' return document.getElementsByClassName('autocomplete')[0].children[0].textContent ''')
+    assert 'Qwe' == driver_ff_function.execute_script(''' return document.getElementsByClassName('autocomplete')[0].children[1].textContent ''')
