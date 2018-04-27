@@ -54,6 +54,12 @@ telnet_db(){
 
 reinit(){
     echo 'Redeploy stack'
+
+    if [[ $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q) ]]
+    then
+        docker container rm $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q)
+    fi
+
     docker stack rm PYIDE
     while [ $(docker network ls --filter=Name=PYIDE_pyide -q) ] ; do echo 'Deleting network'; sleep 1 ; done
     docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
