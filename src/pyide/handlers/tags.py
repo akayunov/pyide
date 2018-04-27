@@ -1,7 +1,9 @@
 import json
+
 import tornado.web
+
 from pyide.configuration import SYS_PATH_PREPEND
-from pyide.code import AST_PARSER
+from pyide.handlers.code import AST_PARSER
 
 
 class Tags(tornado.web.RequestHandler):

@@ -1,14 +1,14 @@
 import argparse
 import logging
 import os
+
 import tornado.ioloop
 import tornado.web
+from pyide.handlers.code import Code
+from pyide.handlers.command import Command
+from pyide.handlers.tags import Tags
 
-from pyide.command import Command
-from pyide.code import Code
-from pyide.tags import Tags
-from pyide.filelisting import FileListing
-
+from pyide.handlers.filelisting import FileListing
 
 LOGGER = logging.getLogger('tornado.access')
 LOGGER.setLevel(logging.WARN)
