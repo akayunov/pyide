@@ -57,7 +57,7 @@ class FileListing {
     }
 
     showFile(event) {
-        let self = this;
+        let self = this, lineCount;
         $.ajax({
             async: false,
             method: "GET",
@@ -67,7 +67,6 @@ class FileListing {
         }).done(function (response) {
             Array.from(document.getElementById('code').children).forEach(
                 function (element) {
-                    console.log('CACAC', element);
                     element.remove()
                 }
             );
@@ -77,8 +76,10 @@ class FileListing {
                 }
             );
             self.curentFile = event.target.attributes['href'].value;
+            lineCount = response.length;
         }).fail(function (jqXHR, textStatus) {
             console.log('все сломалось в get CODE', jqXHR, textStatus)
         });
+        return lineCount;
     }
 }

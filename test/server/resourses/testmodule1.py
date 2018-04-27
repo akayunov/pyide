@@ -23,7 +23,7 @@ class Tratata(object):
 raise SystemExit
 
 import builtins
-# sorted([1,2,3]) it break astparse because it doesn't know about builtins
+# sorted([1,2,3]) it break astparse because it doesn't know about builtins 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 sorted = 1
 class Asd:
     def Qwe(self, zu: Zu):

@@ -37,7 +37,7 @@ def test_basic(driver_ff_function, pyide_base_url):
         driver_ff_function.find_element_by_id('active-autocomplete')
 
 
-def test_class_attribute_autocomlete(driver_ff_function, pyide_base_url):
+def test_class_attribute_ac(driver_ff_function, pyide_base_url):
     driver_ff_function.get(pyide_base_url)
     testmodule1 = WebDriverWait(driver_ff_function, 5).until(ec.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'testmodule1')))
     testmodule1.click()

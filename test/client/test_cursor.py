@@ -67,15 +67,8 @@ def test_move_right(driver_ff_function, pyide_base_url):
     actions.send_keys(Keys.ARROW_DOWN * 61)
     actions.perform()
 
-    element_coordinates = driver_ff_function.execute_script(''' return document.querySelector('[tabindex="61"]').getBoundingClientRect() ''')
-    actions = ActionChains(driver_ff_function)
-    actions.move_by_offset(xoffset=element_coordinates['x'], yoffset=element_coordinates['y'])
-    actions.click()
-    actions.perform()
-
-    actions = ActionChains(driver_ff_function)
-    actions.send_keys(Keys.ARROW_RIGHT * 30)
-    actions.perform()
+    driver_ff_function.execute_script(''' return document.querySelector('[tabindex="61"]')''').click()
+    ActionChains(driver_ff_function).send_keys(Keys.ARROW_RIGHT * 30).perform()
     # cursor stay on last line = 61
     assert '61' == driver_ff_function.execute_script('''return document.getElementsByClassName('cursor')[0].parentNode''').get_attribute('tabIndex')
 
@@ -95,7 +88,7 @@ def test_move_left(driver_ff_function, pyide_base_url):
 
     element_coordinates = driver_ff_function.execute_script(''' return document.querySelector('[tabindex="2"]').getBoundingClientRect() ''')
     actions = ActionChains(driver_ff_function)
-    actions.move_by_offset(xoffset=element_coordinates['x'], yoffset=element_coordinates['top'] + 1)
+    actions.move_by_offset(xoffset=element_coordinates['x'] + 1, yoffset=element_coordinates['top'] + 2)
     actions.click()
     actions.perform()
     assert 'f' == driver_ff_function.find_element_by_class_name('cursor').text

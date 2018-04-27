@@ -1,6 +1,3 @@
-/*.empty {*/
-    /*height: 13px;*/
-/*}*/
 .keyword {
     color: blue;
     font-weight: bold;
@@ -21,21 +18,6 @@
 }
 .content-line {
     white-space:pre;
-}
-
-html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-}
-body {
-     /*TODO research it*/
-    font-family: "DejaVu Sans Mono";
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
 }
 
 div {
@@ -62,8 +44,6 @@ div {
 
 .autocomplete {
     background: yellow;
-    /*top: 0;*/
-    /*left: 0;*/
     position: fixed;
     z-index: 1;
 }
@@ -72,50 +52,90 @@ div {
     background: red;
     color: black;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+html {
+    margin: 0;
+    padding: 0;
+}
+body {
+     /*TODO research it*/
+    font-family: "DejaVu Sans Mono";
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+}
+
 #tags {
     display: inline-block;
-    height: 100%;
-    width: 300px;
-    bottom: 0;
-    position: fixed;
-    left: 0;
-    border: groove;
+    width: 15%;
+    border: none;
+    height: 100vh;
+    float: left;
     overflow-y: scroll;
     overflow-x: scroll;
-    border-top: none;
-    border-bottom: none;
+    white-space:nowrap;
+}
+
+#lines {
+    display: inline-block;
+    width: 70%;
+    height: 100vh;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
+#line-number{
+    display: inline-block;
+    width: 4ch;
+    vertical-align: top;
 }
 
 #code {
     display: inline-block;
-    height: 100%;
-    width: 1300px;
-    bottom: 0;
-    position: fixed;
-    border: groove;
-    left: 306px;
-    overflow-y: scroll;
-    overflow-x: scroll;
-    border-top: none;
-    border-bottom: none;
+    width: 95%;
+    height: 100vh;
 }
+
 #filelisting {
     display: inline-block;
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    border: groove;
-    width: 300px;
-    height: 100%;
+    flex-direction: column;
+    width: 15%;
+    height: 100vh;
+    float: right;
     overflow-y: scroll;
     overflow-x: scroll;
-    border-top: none;
-    border-bottom: none;
+    white-space:nowrap;
 }
+
+
+
 #code div:nth-child(even) {
     background: #f9fbff;
 }
 #code div:nth-child(odd) {
+    background: #f0ffef
+}
+
+#line-number div:nth-child(even) {
+    background: #f9fbff;
+}
+#line-number div:nth-child(odd) {
     background: #f0ffef
 }
 

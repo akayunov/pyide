@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let autoComlete = new AutoComplete();
 
+    let lineNumber = new LineNumber(1);
+
     let pressedKeys = {};
 
     document.getElementById('code').onkeyup = function (event) {
@@ -27,7 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('filelisting').onclick = function (event) {
         if (event.target.parentElement.className === 'filelink'){
-            fileListing.showFile(event);
+            let lineCount = fileListing.showFile(event);
+            // should count multi line string
+            console.log('NEW LINE', lineCount);
+            lineNumber.adjust(lineCount);
             tags.init(event);
             if (event.target.attributes['href'].value.endsWith('.py')) {
                 cursor = new PyCursor();
