@@ -12,26 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let pressedKeys = {};
 
-    document.getElementById('code').onkeyup = function (event) {
+    document.getElementById('code').addEventListener('keyup', function (event) {
         pressedKeys[event.keyCode] = false;
         event.preventDefault();
-    };
+    });
 
 
-    document.getElementById('code').onclick = function (event) {
+    document.getElementById('code').addEventListener('click', function (event) {
         cursor.setByClick();
         autoComlete.hide();
         if (pressedKeys['17']) {
             cursor.goToDefinition(fileListing.curentFile)
         }
         event.preventDefault();
-    };
+    });
 
-    document.getElementById('filelisting').onclick = function (event) {
+    document.getElementById('filelisting').addEventListener('click', function (event) {
         if (event.target.parentElement.className === 'filelink'){
             let lineCount = fileListing.showFile(event);
-            // should count multi line string
-            console.log('NEW LINE', lineCount);
+            // should count multi line string like ''' '''
             lineNumber.adjust(lineCount);
             tags.init(event);
             if (event.target.attributes['href'].value.endsWith('.py')) {
@@ -46,9 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         event.preventDefault();
-    };
+    });
 
-    document.getElementById('code').onkeydown = function (event) {
+    document.getElementById('code').addEventListener('keydown', function (event) {
         pressedKeys[event.keyCode] = true;
 
         if (event.keyCode === 13) { // enter key
@@ -140,5 +139,5 @@ document.addEventListener('DOMContentLoaded', function() {
             autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
             event.preventDefault();
         }
-    };
+    })
 });
