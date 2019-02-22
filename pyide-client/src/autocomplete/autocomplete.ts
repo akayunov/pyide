@@ -1,11 +1,12 @@
-;"use strict";
-class AutoComplete {
+import {CursorPosition} from '../cursors/txt';
+export class AutoComplete {
     constructor () {
+      let self = this;
         $(window).scroll(function () {
-            this.hide();
+            self.hide();
         })
     }
-    show (cursorInfo, curentFile) {
+    show (cursorInfo: CursorPosition, curentFile: string) {
         let autoC = this;
         console.log('CUR fie', curentFile, cursorInfo['textBeforeCursor']);
         $.ajax({
@@ -25,7 +26,7 @@ class AutoComplete {
             let flag = false;
             let list = response.result;
             let prefix = response.prefix;
-            list.forEach(function (element) {
+            list.forEach(function (element:string) {
                 let postfix = element.slice(prefix.length, element.length);
                 if (!flag) {
                     $divElement.append($('<div id="active-autocomplete"><span>' + prefix + '</span>'

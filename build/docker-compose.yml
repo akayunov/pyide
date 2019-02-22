@@ -23,16 +23,20 @@ services:
 
     volumes:
       - type: bind
-        source: ../src
-        target: /opt/pyide/src
+        source: ../pyide-server
+        target: /opt/pyide/pyide-server
         read_only: true
       - type: bind
-        source: ../test/server/resourses
-        target: /opt/pyide/test/server/resourses
+        source: ../pyide-client
+        target: /opt/pyide/pyide-client
         read_only: true
-      - type: bind
-        source: ../tmp
-        target: /opt/pyide/tmp
+#      - type: bind
+#        source: ../pyide-server/test/resourses
+#        target: /opt/pyide/test/resourses
+#        read_only: true
+#      - type: bind
+#        source: ../tmp
+#        target: /opt/pyide/tmp
     deploy:
       mode: replicated
       replicas: 1
@@ -48,6 +52,6 @@ services:
       - "5555:5555"
 
     environment:
-      PYTHONPATH: /opt/pyide/src
+      PYTHONPATH: /opt/pyide/pyide-server/src
       PYTHONUNBUFFERED: 'true'
     command: ['python3', '-m', 'pyide', '-d']

@@ -1,6 +1,14 @@
-;"use strict";
+export interface CursorPosition {
+    contentLineElement: JQuery<HTMLElement>,
+    cursorPosition: number,
+    textBeforeCursor: string
+    }
 
-class TxtCursor {
+export class TxtCursor {
+    position: number;
+    goToDefinition(curentFile: string): any {
+        throw new Error("Method not implemented.");
+    }
     constructor() {
         this.position = 1;
 
@@ -13,17 +21,17 @@ class TxtCursor {
             divEl.appendChild(spanEl);
             document.getElementById('code').appendChild(divEl);
         }
-        this._setCursorShift(1, $('.content-line')[0]);
+        this._setCursorShift(1, $($('.content-line')[0]));
         $("div[tabindex='1']").focus();
     }
 
-    static _isElementOnViewPort(el) {
+    static _isElementOnViewPort(el: HTMLElement) {
         let rect = el.getBoundingClientRect(),
             windowHeight = window.innerHeight;
         return (rect.top >= 0 && rect.bottom <= windowHeight );
     }
 
-    _createCursor(cursorParentElement, textBefore, cursorLetter, textAfter) {
+    _createCursor(cursorParentElement: JQuery<Node>, textBefore:string, cursorLetter:string, textAfter:string) {
         if ($(cursorParentElement).parent().attr('class') === 'cursor') {
             console.log('a nichego ne budu delat', new Error().stack);
 
@@ -52,7 +60,7 @@ class TxtCursor {
         let stop = false;
 
         function closure() {
-            function getText(index, element) {
+            function getText(index: number, element:Node) {
                 if (stop) {
                     return;
                 }
@@ -80,25 +88,23 @@ class TxtCursor {
         $(contentLineElement).contents().each(closure());
         // console.log('text before', textBeforeCursor.slice(0, textBeforeCursor.length - 1));
         return {
-            "contentLineElement": contentLineElement,
+            "contentLineElement": $(contentLineElement),
             "cursorPosition": textBeforeCursor.length,
             "textBeforeCursor": textBeforeCursor.slice(0, textBeforeCursor.length - 1)
         }
     };
 
-    _setCursorShift(cursorShiftSize, contentLineElement) {
+    _setCursorShift(cursorShiftSize: number, contentLineElement:JQuery<HTMLElement>) {
         this.position = cursorShiftSize;
-        let textBeforeCursor = '';
         let cursorParentElement = null;
         let stop = false;
 
         function closure() {
-            function getText(index, element) {
+            function getText(this: Node, index: number, element:Node) {
                 if (stop) {
                     return;
                 }
                 if (element.nodeType === Node.TEXT_NODE) {
-                    textBeforeCursor += $(element).text();
                     cursorShiftSize -= $(element).text().length;
                     if (cursorShiftSize <= 0) {
                         stop = true;
@@ -124,7 +130,7 @@ class TxtCursor {
         this._createCursor(cursorParentElement, text_before, cursor_letter, text_after);
     };
 
-    putSymbol(char) {
+    putSymbol(char:string) {
         $('.cursor').before($(document.createTextNode(char)));
         // TODO странно это ведь если я перешел на строку вверх нпример и начал набирать то позиция то будет не +=1 а длина строки плюс 1
         // строка то может быть короче
@@ -231,7 +237,7 @@ class TxtCursor {
         lastElement.scrollIntoView(true);
         this._setCursorShift(
             this.position < $(lastElement).text().length ? this.position : $(lastElement).text().length,
-            lastElement);
+            $(lastElement));
         this.position = positionPrev;
     };
 
@@ -247,7 +253,7 @@ class TxtCursor {
             }
         }
         lastElement.scrollIntoView(false);
-        this._setCursorShift(this.position < $(lastElement).text().length ? this.position : $(lastElement).text().length, lastElement);
+        this._setCursorShift(this.position < $(lastElement).text().length ? this.position : $(lastElement).text().length, $(lastElement));
         this.position = positionPrev;
     };
 
@@ -277,8 +283,8 @@ class TxtCursor {
             (function closure() {
                 let start = false;
 
-                function removeTextNodes(index, element) {
-                    if (element.className === 'cursor') {
+                function removeTextNodes(index:number, element:Node) {
+                    if ((<HTMLElement>element).className === 'cursor') {
                         $(element).replaceWith($(document.createTextNode('')));
                         start = true;
                         return;
@@ -300,12 +306,12 @@ class TxtCursor {
             (function closure() {
                 let stop = false;
 
-                function removeTextNodes(index, element) {
+                function removeTextNodes(index: number, element:Node) {
                     if (element.nodeType === Node.TEXT_NODE && !stop) {
                         $(element).replaceWith($(document.createTextNode('')));
                     }
                     else {
-                        if (element.className === 'cursor') {
+                        if ((<HTMLElement>element).className === 'cursor') {
                             stop = true;
                             return;
                         }
@@ -329,5 +335,5 @@ class TxtCursor {
     putTab() {
         this.putSymbol('\t');
     }
+    lineParse (event: KeyboardEvent, curentFile: string){};
 }
-

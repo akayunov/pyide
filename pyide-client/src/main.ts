@@ -1,4 +1,14 @@
-;"use strict";
+import {LineNumber} from './linenumber';
+import {AutoComplete} from './autocomplete/autocomplete';
+import {FileListing} from './filelisting';
+import {TxtCursor} from './cursors/txt';
+import {PyCursor} from './cursors/py';
+import {Tags} from './tags/tags';
+ 
+
+interface KeyCodes {
+  [index: string]: boolean;
+}
 document.addEventListener('DOMContentLoaded', function() {
     let cursor = new TxtCursor();
 
@@ -10,12 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let lineNumber = new LineNumber(1);
 
-    let pressedKeys = {};
+    let pressedKeys: KeyCodes = {};
 
-    document.getElementById('code').addEventListener('keyup', function (event) {
+    document.getElementById('code').addEventListener('keyup', function (event: KeyboardEvent) {
         pressedKeys[event.keyCode] = false;
         event.preventDefault();
     });
+
 
 
     document.getElementById('code').addEventListener('click', function (event) {
@@ -28,19 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('filelisting').addEventListener('click', function (event) {
-        if (event.target.parentElement.className === 'filelink'){
+      const target: HTMLElement = event.target as HTMLElement;
+        if (target.parentElement.className === 'filelink'){
             let lineCount = fileListing.showFile(event);
             // should count multi line string like ''' '''
             lineNumber.adjust(lineCount);
             tags.init(event);
-            if (event.target.attributes['href'].value.endsWith('.py')) {
+            if (target.attributes['href'].value.endsWith('.py')) {
                 cursor = new PyCursor();
             }
             else {
                 cursor = new TxtCursor();
             }
         }
-        else if (event.target.parentElement.className === 'folderlink'){
+        else if (target.parentElement.className === 'folderlink'){
             fileListing.get(event);
         }
 
@@ -56,11 +68,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if (event.keyCode === 9) { // tab key
             if ( document.getElementById('active-autocomplete')) {
-                let insertedText = document.getElementById('active-autocomplete').children[1].textContent;
-                for (let i = 0; i < insertedText.length; i++) {
-                    cursor.putSymbol(insertedText[i]);
+                const activeAutoComplete = document.getElementById('active-autocomplete');
+                let insertedText = activeAutoComplete.children[1].textContent;
+                if (insertedText){
+                    for (let i = 0; i < insertedText.length; i++) {
+                        cursor.putSymbol(insertedText[i]);
+                    }
+                    autoComlete.hide();
                 }
-                autoComlete.hide();
+                else{
+                    console.log('insertedText is empty in  main')
+                }
             }
             else {
                 cursor.putTab();

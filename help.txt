@@ -1,0 +1,4 @@
+npm init
+npm install --save-dev typescript webpack webpack-cli awesome-typescript-loader source-map-loader @types/jquery
+
+если надо либу с аннотациями то указываешь имя вот так: @types/[имя либы]

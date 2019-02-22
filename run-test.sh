@@ -6,7 +6,7 @@ main() {
 
     script_dir_name="`dirname \"$0\"`"              # relative
 
-    PROJECT_DIR_ON_HOST="`( cd \"${script_dir_name}/../\" && pwd )`"  # absolutized and normalized
+    PROJECT_DIR_ON_HOST="`( cd \"${script_dir_name}/\" && pwd )`"  # absolutized and normalized
     PROJECT_DIR_ON_GUEST='/opt/pyide'
     
     echo 'PROJECT_DIR_ON_HOST:  ' ${PROJECT_DIR_ON_HOST}

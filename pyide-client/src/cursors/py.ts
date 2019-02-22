@@ -1,9 +1,9 @@
-;"use strict";
-class PyCursor extends TxtCursor {
+import {TxtCursor} from './txt';
+export class PyCursor extends TxtCursor {
     constructor() {
-        super(arguments);
+        super();
     }
-
+ 
     addNewRow() {
         let $targetContentLine = $('.cursor').parents('.content-line'),
             $nextContentLine = $targetContentLine.clone();
@@ -13,8 +13,8 @@ class PyCursor extends TxtCursor {
             (function closure() {
                 let start = false;
 
-                function removeTextNodes(index, element) {
-                    if (element.className === 'cursor') {
+                function removeTextNodes(index:number, element:Node) {
+                    if ((<HTMLElement>element).className === 'cursor') {
                         $(element).replaceWith($(document.createTextNode('')));
                         start = true;
                         return;
@@ -36,12 +36,12 @@ class PyCursor extends TxtCursor {
             (function closure() {
                 let stop = false;
 
-                function removeTextNodes(index, element) {
+                function removeTextNodes(index:number, element:Node) {
                     if (element.nodeType === Node.TEXT_NODE && !stop) {
                         $(element).replaceWith($(document.createTextNode('')));
                     }
                     else {
-                        if (element.className === 'cursor') {
+                        if ((<HTMLElement>element).className === 'cursor') {
                             stop = true;
                             return;
                         }
@@ -89,7 +89,7 @@ class PyCursor extends TxtCursor {
         this.putSymbol(' ');
         this.putSymbol(' ');
     };
-    goToDefinition(curentFile) {
+    goToDefinition(curentFile:string) {
         let self = this;
         $.ajax({
             method: "POST",
@@ -103,14 +103,14 @@ class PyCursor extends TxtCursor {
                 "type": "gotodefinition"
             })
         }).done(function (response) {
-            let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]');
+            let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]') as HTMLElement;
             contentLIne.scrollIntoView(true);
-            self._setCursorShift(response.cursor_position + 1, contentLIne);
+            self._setCursorShift(response.cursor_position + 1, $(contentLIne));
         }).fail(function () {
             console.log('все сломалось в го ту дефинишин')
         });
     }
-    lineParse (event, curentFile){
+    lineParse (event:KeyboardEvent, curentFile:string){
         let self = this;
         let cloneElement = $(event.target).clone();
         let cursorEl = cloneElement.find('.cursor');
@@ -126,7 +126,7 @@ class PyCursor extends TxtCursor {
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({
                 "code_string": codeString,
-                "code_line_number": parseInt(event.target.getAttribute('tabIndex')),
+                "code_line_number": parseInt((<HTMLElement>event.target).getAttribute('tabIndex')),
                 "type": "parse"
             })
         }).done(function (response) {
