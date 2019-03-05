@@ -22,7 +22,10 @@ def mark_token(k, current_position, ast_parser):
         for i in range(int(tab_length / 4)):
             padding += '<span class="padding_{}">    </span>'.format(i)
     else:
-        padding = (' ' * (k.start[1] - current_position))
+        # padding = ('<span>' + ' ' * (k.start[1] - current_position) + '</span>')
+        padding = ' ' * (k.start[1] - current_position)
+        if padding:
+            padding = '<span>' + padding + '</span>'
 
     if keyword.iskeyword(k.string):
         tagged_string = padding + '<span class=keyword>' + k.string + '</span>'
