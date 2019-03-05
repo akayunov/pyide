@@ -46,7 +46,7 @@ def mark_token(k, current_position, ast_parser):
             #     node.id if node else None) + k.string + '</span>'
             tagged_string = padding + '<span class="{}">'.format(node.type if node else 'unknown') + k.string + '</span>'
         else:
-            tagged_string = padding + k.string
+            tagged_string = padding + '<span>' + k.string + '</span>'
     return tagged_string
 
 

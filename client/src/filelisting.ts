@@ -1,5 +1,5 @@
 export class FileListing {
-    public curentFile: string=''
+    public curentFile: string='';
     constructor() {
         this.curentFile = '';
         $.ajax({
@@ -11,7 +11,7 @@ export class FileListing {
             response.forEach(
                 function (element: string) {
                     let node = $(element)[0];
-                    const myElement: HTMLElement | null = document.getElementById('filelisting')
+                    const myElement: HTMLElement | null = document.getElementById('filelisting');
                     if ( myElement){
                         myElement.appendChild(node);
                     }
@@ -28,7 +28,7 @@ export class FileListing {
 
     get(event: MouseEvent) {
         const target : HTMLElement | null = <HTMLElement>event.target;
-        if (target){
+        if (!target){
             console.log('event.target is empty in folder listing get')
             return;
         }

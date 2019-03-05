@@ -1,4 +1,4 @@
-import {CursorPosition} from '../cursors/txt';
+import {CursorSiblings} from '../cursors/txt';
 export class AutoComplete {
     constructor () {
       let self = this;
@@ -6,7 +6,7 @@ export class AutoComplete {
             self.hide();
         })
     }
-    show (cursorInfo: CursorPosition, curentFile: string) {
+    show (cursorInfo: CursorSiblings, curentFile: string) {
         let autoC = this;
         console.log('CUR fie', curentFile, cursorInfo['textBeforeCursor']);
         $.ajax({
@@ -15,8 +15,8 @@ export class AutoComplete {
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({
-                "code_string": cursorInfo['textBeforeCursor'],
-                "code_line_number": parseInt(cursorInfo['contentLineElement'].attr('tabIndex')),
+                "code_string": cursorInfo.textBeforeCursor,
+                "code_line_number": cursorInfo.cursorParentElement.tabIndex,
                 "type": "autocomplete"
             })
         }).done(function (response) {

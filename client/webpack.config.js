@@ -11,6 +11,7 @@ module.exports = {
  output: {
     filename: "main.js",
     path: path.resolve(__dirname, 'dist'),
+    sourceMapFilename: "./[name].js.map",
 },
   // Currently we need to add '.ts' to the resolve.extensions array.
   resolve: {

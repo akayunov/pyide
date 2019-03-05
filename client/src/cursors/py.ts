@@ -1,9 +1,9 @@
-import {TxtCursor} from './txt';
+import {TxtCursor, CursorSiblings} from './txt';
 export class PyCursor extends TxtCursor {
-    constructor() {
-        super();
+    constructor(el: HTMLElement) {
+        super(el);
     }
- 
+
     addNewRow() {
         let $targetContentLine = $('.cursor').parents('.content-line'),
             $nextContentLine = $targetContentLine.clone();
@@ -59,7 +59,7 @@ export class PyCursor extends TxtCursor {
                 $(element).attr('tabIndex', parseInt($(element).attr('tabIndex')) + 1);
             }
         );
-        this.position = this._getCursorPosition()['cursorPosition'];
+        // this.columnNumber = this._getCursorPosition()['cursorPosition'];
     };
 
     deleteSymbolUnder() {
@@ -98,14 +98,16 @@ export class PyCursor extends TxtCursor {
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({
                 "code_string": $($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0]).text(),
-                "cursor_position": self._getCursorPosition()['cursorPosition'],
+                "cursor_position": TxtCursor._getCursorSiblingTextsByCursors()[0].textBeforeCursor.length + 1,
                 "code_line_number": parseInt($(document.getElementsByClassName('cursor')[0]).parents('.content-line')[0].getAttribute('tabIndex')),
                 "type": "gotodefinition"
             })
         }).done(function (response) {
             let contentLIne = document.querySelector('[tabindex="' + parseInt(response.code_line_number) + '"]') as HTMLElement;
             contentLIne.scrollIntoView(true);
-            self._setCursorShift(response.cursor_position + 1, $(contentLIne));
+            let cursorSibling = TxtCursor._getCursorSiblingTextByPosition(response.cursor_position + 1, contentLIne);
+            TxtCursor._createCursor(contentLIne, cursorSibling.textBeforeCursor, cursorSibling.textCursor, cursorSibling.textAfterCursor);
+                //self._setCursorShift(response.cursor_position + 1, $(contentLIne));
         }).fail(function () {
             console.log('все сломалось в го ту дефинишин')
         });
@@ -133,7 +135,9 @@ export class PyCursor extends TxtCursor {
             let $newElement = $(response.code_string[0]);
             $(event.target).replaceWith($newElement);
             // если починить ссе баги на курсор то можно будет тернарный опереатор убрать
-            self._setCursorShift(self.position <= $newElement.text().length ? self.position : $newElement.text().length, $newElement);
+            let cursorSibling = PyCursor._getCursorSiblingTextByPosition(1, $newElement);
+            PyCursor._createCursor($newElement, cursorSibling.textBeforeCursor, cursorSibling.textCursor, cursorSibling.textAfterCursor);
+            // _setCursorShift(self.columnNumber <= $newElement.text().length ? self.columnNumber : $newElement.text().length, $newElement);
             $newElement.focus();
         }).fail(function () {
             console.log('все сломалось')

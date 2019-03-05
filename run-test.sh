@@ -97,10 +97,10 @@ test_functional(){
     check_stack
     # functional test
     docker run -it --rm \
-        -v "${PROJECT_DIR_ON_HOST}/test":${PROJECT_DIR_ON_GUEST}/test:ro \
+        -v "${PROJECT_DIR_ON_HOST}/pyide/test":${PROJECT_DIR_ON_GUEST}/test:ro \
         -v "${PROJECT_DIR_ON_HOST}/tmp":${PROJECT_DIR_ON_GUEST}/tmp \
         --network=PYIDE_pyide \
-        registry.hub.docker.com/akayunov/pyide-test:latest pytest -s $@ ${PROJECT_DIR_ON_GUEST}/test/client
+        registry.hub.docker.com/akayunov/pyide-test:latest pytest -s $@ ${PROJECT_DIR_ON_GUEST}/test
 }
 
 test_coverage(){

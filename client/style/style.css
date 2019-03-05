@@ -25,21 +25,22 @@ div {
 }
 
 .cursor {
-    animation: 1s blink step-end infinite;
+    /*animation: 1s blink step-end infinite;*/
+    background: #ff7b80;
 }
 #to-remove {
     -moz-user-select: none;
 }
 
-@keyframes "blink" {
-  from, to {
-      background: #ff7b80;
+/*@keyframes "blink" {*/
+  /*from, to {*/
+      /*background: #ff7b80;*/
 
-  }
-  50% {
-    background: transparent;
-  }
-}
+  /*}*/
+  /*50% {*/
+    /*background: transparent;*/
+  /*}*/
+/*}*/
 
 
 .autocomplete {

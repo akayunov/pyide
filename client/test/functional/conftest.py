@@ -9,7 +9,7 @@ from selenium import webdriver
 
 @pytest.fixture(scope='session')
 def pyide_base_url():
-    return 'http://pyide:31415/client/pyide.html'
+    return 'http://pyide:31415/client/dist/pyide.html'
 
 
 @pytest.fixture(scope='function')
