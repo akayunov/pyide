@@ -1,6 +1,5 @@
 import {Code} from '../code';
-import {AST} from "parse5/lib";
-import TextNode = AST.HtmlParser2.TextNode;
+
 
 export class TxtCursor {
     cursorParentElement: HTMLElement = null;
@@ -14,10 +13,10 @@ export class TxtCursor {
         this.code = code;
         this._createCursorHTMLElement();
 
-        let parentElement = <HTMLElement>this.code.getFirstElement();
+        let parentElement = this.code.getFirstElement();
         this._putCursorByPositionInNode(parentElement, 0);
 
-        if (parentElement.textContent === ''){
+        if (parentElement.textContent === '') {
             // document is empty so do this way
             this.cursorText = ' ';
             this.cursorElement.id = 'to-remove'
@@ -31,20 +30,20 @@ export class TxtCursor {
         this.cursorText = '';
     }
 
-    _createCursorHTMLElement(cursorText='') {
-        // TODO create cursor by webcomponent
+    _createCursorHTMLElement(cursorText = '') {
+        // TODO create cursor by web component
         this.cursorElement = document.createElement('span');
         this.cursorElement.className = 'cursor';
         this.cursorText = cursorText;
     }
 
-    _putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode:number) {
-        if (parentCursorNode === null){
+    _putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode: number) {
+        if (parentCursorNode === null) {
             // do nothink if new node is null
             return;
         }
 
-        if(this.cursorParentElement !== null){
+        if (this.cursorParentElement !== null) {
             // don't delete if cursor not exists
             this._deleteCursor();
         }
@@ -52,21 +51,21 @@ export class TxtCursor {
         let initTextContent = parentCursorNode.textContent;
         this.cursorParentElement = parentCursorNode;
         let childNodes = this.cursorParentElement.childNodes;
-        if(childNodes.length !== 1){
+        if (childNodes.length !== 1) {
             console.log('childNodes.length:=', childNodes.length);
         }
-        let nextTextNode = (childNodes.item(0) as Text).splitText(cursorPositionInNode);
+        let nextTextNode = (<Text>childNodes.item(0)).splitText(cursorPositionInNode);
         this.cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
         nextTextNode.textContent = initTextContent.slice(cursorPositionInNode + 1);
         nextTextNode.before(this.cursorElement);
     }
 
-    _resetPosition(){
+    _resetPosition() {
         this.position = null;
     }
 
-    _setPosition(){
-        if( this.position === null){
+    _setPosition() {
+        if (this.position === null) {
             this.position = this.code.getPositionInLine(this.cursorParentElement, this.cursorElement.previousSibling.textContent.length);
         }
     };
@@ -91,7 +90,7 @@ export class TxtCursor {
         } else {
             result = this.cursorElement.textContent;
         }
-        if (this.newLineFlag){
+        if (this.newLineFlag) {
             result += '\n';
         }
         return result;
@@ -103,13 +102,12 @@ export class TxtCursor {
     };
 
     moveLeft() {
-        if (this.cursorElement.previousSibling.textContent !== ''){
+        if (this.cursorElement.previousSibling.textContent !== '') {
             this.cursorElement.nextSibling.textContent = this.cursorText + this.cursorElement.nextSibling.textContent;
             this.cursorText = this.cursorElement.previousSibling.textContent.slice(this.cursorElement.previousSibling.textContent.length - 1);
             this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.cursorElement.previousSibling.textContent.length - 1);
             this.position -= 1;
-        }
-        else if (this.cursorElement.previousSibling.textContent === ''){
+        } else if (this.cursorElement.previousSibling.textContent === '') {
             let previousElement = this.code.getPreviousElement(this.cursorParentElement);
             this._putCursorByPositionInNode(previousElement, previousElement.textContent.length - 1);
             this.code.scrollIntoView(previousElement);
@@ -118,13 +116,12 @@ export class TxtCursor {
     };
 
     moveRight() {
-        if (this.cursorElement.nextSibling.textContent !== ''){
+        if (this.cursorElement.nextSibling.textContent !== '') {
             this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent + this.cursorText;
             this.cursorText = this.cursorElement.nextSibling.textContent.slice(0, 1);
             this.cursorElement.nextSibling.textContent = this.cursorElement.nextSibling.textContent.slice(1);
             this.position += 1;
-        }
-        else if (this.cursorElement.nextSibling.textContent === ''){
+        } else if (this.cursorElement.nextSibling.textContent === '') {
             let nextElement = this.code.getNextElement(this.cursorParentElement);
             this._putCursorByPositionInNode(nextElement, 0);
             this.code.scrollIntoView(nextElement, false);
@@ -135,25 +132,25 @@ export class TxtCursor {
     moveUpRow() {
         this._setPosition();
         let newPosition = this.code.getOverElement(this.cursorParentElement, this.position);
-        this._putCursorByPositionInNode(newPosition.node, newPosition.nodePosition);
+        this._putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
     };
 
     moveDownRow() {
         this._setPosition();
         let newPosition = this.code.getUnderElement(this.cursorParentElement, this.position);
-        this._putCursorByPositionInNode(newPosition.node, newPosition.nodePosition);
+        this._putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
     };
 
     pageDown() {
         this._setPosition();
         let newElement = this.code.pageDown(this.cursorParentElement, this.position);
-        this._putCursorByPositionInNode(newElement.node, newElement.nodePosition);
+        this._putCursorByPositionInNode(newElement.node, newElement.positionInNode);
     };
 
     pageUp() {
         this._setPosition();
         let newElement = this.code.pageUp(this.cursorParentElement, this.position);
-        this._putCursorByPositionInNode(newElement.node, newElement.nodePosition);
+        this._putCursorByPositionInNode(newElement.node, newElement.positionInNode);
     };
 
     moveHome() {
@@ -192,10 +189,15 @@ export class TxtCursor {
     };
 
     addNewRow() {
-        let newLine = this.code.putNewLineAfter(this.cursorParentElement, '\n');
-        this._putCursorByPositionInNode(this.code.getFirstElementOnLine(newLine), 0);
+        this.moveLeft();
+        let newNode = this.code.divideLine(this.cursorParentElement);
+        let shiftedText = this.cursorElement.nextSibling.textContent;
+        this.cursorElement.nextSibling.textContent = '\n';
+        this._putCursorByPositionInNode(newNode, 0);
+        this.cursorElement.previousSibling.textContent = shiftedText;
+        this._putCursorByPositionInNode(newNode, 0);
         this._resetPosition();
-        // TODO this.code.recalculateTabIndex(newLine);
+        this.code.recalculateTabIndex(newNode);
     };
 
 }
