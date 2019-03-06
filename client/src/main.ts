@@ -26,7 +26,7 @@ class Main {
 
         self.tags = new Tags();
 
-        self.fileListing = new FileListing();
+        self.fileListing = new FileListing(self.code);
 
         self.autoComplete = new AutoComplete();
 
@@ -53,6 +53,7 @@ class Main {
         document.getElementById('filelisting').addEventListener('click', function (event) {
             const target: HTMLElement = event.target as HTMLElement;
             if (target.parentElement.className === 'filelink'){
+
                 let lineCount = self.fileListing.showFile(event);
                 // should count multi line string like ''' '''
                 self.lineNumber.adjust(lineCount);

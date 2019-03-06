@@ -21,7 +21,7 @@
 }
 
 div {
-    /*outline: none;*/
+    /*outline: none;*/  /* comment for a while to see which element in focus*/
 }
 
 .cursor {

@@ -17,6 +17,7 @@ def mark_token(k, current_position, ast_parser):
     # tabulation
     padding = ''
     tagged_string = ''
+
     if current_position == 0:
         tab_length = k.start[1] - current_position
         for i in range(int(tab_length / 4)):
@@ -25,6 +26,7 @@ def mark_token(k, current_position, ast_parser):
         # padding = ('<span>' + ' ' * (k.start[1] - current_position) + '</span>')
         padding = ' ' * (k.start[1] - current_position)
         if padding:
+            # TODO may be use custom tag <s></s> to save 2 symbol and do file size smaller?
             padding = '<span>' + padding + '</span>'
 
     if keyword.iskeyword(k.string):
@@ -70,7 +72,6 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
     current_position = 0
     string = ''
     result = []
-
     for k in tokenize_structure:
         # print(k)
         if k.exact_type == 59:

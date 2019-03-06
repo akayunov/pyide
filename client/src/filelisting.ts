@@ -1,7 +1,9 @@
 export class FileListing {
     public curentFile: string='';
-    constructor() {
+    public code;
+    constructor(code) {
         this.curentFile = '';
+        this.code= code;
         $.ajax({
             method: "GET",
             dataType: 'json',

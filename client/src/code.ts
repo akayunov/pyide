@@ -1,12 +1,23 @@
 export class Code {
+    screenSize: number = 40; // TODO calculate it on run time
     constructor() {
-        let divEl = document.createElement('div');
-        divEl.tabIndex = 1;
-        divEl.className = 'content-line';
-        let spanEl = document.createElement('span');
-        divEl.appendChild(spanEl);
-        spanEl.appendChild(document.createTextNode(''));
-        document.getElementById('code').appendChild(divEl);
+        document.getElementById('code').appendChild(this.createNewLine(1))
+    }
+
+    createNewLine(tabIndex = 1, text=''){
+        let divElement = document.createElement('div');
+        divElement.tabIndex = tabIndex;
+        divElement.className = 'content-line';
+        let spanElement = document.createElement('span');
+        divElement.appendChild(spanElement);
+        spanElement.appendChild(document.createTextNode(text));
+        return divElement;
+    }
+
+    putNewLineAfter(node, text=''){
+        let newLine = this.createNewLine(1, text);
+        node.parentElement.parentElement.appendChild(newLine);
+        return newLine;
     }
 
     getFirstLine() {
@@ -24,11 +35,14 @@ export class Code {
         return contentLines[contentLines.length - 1];
     }
 
-    getFirstElementOnLine(node) {
+    getFirstElementOnLine(line){
+        return line.firstChild;
+    }
+    getFirstElementOnLineByNode(node) {
         return node.parentElement.firstChild;
     }
 
-    getLastElementOnLine(node) {
+    getLastElementOnLineByNode(node) {
         return node.parentElement.lastChild;
     }
 
@@ -70,7 +84,7 @@ export class Code {
         return (rect.top >= 0 && rect.bottom <= windowHeight);
     }
 
-    getOverElement(node, nodePosition) {
+    getPositionInLine(node, nodePosition) {
         let oldLinePosition = 0;
         for (let el of node.parentElement.childNodes) {
             if (el === node) {
@@ -79,101 +93,89 @@ export class Code {
             }
             oldLinePosition += el.textContent.length;
         }
-
-        if (node.parentElement.previousElementSibling !== null){
-            let breakFlag = false;
-            let newLinePosition = 0;
-            let newNodePosition = 0;
-            let newNode = node.parentElement.previousElementSibling.firstChild;
-
-            for (let el of node.parentElement.previousElementSibling.childNodes) {
-                newLinePosition += el.textContent.length;
-                if (newLinePosition >= oldLinePosition + 1) {
-                    newNode = el;
-                    newNodePosition = el.textContent.length - ( newLinePosition - oldLinePosition);
-                    breakFlag = true;
-                    break;
-                }
-            }
-            if (!breakFlag){
-                newNode = node.parentElement.previousElementSibling.lastChild;
-                newNodePosition = newNode.textContent.length - 1;
-            }
-            return {node: newNode, nodePosition: newNodePosition};
-        }
-        else{
-            return {node: null, nodePosition: 0};
-        }
+        return oldLinePosition;
     }
 
-    getUnderElement(node, nodePosition) {
-        let oldLinePosition = 0;
-        for (let el of node.parentElement.childNodes) {
-            if (el === node) {
-                oldLinePosition += nodePosition;
+    getNodeByPosition(line, positionInLine) {
+        let breakFlag = false;
+        let newLinePosition = 0;
+        let newNodePosition = 0;
+        let newNode = line.firstChild;
+
+        for (let el of line.childNodes) {
+            newLinePosition += el.textContent.length;
+            if (newLinePosition >= positionInLine + 1) {
+                newNode = el;
+                newNodePosition = el.textContent.length - (newLinePosition - positionInLine);
+                breakFlag = true;
                 break;
             }
-            oldLinePosition += el.textContent.length;
         }
+        if (!breakFlag) {
+            newNode = line.lastChild;
+            newNodePosition = newNode.textContent.length - 1;
+        }
+        return {node: newNode, nodePosition: newNodePosition};
+    }
 
-        if (node.parentElement.nextElementSibling !== null){
-            let breakFlag = false;
-            let newLinePosition = 0;
-            let newNodePosition = 0;
-            let newNode = node.parentElement.nextElementSibling.firstChild;
-            for (let el of node.parentElement.nextElementSibling.childNodes) {
-                newLinePosition += el.textContent.length;
-                if (newLinePosition >= oldLinePosition + 1) {
-                    newNode = el;
-                    newNodePosition = el.textContent.length - ( newLinePosition - oldLinePosition);
-                    breakFlag = true;
-                    break;
-                }
-            }
-            if (!breakFlag){
-                newNode = node.parentElement.nextElementSibling.lastChild;
-                newNodePosition = newNode.textContent.length - 1;
-            }
-            return {node: newNode, nodePosition: newNodePosition};
-        }
-        else{
+    getOverElement(node, positionInLine) {
+        if (node.parentElement.previousElementSibling !== null) {
+            return this.getNodeByPosition(node.parentElement.previousElementSibling, positionInLine);
+        } else {
             return {node: null, nodePosition: 0};
         }
     }
 
-    pageUp(contentLine: HTMLElement) {
-        while (contentLine.nextElementSibling) {
-            if (!Code._isElementOnViewPort(<HTMLElement>contentLine.nextElementSibling)) {
-                contentLine.nextElementSibling.scrollIntoView(true);
-                return contentLine.nextElementSibling;
-            }
-            contentLine = <HTMLElement>contentLine.nextElementSibling;
+    getUnderElement(node, positionInLine) {
+        if (node.parentElement.nextElementSibling !== null) {
+            return this.getNodeByPosition(node.parentElement.nextElementSibling, positionInLine);
+        } else {
+            return {node: null, nodePosition: 0};
         }
-        return contentLine;
     }
 
-    pageDown(contentLine: HTMLElement) {
-        while (contentLine.previousElementSibling) {
-            if (!Code._isElementOnViewPort(<HTMLElement>contentLine.previousElementSibling)) {
-                contentLine.previousElementSibling.scrollIntoView(true);
-                return contentLine.previousElementSibling;
-            }
-            contentLine = <HTMLElement>contentLine.previousElementSibling;
-        }
-        return contentLine;
+    pageUp(node, positionInLine) {
+        let codeLine = node.parentElement;
 
-        // let positionPrev = this.columnNumber;
-        // for (let i = 0; i < contentLines.length; i++) {
-        //     if (TxtCursor._isElementOnViewPort(contentLines[i])) {
-        //         if (parseInt(lastElement.getAttribute('tabIndex')) < parseInt(contentLines[i].getAttribute('tabIndex'))) {
-        //             lastElement = contentLines[i];
-        //         }
-        //     }
-        // }
-        // lastElement.scrollIntoView(true);
-        // this._setCursorShift(
-        //     this.columnNumber < $(lastElement).text().length ? this.columnNumber : $(lastElement).text().length,
-        //     $(lastElement));
-        // this.columnNumber = positionPrev;
+        let counter = 0;
+        while (codeLine.previousElementSibling) {
+            counter += 1;
+            codeLine = <HTMLElement>codeLine.previousElementSibling;
+            if (counter >= this.screenSize){
+                break;
+            }
+            // if (!Code._isElementOnViewPort(<HTMLElement>codeLine)) {
+            //     break;
+            // }
+        }
+        // codeLine.scrollIntoView(true);
+        this.scrollIntoView(codeLine);
+        return this.getNodeByPosition(codeLine, positionInLine);
     }
+
+    pageDown(node, positionInLine) {
+        let codeLine = node.parentElement;
+
+        let counter = 0;
+        while (codeLine.nextElementSibling) {
+            counter += 1;
+            codeLine = <HTMLElement>codeLine.nextElementSibling;
+            if (counter >= this.screenSize){
+                break;
+            }
+            // if (!Code._isElementOnViewPort(<HTMLElement>codeLine)) {
+            //     break;
+            // }
+        }
+        // codeLine.scrollIntoView(true);
+        this.scrollIntoView(codeLine);
+        return this.getNodeByPosition(codeLine, positionInLine);
+    }
+
+    scrollIntoView(line, where=true){
+        if (!Code._isElementOnViewPort(<HTMLElement>line)) {
+            line.scrollIntoView(where);
+        }
+    }
+
 }
