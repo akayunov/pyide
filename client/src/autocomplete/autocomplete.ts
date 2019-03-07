@@ -16,7 +16,7 @@ export class AutoComplete {
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({
                 "code_string": cursorInfo.textBeforeCursor,
-                "code_line_number": cursorInfo.cursorParentElement.tabIndex,
+                "code_line_number": cursorInfo._cursorParentElement.tabIndex,
                 "type": "autocomplete"
             })
         }).done(function (response) {

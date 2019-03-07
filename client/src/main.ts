@@ -12,12 +12,12 @@ interface KeyCodes {
 }
 
 class Main {
-    public code;
-    public cursor;
-    public tags;
-    public fileListing;
-    public autoComplete;
-    public lineNumber;
+    public code :Code;
+    public cursor: TxtCursor;
+    public tags :Tags;
+    public fileListing : FileListing;
+    public autoComplete :AutoComplete;
+    public lineNumber : LineNumber;
 
     constructor() {
         let self = this;
@@ -37,7 +37,7 @@ class Main {
             let pressedKeys: KeyCodes = {};
 
             document.getElementById('code').addEventListener('keyup', function (event: KeyboardEvent) {
-                pressedKeys[event.keyCode] = false;
+                pressedKeys[event.code] = false;
                 event.preventDefault();
             });
 
@@ -45,7 +45,7 @@ class Main {
             document.getElementById('code').addEventListener('click', function (event) {
                 self.cursor.setByClick();
                 self.autoComplete.hide();
-                if (pressedKeys['17']) {
+                if (pressedKeys['ControlLeft']) {
                     self.cursor.goToDefinition(self.fileListing.curentFile)
                 }
                 event.preventDefault();
@@ -75,12 +75,13 @@ class Main {
             });
 
             document.getElementById('code').addEventListener('keydown', function (event) {
-                pressedKeys[event.keyCode] = true;
+                pressedKeys[event.code] = true;
+                // console.log('cod', event.code);
 
-                if (event.keyCode === 13) { // enter key
+                if (event.code === 'Enter') {
                     self.cursor.addNewRow();
                     event.preventDefault();
-                } else if (event.keyCode === 9) { // tab key
+                } else if (event.code === 'Tab') {
                     if (document.getElementById('active-autocomplete')) {
                         const activeAutoComplete = document.getElementById('active-autocomplete');
                         let insertedText = activeAutoComplete.children[1].textContent;
@@ -96,56 +97,56 @@ class Main {
                         self.cursor.putTab();
                     }
                     event.preventDefault();
-                } else if (event.keyCode === 38) { // up arrow
+                } else if (event.code === 'ArrowUp') {
                     if (document.getElementsByClassName('autocomplete').length) {
                         self.autoComplete.hlPrev();
                     } else {
                         self.cursor.moveUpRow();
                     }
                     event.preventDefault();
-                } else if (event.keyCode === 40) { // down arrow
+                } else if (event.code === 'ArrowDown') {
                     if (document.getElementsByClassName('autocomplete').length) {
                         self.autoComplete.hlNext();
                     } else {
                         self.cursor.moveDownRow();
                     }
                     event.preventDefault();
-                } else if (event.keyCode === 16) {
-                } else if (event.keyCode === 32) { // space
+                } else if (event.code === 'Space') {
                     self.cursor.putSymbol(event.key);
                     self.autoComplete.hide();
                     self.cursor.lineParse(event, self.fileListing.curentFile);
                     event.preventDefault();
-                } else if (event.keyCode === 33) { // PageUP
+                } else if (event.code === 'PageUp') {
                     self.cursor.pageUp();
                     event.preventDefault();
-                } else if (event.keyCode === 34) { // PageDown
+                } else if (event.code === 'PageDown') {
                     self.cursor.pageDown();
                     event.preventDefault();
-                } else if (event.keyCode === 35) { // end
+                } else if (event.code === 'End') {
                     self.cursor.moveEnd();
                     event.preventDefault();
-                } else if (event.keyCode === 36) { // home
+                } else if (event.code === 'Home') {
                     self.cursor.moveHome();
                     event.preventDefault();
-                } else if (event.keyCode === 37) { // row left
+                } else if (event.code === 'ArrowLeft') {
                     self.cursor.moveLeft();
                     event.preventDefault();
-                } else if (event.keyCode === 39) { // row rigth
+                } else if (event.code === 'ArrowRight') {
                     self.cursor.moveRight();
                     event.preventDefault();
-                } else if (event.keyCode === 16) {  // shift
-                } else if (event.keyCode === 17) {  // ctrl
-                } else if (event.keyCode === 18) {  // alt
-                } else if (event.keyCode === 116) {  // F5
-                } else if (event.keyCode === 8) { // backspace
+                } else if (event.code === 'ShiftLeft') {
+                } else if (event.code === 'ControlLeft') {
+                } else if (event.code === 'AltLeft') {
+                } else if (event.code === 'F5') {
+                } else if (event.code === 'Backspace') {
                     self.cursor.deleteSymbolBefore();
                     // autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
                     event.preventDefault();
-                } else if (event.keyCode === 46) { // delete
+                } else if (event.code === 'Delete') {
                     self.cursor.deleteSymbolUnder();
                     event.preventDefault();
                 } else {
+                    console.log('code', event.code);
                     self.cursor.putSymbol(event.key);
                     // autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
                     event.preventDefault();

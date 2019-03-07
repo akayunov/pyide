@@ -9,14 +9,17 @@ class PositionInNode {
 }
 
 export class Code {
-    screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
+    private screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
+
     constructor() {
         document.getElementById('code').appendChild(this.createNewLine(1))
     }
 
-    createNewLine(tabIndex = 1, text = '') {
+    // noinspection JSMethodCanBeStatic
+    // noinspection JSMethodCanBeStatic
+    private createNewLine(tabIndex = 1, text = '') {
         let divElement = document.createElement('div');
-        divElement.tabIndex = tabIndex;
+        divElement.setAttribute('tabIndex', tabIndex.toString());
         divElement.className = 'content-line';
         let spanElement = document.createElement('span');
         divElement.appendChild(spanElement);
@@ -24,31 +27,70 @@ export class Code {
         return divElement;
     }
 
-    putNewLineAfter(node: HTMLElement, text = '') {
+    private putNewLineAfter(node: HTMLElement, text = '') {
         let newLine = this.createNewLine(1, text);
         node.parentElement.after(newLine);
         return newLine;
     }
 
-    getFirstLine(): HTMLElement {
-        //TODO do I really need all this casting
+    // noinspection JSMethodCanBeStatic
+    private getFirstLine(): HTMLElement {
         let firstLine = <HTMLElement>document.getElementsByClassName('content-line').item(0);
         firstLine.focus();
         return firstLine;
+    }
+
+
+    // noinspection JSMethodCanBeStatic
+    private getNodeByPosition(line: HTMLElement, positionInLine: number): PositionInNode {
+        let breakFlag = false;
+        let newLinePosition = 0;
+        let newPositionInNode = 0;
+        let newNode = line.firstChild;
+
+        for (let el of line.childNodes) {
+            newLinePosition += el.textContent.length;
+            if (newLinePosition >= positionInLine + 1) {
+                newNode = el;
+                newPositionInNode = el.textContent.length - (newLinePosition - positionInLine);
+                breakFlag = true;
+                break;
+            }
+        }
+        if (!breakFlag) {
+            newNode = line.lastChild;
+            newPositionInNode = newNode.textContent.length - 1;
+        }
+        return new PositionInNode(<HTMLElement>newNode, newPositionInNode);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    // noinspection JSMethodCanBeStatic
+    private recalculateTabIndex(line: HTMLElement): void {
+        let tabIndex: number = parseInt(line.previousElementSibling.getAttribute('tabIndex')) + 1;
+        line.setAttribute('tabIndex', tabIndex.toString());
+        while (line.nextElementSibling) {
+            tabIndex += 1;
+            line = <HTMLElement>line.nextElementSibling;
+            line.setAttribute('tabIndex', tabIndex.toString());
+        }
     }
 
     getFirstElement(): HTMLElement {
         return <HTMLElement>this.getFirstLine().childNodes.item(0);
     }
 
+    // noinspection JSMethodCanBeStatic
     getFirstElementOnLineByNode(node: HTMLElement) {
         return <HTMLElement>node.parentElement.firstChild;
     }
 
+    // noinspection JSMethodCanBeStatic
     getLastElementOnLineByNode(node: HTMLElement) {
         return <HTMLElement>node.parentElement.lastChild;
     }
 
+    // noinspection JSMethodCanBeStatic
     getPreviousElement(node: HTMLElement): HTMLElement {
         if (node.previousElementSibling !== null) {
             return <HTMLElement>node.previousElementSibling
@@ -61,6 +103,7 @@ export class Code {
         }
     }
 
+    // noinspection JSMethodCanBeStatic
     getNextElement(node: HTMLElement) {
         if (node.nextElementSibling !== null) {
             return <HTMLElement>node.nextElementSibling;
@@ -73,21 +116,9 @@ export class Code {
         }
     }
 
-    getPreviousLine(node: HTMLElement) {
-        let previousLine = node.parentElement.previousElementSibling;
-        if (previousLine === null) {
-            previousLine = node.parentElement;
-        }
-        return previousLine;
-    }
 
-    static _isElementOnViewPort(el: HTMLElement) {
-        let rect = el.getBoundingClientRect(),
-            windowHeight = window.innerHeight;
-        return (rect.top >= 0 && rect.bottom <= windowHeight);
-    }
-
-    getPositionInLine(node: HTMLElement, positionInNode: number) {
+    // noinspection JSMethodCanBeStatic
+    getPositionInLine(node: HTMLElement, positionInNode: number): number {
         let oldLinePosition = 0;
         for (let el of node.parentElement.childNodes) {
             if (el === node) {
@@ -99,27 +130,6 @@ export class Code {
         return oldLinePosition;
     }
 
-    getNodeByPosition(line: HTMLElement, positionInLine: number): PositionInNode {
-        let breakFlag = false;
-        let newLinePosition = 0;
-        let newpositionInNode = 0;
-        let newNode = line.firstChild;
-
-        for (let el of line.childNodes) {
-            newLinePosition += el.textContent.length;
-            if (newLinePosition >= positionInLine + 1) {
-                newNode = el;
-                newpositionInNode = el.textContent.length - (newLinePosition - positionInLine);
-                breakFlag = true;
-                break;
-            }
-        }
-        if (!breakFlag) {
-            newNode = line.lastChild;
-            newpositionInNode = newNode.textContent.length - 1;
-        }
-        return new PositionInNode(<HTMLElement>newNode, newpositionInNode);
-    }
 
     getOverElement(node: HTMLElement, positionInLine: number): PositionInNode {
         if (node.parentElement.previousElementSibling !== null) {
@@ -137,7 +147,7 @@ export class Code {
         }
     }
 
-    pageUp(node: HTMLElement, positionInLine: number) {
+    pageUp(node: HTMLElement, positionInLine: number): PositionInNode {
         let codeLine = node.parentElement;
 
         let counter = 0;
@@ -148,11 +158,10 @@ export class Code {
                 break;
             }
         }
-        this.scrollIntoView(codeLine);
         return this.getNodeByPosition(codeLine, positionInLine);
     }
 
-    pageDown(node: HTMLElement, positionInLine: number) {
+    pageDown(node: HTMLElement, positionInLine: number): PositionInNode {
         let codeLine = node.parentElement;
 
         let counter = 0;
@@ -163,15 +172,9 @@ export class Code {
                 break;
             }
         }
-        this.scrollIntoView(codeLine);
         return this.getNodeByPosition(codeLine, positionInLine);
     }
 
-    scrollIntoView(line: HTMLElement, where = true) {
-        if (!Code._isElementOnViewPort(<HTMLElement>line)) {
-            line.scrollIntoView(where);
-        }
-    }
 
     divideLine(node: HTMLElement): HTMLElement {
         let newLine = this.putNewLineAfter(node);
@@ -179,21 +182,15 @@ export class Code {
 
         while (node.parentElement.lastChild) {
             if (node.parentElement.lastChild === node) {
+                newLine.insertBefore(node.parentElement.lastChild.cloneNode(), newLine.firstChild);
+                newLine.firstChild.textContent = node.parentElement.lastChild.textContent;
                 break;
             }
             newLine.insertBefore(node.parentElement.removeChild(node.parentElement.lastChild), newLine.firstChild);
         }
+        this.recalculateTabIndex(newLine);
         return <HTMLElement>newLine.firstChild;
     }
 
-    recalculateTabIndex(node: HTMLElement) {
-        let currentElement = node.parentElement;
-        let tabIndex = currentElement.previousElementSibling.attributes.tabIndex + 1;
-        currentElement.tabIndex = tabIndex;
-        while (currentElement.nextElementSibling) {
-            tabIndex += 1;
-            currentElement = <HTMLElement>currentElement.nextElementSibling;
-            currentElement.tabIndex = tabIndex;
-        }
-    }
+
 }
