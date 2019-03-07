@@ -16,7 +16,6 @@ export class Code {
     }
 
     // noinspection JSMethodCanBeStatic
-    // noinspection JSMethodCanBeStatic
     private createNewLine(tabIndex = 1, text = '') {
         let divElement = document.createElement('div');
         divElement.setAttribute('tabIndex', tabIndex.toString());
@@ -64,7 +63,6 @@ export class Code {
         return new PositionInNode(<HTMLElement>newNode, newPositionInNode);
     }
 
-    // noinspection JSMethodCanBeStatic
     // noinspection JSMethodCanBeStatic
     private recalculateTabIndex(line: HTMLElement): void {
         let tabIndex: number = parseInt(line.previousElementSibling.getAttribute('tabIndex')) + 1;
@@ -192,5 +190,29 @@ export class Code {
         return <HTMLElement>newLine.firstChild;
     }
 
+    removeNode(node){
+        let elementToRecalculateFrom = node.parentElement.previousElementSibling !== null ? node.parentElement.previousElementSibling:  this.getFirstLine();
+        if (node.parentElement.childNodes.length === 1){
+            node.parentElement.remove();
+        }
+        else{
+            if (node.textContent === ''){
+                if (node.parentElement.nextElementSibling && node === node.parentElement.lastChild){
+                    while(node.parentElement.nextElementSibling.firstChild ){
+                        node.parentElement.appendChild(
+                            node.parentElement.nextElementSibling.removeChild(
+                                node.parentElement.nextElementSibling.firstChild
+                            )
+                        );
+                    }
+
+                }
+            }
+            node.parentElement.nextElementSibling.remove();
+            node.remove();
+
+        }
+        this.recalculateTabIndex(elementToRecalculateFrom);
+    }
 
 }

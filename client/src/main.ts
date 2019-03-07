@@ -61,7 +61,6 @@ class Main {
                     // tags.init(event);
                     if (target.attributes['href'].value.endsWith('.py')) {
                         self.code = new Code();
-                        self.code.getFirstLine();
                         self.cursor = new PyCursor(self.code);
                     } else {
                         self.code = new Code();

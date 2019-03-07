@@ -4,11 +4,11 @@ import {Code} from '../code';
 export class TxtCursor {
     public code: Code;
 
-    private position: number;
     private cursorParentElement: HTMLElement = null;
     private cursorElement: HTMLElement;
     private newLineFlag: boolean = false; // firefox bug about new line character
-    // cursorText: string ='';  use setter/getter
+    // private cursorText: string = '';  use setter/getter
+    private position: number = null;
 
     constructor(code: Code) {
         this.code = code;
@@ -16,7 +16,6 @@ export class TxtCursor {
 
         let parentElement = this.code.getFirstElement();
         this.cursorParentElement = parentElement;
-        this.cursorParentElement.appendChild(document.createTextNode(''));
         this.cursorParentElement.appendChild(this.cursorElement);
         this.cursorParentElement.appendChild(document.createTextNode(''));
         this.putCursorByPositionInNode(parentElement, 0);
@@ -38,6 +37,7 @@ export class TxtCursor {
     private putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode: number) {
         if (parentCursorNode === null) {
             // do nothink if new node is null
+            console.log('null element in putCursorByPositionInNode');
             return;
         }
 
@@ -175,8 +175,18 @@ export class TxtCursor {
     };
 
     deleteSymbolUnder() {
-        this.cursorText = '';
         this.moveRight();
+        if (this.cursorElement.previousSibling.textContent.length !== 0){
+            this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.cursorElement.previousSibling.textContent.length - 1)
+        }
+        else{
+            let prevElement = this.code.getPreviousElement(this.cursorParentElement);
+            prevElement.textContent = prevElement.textContent.slice(0, prevElement.textContent.length - 1);
+            if (prevElement.textContent.length === 0){
+                this.code.removeNode(prevElement);
+            }
+        }
+
     };
 
     deleteSymbolBefore() {
@@ -192,7 +202,7 @@ export class TxtCursor {
             return;
         }
         let cursorParentElement = anchorNode.parentElement;
-        if (anchorNode.parentElement.className === 'cursor'){
+        if (anchorNode.parentElement.className === 'cursor') {
             // click in cursor
             cursorParentElement = cursorParentElement.parentElement;
         }
