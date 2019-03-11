@@ -1,3 +1,5 @@
+import {CommandHandlers} from './command';
+
 class PositionInNode {
     public node: HTMLElement;
     public positionInNode: number;
@@ -8,11 +10,33 @@ class PositionInNode {
     }
 }
 
-export class Code {
+export class Code extends CommandHandlers{
     private screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
+    public fileName: string;
 
-    constructor() {
-        document.getElementById('code').appendChild(this.createNewLine(1))
+    //TODO should code be divided by type of file like cursor or no?
+    // may be for text file we don't need to generate span tag for each world?
+
+    constructor(fileName: string) {
+        super();
+        this.fileName = fileName;
+        document.getElementById('code').appendChild(this.createNewLine(1));
+
+        this.registerCommandHandler("lineParse", (codeLine: HTMLElement) => {
+                // TODO do schema
+                let msg = {
+                    "type": "lineParse",
+                    "data": {
+                        "fileName": this.fileName,
+                        "lineText": codeLine.textContent,
+                        "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
+                    }
+                };
+                return JSON.stringify( msg);
+            },
+            (data:string) => {
+                console.log('URA',data);
+            });
     }
 
     // noinspection JSMethodCanBeStatic
@@ -190,29 +214,26 @@ export class Code {
         return <HTMLElement>newLine.firstChild;
     }
 
-    removeNode(node){
-        let elementToRecalculateFrom = node.parentElement.previousElementSibling !== null ? node.parentElement.previousElementSibling:  this.getFirstLine();
-        if (node.parentElement.childNodes.length === 1){
+    removeNode(node: HTMLElement) {
+        let elementToRecalculateFrom = node.parentElement.previousElementSibling !== null ? node.parentElement.previousElementSibling : this.getFirstLine();
+        if (node.parentElement.childNodes.length === 1) {
             node.parentElement.remove();
-        }
-        else{
-            if (node.textContent === ''){
-                if (node.parentElement.nextElementSibling && node === node.parentElement.lastChild){
-                    while(node.parentElement.nextElementSibling.firstChild ){
+        } else {
+            if (node.textContent === '') {
+                if (node.parentElement.nextElementSibling && node === node.parentElement.lastChild) {
+                    while (node.parentElement.nextElementSibling.firstChild) {
                         node.parentElement.appendChild(
                             node.parentElement.nextElementSibling.removeChild(
                                 node.parentElement.nextElementSibling.firstChild
                             )
                         );
                     }
-
+                    node.parentElement.nextElementSibling.remove();
                 }
             }
-            node.parentElement.nextElementSibling.remove();
             node.remove();
-
         }
-        this.recalculateTabIndex(elementToRecalculateFrom);
+        this.recalculateTabIndex(<HTMLElement>elementToRecalculateFrom);
     }
 
 }

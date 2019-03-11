@@ -195,6 +195,7 @@ export class TxtCursor {
     };
 
     setByClick() {
+        //TODO works strange fix it
         let selObj = window.getSelection();
         let anchorNode = selObj.anchorNode;
         if (anchorNode.nodeType !== Node.TEXT_NODE) {
@@ -228,7 +229,4 @@ export class TxtCursor {
         this.putSymbol('\t');
     }
 
-    lineParse(event: Event, fileName: string) {
-        // TODO why is it here
-    }
 }
