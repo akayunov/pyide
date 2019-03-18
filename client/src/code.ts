@@ -1,5 +1,3 @@
-import {CommandHandlers} from './command';
-
 class PositionInNode {
     public node: HTMLElement;
     public positionInNode: number;
@@ -10,7 +8,7 @@ class PositionInNode {
     }
 }
 
-export class Code extends CommandHandlers{
+export class Code {
     private screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
     public fileName: string;
 
@@ -18,25 +16,8 @@ export class Code extends CommandHandlers{
     // may be for text file we don't need to generate span tag for each world?
 
     constructor(fileName: string) {
-        super();
-        this.fileName = fileName;
+        this.fileName = '/' + fileName.split('/').slice(3).join('/');
         document.getElementById('code').appendChild(this.createNewLine(1));
-
-        this.registerCommandHandler("lineParse", (codeLine: HTMLElement) => {
-                // TODO do schema
-                let msg = {
-                    "type": "lineParse",
-                    "data": {
-                        "fileName": this.fileName,
-                        "lineText": codeLine.textContent,
-                        "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
-                    }
-                };
-                return JSON.stringify( msg);
-            },
-            (data:string) => {
-                console.log('URA',data);
-            });
     }
 
     // noinspection JSMethodCanBeStatic
@@ -63,9 +44,12 @@ export class Code extends CommandHandlers{
         return firstLine;
     }
 
+    getLineByNumber(n: number) {
+        return <HTMLElement>document.querySelector('[tabIndex="' + n.toString() + '"]');
+    }
 
     // noinspection JSMethodCanBeStatic
-    private getNodeByPosition(line: HTMLElement, positionInLine: number): PositionInNode {
+    getNodeByPosition(line: HTMLElement, positionInLine: number): PositionInNode {
         let breakFlag = false;
         let newLinePosition = 0;
         let newPositionInNode = 0;
@@ -236,4 +220,35 @@ export class Code extends CommandHandlers{
         this.recalculateTabIndex(<HTMLElement>elementToRecalculateFrom);
     }
 
+    replaceLine(n: number, lineElements: Array<string>) {
+        let line = this.getLineByNumber(n);
+        let tmpContainer: HTMLElement = document.createElement('div');
+        tmpContainer.innerHTML = lineElements.join('');
+        for (let oldEl of line.childNodes) {
+            let nodeId = (<HTMLElement>oldEl).getAttribute('nodeid');
+            if (nodeId !== null) {
+                let elementsToReplace = [];
+                for (let newEl of Array.from(tmpContainer.childNodes)) {
+                    // console.log('tartata', newEl);
+                    if ((<HTMLElement>newEl).getAttribute('nodeid') === nodeId) {
+                        elementsToReplace.push(newEl);
+                    }
+                }
+                // check that text is equal and element does't change from send request
+                if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
+                    for (let el of elementsToReplace.reverse()) {
+                        (<HTMLElement>el).removeAttribute('nodeid');
+                        oldEl.after(el);
+                    }
+                    oldEl.remove();
+                } else {
+                    console.log('element content is different:', elementsToReplace.map(x => x.textContent).join(''),
+                        ' vs ',
+                        oldEl.textContent
+                    );
+                }
+
+            }
+        }
+    }
 }

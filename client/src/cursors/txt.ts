@@ -4,11 +4,13 @@ import {Code} from '../code';
 export class TxtCursor {
     public code: Code;
 
-    private cursorParentElement: HTMLElement = null;
+    private _cursorParentElement: HTMLElement = null;
     private cursorElement: HTMLElement;
     private newLineFlag: boolean = false; // firefox bug about new line character
-    // private cursorText: string = '';  use setter/getter
     private position: number = null;
+    // private cursorText: string = '';  use setter/getter
+    // private cursorParentElement: HTMLElement = null; use setter/getter
+
 
     constructor(code: Code) {
         this.code = code;
@@ -34,7 +36,7 @@ export class TxtCursor {
         this.cursorText = cursorText;
     }
 
-    private putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode: number) {
+    putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode: number) {
         if (parentCursorNode === null) {
             // do nothink if new node is null
             console.log('null element in putCursorByPositionInNode');
@@ -60,7 +62,7 @@ export class TxtCursor {
             nextTextNode.textContent = initTextContent.slice(cursorPositionInNode + 1);
             nextTextNode.before(this.cursorElement);
         } else {
-            if (cursorPositionInNode !== this.cursorElement.previousSibling.textContent.length - 1 + 1) {
+            if (cursorPositionInNode !== this.getPositionInNode() - 1 + 1) {
                 let previousSiblingText = '', cursorText = '', nextSiblingText = '';
                 previousSiblingText = this.cursorParentElement.textContent.slice(0, cursorPositionInNode);
                 cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
@@ -74,18 +76,36 @@ export class TxtCursor {
         this.scrollIntoView();
     }
 
-    private resetPosition() {
+    getPositionInNode() {
+        return this.cursorElement.previousSibling.textContent.length;
+    }
+
+    private resetLinePosition() {
         this.position = null;
     }
 
-    private setPosition() {
+    private setLinePosition() {
         if (this.position === null) {
-            this.position = this.code.getPositionInLine(this.cursorParentElement, this.cursorElement.previousSibling.textContent.length);
+            this.position = this.code.getPositionInLine(this.cursorParentElement, this.getPositionInNode());
         }
     };
 
     private scrollIntoView(): void {
         this.cursorElement.scrollIntoView({'block': 'nearest', 'inline': 'nearest'});
+    }
+
+    set cursorParentElement(el) {
+        if (el === null) {
+            // this._cursorParentElement.removeAttribute('nodeid');
+            // remove by code parsing alghoritm
+        } else {
+            el.setAttribute('nodeid', Math.floor((Math.random() * 1000000000) + 1).toString());
+            this._cursorParentElement = el;
+        }
+    }
+
+    get cursorParentElement() {
+        return this._cursorParentElement;
     }
 
     set cursorText(cursorText: string) {
@@ -116,73 +136,72 @@ export class TxtCursor {
 
     putSymbol(char: string) {
         this.cursorElement.previousSibling.textContent += char;
-        this.putCursorByPositionInNode(this.cursorParentElement, this.cursorElement.previousSibling.textContent.length - 1 + 1);
-        this.resetPosition();
+        this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1 + 1);
+        this.resetLinePosition();
     };
 
     moveLeft() {
         if (this.cursorElement.previousSibling.textContent !== '') {
-            this.putCursorByPositionInNode(this.cursorParentElement, this.cursorElement.previousSibling.textContent.length - 1);
+            this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1);
         } else if (this.cursorElement.previousSibling.textContent === '') {
             let previousElement = this.code.getPreviousElement(this.cursorParentElement);
             this.putCursorByPositionInNode(previousElement, previousElement.textContent.length - 1);
         }
-        this.resetPosition();
+        this.resetLinePosition();
     };
 
     moveRight() {
         if (this.cursorElement.nextSibling.textContent !== '') {
-            this.putCursorByPositionInNode(this.cursorParentElement, this.cursorElement.previousSibling.textContent.length - 1 + 1 + 1);
+            this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1 + 1 + 1);
         } else if (this.cursorElement.nextSibling.textContent === '') {
             this.putCursorByPositionInNode(this.code.getNextElement(this.cursorParentElement), 0);
         }
-        this.resetPosition();
+        this.resetLinePosition();
     };
 
     moveUpRow() {
-        this.setPosition();
+        this.setLinePosition();
         let newPosition = this.code.getOverElement(this.cursorParentElement, this.position);
         this.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
     };
 
     moveDownRow() {
-        this.setPosition();
+        this.setLinePosition();
         let newPosition = this.code.getUnderElement(this.cursorParentElement, this.position);
         this.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
     };
 
     pageDown() {
-        this.setPosition();
+        this.setLinePosition();
         let newElement = this.code.pageDown(this.cursorParentElement, this.position);
         this.putCursorByPositionInNode(newElement.node, newElement.positionInNode);
     };
 
     pageUp() {
-        this.setPosition();
+        this.setLinePosition();
         let newElement = this.code.pageUp(this.cursorParentElement, this.position);
         this.putCursorByPositionInNode(newElement.node, newElement.positionInNode);
     };
 
     moveHome() {
         this.putCursorByPositionInNode(this.code.getFirstElementOnLineByNode(this.cursorParentElement), 0);
-        this.resetPosition();
+        this.resetLinePosition();
     };
 
     moveEnd() {
         let lastElement = this.code.getLastElementOnLineByNode(this.cursorParentElement);
         this.putCursorByPositionInNode(lastElement, lastElement.textContent.length - 1);
-        this.resetPosition();
+        this.resetLinePosition();
     };
 
     deleteSymbolUnder() {
         this.moveRight();
-        if (this.cursorElement.previousSibling.textContent.length !== 0){
-            this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.cursorElement.previousSibling.textContent.length - 1)
-        }
-        else{
+        if (this.getPositionInNode() !== 0) {
+            this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.getPositionInNode() - 1)
+        } else {
             let prevElement = this.code.getPreviousElement(this.cursorParentElement);
             prevElement.textContent = prevElement.textContent.slice(0, prevElement.textContent.length - 1);
-            if (prevElement.textContent.length === 0){
+            if (prevElement.textContent.length === 0) {
                 this.code.removeNode(prevElement);
             }
         }
@@ -208,13 +227,13 @@ export class TxtCursor {
             cursorParentElement = cursorParentElement.parentElement;
         }
         this.putCursorByPositionInNode(cursorParentElement, selObj.anchorOffset);
-        this.resetPosition();
+        this.resetLinePosition();
     };
 
     addNewRow() {
         this.moveLeft();
         let newNode = this.code.divideLine(this.cursorParentElement);
-        let positionInNode = this.cursorElement.previousSibling.textContent.length;
+        let positionInNode = this.getPositionInNode();
         this.cursorElement.nextSibling.textContent = '\n';
         this.putCursorByPositionInNode(newNode, positionInNode);
         this.cursorElement.previousSibling.textContent = '';

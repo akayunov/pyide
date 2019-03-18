@@ -5,14 +5,21 @@ import {TxtCursor} from './cursors/txt';
 import {PyCursor} from './cursors/py';
 import {Tags} from './tags/tags';
 import {Code} from './code';
-import {handlers} from './command';
+import {CommandBus} from './commandbus';
+import {CommandHandlers} from './command';
 
 
 interface KeyCodes {
     [index: string]: boolean;
 }
 
-class Main {
+interface LineParse {
+    type: string;
+    lineNumber: number;
+    lineElements: Array<string>;
+}
+
+class Main extends CommandHandlers{
     public code :Code;
     public cursor: TxtCursor;
     public tags :Tags;
@@ -20,13 +27,14 @@ class Main {
     public autoComplete :AutoComplete;
     public lineNumber : LineNumber;
     public pressedKeys: KeyCodes;
-    public socket: WebSocket;
     private readonly serverUrl:string;
+    private commandBus: CommandBus;
 
     constructor() {
+        super();
         let self = this;
         //TODO change firefox-> about:config  -> network.websocket.allowInsecureFromHTTPS to false
-        this.serverUrl = "ws://127.0.0.1:31415/server/command";
+        this.serverUrl = "ws://" + window.location.host + "/server/command";
         document.addEventListener('DOMContentLoaded', function () {
             self.setKeyBoardEventListeners();
             self.setMouseEventListeners();
@@ -43,43 +51,30 @@ class Main {
             self.lineNumber = new LineNumber(1);
 
             self.pressedKeys = {};
-            self.createSocket();
+            self.commandBus = new CommandBus(self.serverUrl);
 
+            // TODO may be do it in Command.ts to more clear code
+            self.registerCommandHandler("lineParse", (codeLine: HTMLElement) => {
+                    // TODO do schema
+                    let msg = {
+                        "type": "lineParse",
+                        "data": {
+                            "fileName": self.code.fileName,
+                            "lineText": codeLine.textContent,
+                            "outerHTML": codeLine.outerHTML,
+                            "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
+                        }
+                    };
+                    return JSON.stringify(msg);
+                },
+                (jsonData: LineParse) => {
+                    let line = self.code.getLineByNumber(jsonData.lineNumber);
+                    let oldPosition = self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode());
+                    self.code.replaceLine(jsonData.lineNumber, jsonData.lineElements);
+                    let newPosition = self.code.getNodeByPosition(line, oldPosition);
+                    self.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
+                });
         })
-
-    }
-    createSocket(){
-        let self = this;
-        let socket = new WebSocket(this.serverUrl);
-        socket.onopen = function() {
-            console.log("connected to:", self.serverUrl);
-        };
-
-        socket.onclose = function(event) {
-            if (event.wasClean) {
-                console.log('Clean closed');
-            } else {
-                console.log('Connection reset by peer');
-            }
-            console.log('Connection reset, code=:' + event.code + ', reason=' + event.reason);
-        };
-
-        socket.onmessage = function(msg:MessageEvent){
-            let message = JSON.parse(msg.data);
-            console.log('recieve:', message,handlers, message.type ,(typeof message) );
-            handlers[message.type].callback(message);
-
-        };
-        self.socket = socket;
-    }
-    sendCommand(msgType:string, args){
-        //TODO why can't get by handlers.msgType?
-        if (handlers[msgType]){
-            this.socket.send(handlers[msgType].getMessage(args))
-        }
-        else{
-            console.log('message handler is not found:', handlers,msgType, handlers[msgType]);
-        }
     }
 
     setKeyBoardEventListeners(){
@@ -91,8 +86,7 @@ class Main {
 
         document.getElementById('code').addEventListener('keydown', function (event) {
             self.pressedKeys[event.code] = true;
-            // console.log('cod', event.code);
-
+            // console.log('code', event.code);
             if (event.code === 'Enter') {
                 self.cursor.addNewRow();
                 event.preventDefault();
@@ -129,7 +123,8 @@ class Main {
             } else if (event.code === 'Space') {
                 self.cursor.putSymbol(event.key);
                 self.autoComplete.hide();
-                self.sendCommand('lineParse', event.target);
+                console.log('events.target:', event.target, event.currentTarget, event);
+                self.commandBus.sendCommand('lineParse', <HTMLElement>event.target);
                 event.preventDefault();
             } else if (event.code === 'PageUp') {
                 self.cursor.pageUp();
@@ -161,7 +156,6 @@ class Main {
                 self.cursor.deleteSymbolUnder();
                 event.preventDefault();
             } else {
-                console.log('code', event.code);
                 self.cursor.putSymbol(event.key);
                 // autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
                 event.preventDefault();
@@ -205,4 +199,4 @@ class Main {
     }
 }
 
-let main = new Main();
+new Main();

@@ -21,7 +21,7 @@ export class CommandHandlers {
             };
     }
 
-    getMessage(msgType:string) {
-        handlers.msgType.getMessage()
+    getMessage(el: HTMLElement) {
+        handlers.msgType.getMessage(el)
     }
 }
