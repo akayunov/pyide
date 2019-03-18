@@ -19,15 +19,15 @@ interface LineParse {
     lineElements: Array<string>;
 }
 
-class Main extends CommandHandlers{
-    public code :Code;
+class Main extends CommandHandlers {
+    public code: Code;
     public cursor: TxtCursor;
-    public tags :Tags;
-    public fileListing : FileListing;
-    public autoComplete :AutoComplete;
-    public lineNumber : LineNumber;
+    public tags: Tags;
+    public fileListing: FileListing;
+    public autoComplete: AutoComplete;
+    public lineNumber: LineNumber;
     public pressedKeys: KeyCodes;
-    private readonly serverUrl:string;
+    private readonly serverUrl: string;
     private commandBus: CommandBus;
 
     constructor() {
@@ -53,31 +53,19 @@ class Main extends CommandHandlers{
             self.pressedKeys = {};
             self.commandBus = new CommandBus(self.serverUrl);
 
-            // TODO may be do it in Command.ts to more clear code
-            self.registerCommandHandler("lineParse", (codeLine: HTMLElement) => {
-                    // TODO do schema
-                    let msg = {
-                        "type": "lineParse",
-                        "data": {
-                            "fileName": self.code.fileName,
-                            "lineText": codeLine.textContent,
-                            "outerHTML": codeLine.outerHTML,
-                            "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
-                        }
-                    };
-                    return JSON.stringify(msg);
-                },
-                (jsonData: LineParse) => {
-                    let line = self.code.getLineByNumber(jsonData.lineNumber);
-                    let oldPosition = self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode());
-                    self.code.replaceLine(jsonData.lineNumber, jsonData.lineElements);
-                    let newPosition = self.code.getNodeByPosition(line, oldPosition);
-                    self.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
-                });
+            self.registerCommandHandler("lineParse", (x) => {self.handlerLineParse(x)});
         })
     }
 
-    setKeyBoardEventListeners(){
+    handlerLineParse(jsonData: LineParse) {
+        let line = this.code.getLineByNumber(jsonData.lineNumber);
+        let oldPosition = this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode());
+        this.code.replaceLine(jsonData.lineNumber, jsonData.lineElements);
+        let newPosition = this.code.getNodeByPosition(line, oldPosition);
+        this.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
+    }
+
+    setKeyBoardEventListeners() {
         let self = this;
         document.getElementById('code').addEventListener('keyup', function (event: KeyboardEvent) {
             self.pressedKeys[event.code] = false;
@@ -123,8 +111,7 @@ class Main extends CommandHandlers{
             } else if (event.code === 'Space') {
                 self.cursor.putSymbol(event.key);
                 self.autoComplete.hide();
-                console.log('events.target:', event.target, event.currentTarget, event);
-                self.commandBus.sendCommand('lineParse', <HTMLElement>event.target);
+                self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
                 event.preventDefault();
             } else if (event.code === 'PageUp') {
                 self.cursor.pageUp();

@@ -45,10 +45,7 @@ export class TxtCursor {
 
         if (this.cursorParentElement !== parentCursorNode) {
             // delete if put cursor in another node
-            this.cursorElement.replaceWith(this.cursorText);
-            this.cursorParentElement.normalize();
             this.cursorParentElement = null;
-            this.cursorText = '';
 
             // create new one
             let initTextContent = parentCursorNode.textContent;
@@ -96,8 +93,14 @@ export class TxtCursor {
 
     set cursorParentElement(el) {
         if (el === null) {
-            // this._cursorParentElement.removeAttribute('nodeid');
+            this.cursorElement.replaceWith(this.cursorText);
+            this.cursorParentElement.normalize();
+            this._cursorParentElement = null;
+            this.cursorText = '';
+
             // remove by code parsing alghoritm
+            // this._cursorParentElement.removeAttribute('nodeid');
+
         } else {
             el.setAttribute('nodeid', Math.floor((Math.random() * 1000000000) + 1).toString());
             this._cursorParentElement = el;

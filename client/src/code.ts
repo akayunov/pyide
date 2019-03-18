@@ -12,7 +12,7 @@ export class Code {
     private screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
     public fileName: string;
 
-    //TODO should code be divided by type of file like cursor or no?
+    //TODO should code.ts be divided by type of file like cursor or no?
     // may be for text file we don't need to generate span tag for each world?
 
     constructor(fileName: string) {
@@ -250,5 +250,18 @@ export class Code {
 
             }
         }
+    }
+
+    commandGetParseLineMsg(codeLine: HTMLElement){
+        // TODO do schema
+        return JSON.stringify({
+            "type": "lineParse",
+            "data": {
+                "fileName": this.fileName,
+                "lineText": codeLine.textContent,
+                "outerHTML": codeLine.outerHTML,
+                "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
+            }
+        });
     }
 }
