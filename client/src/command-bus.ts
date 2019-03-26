@@ -21,7 +21,7 @@ export class CommandBus {
         console.log("connected to:", this.serverUrl);
     }
 
-    onClose(event) {
+    onClose(event: CloseEvent) {
         if (event.wasClean) {
             console.log('Clean closed');
         } else {

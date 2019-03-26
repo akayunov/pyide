@@ -19,7 +19,8 @@ module.exports = {
   },
 
   // Source maps support ('inline-source-map' also works)
-  devtool: 'source-map',
+  //devtool: 'source-map',  // chrome does not work properly with it
+  devtool: 'inline-module-source-map',
 
   // Add the loader for .ts files.
   module: {

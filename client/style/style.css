@@ -18,6 +18,7 @@
 }
 .content-line {
     white-space:pre;
+    position: relative;
 }
 
 div {
@@ -46,6 +47,11 @@ div {
 .autocomplete {
     background: yellow;
     position: fixed;
+    z-index: 1;
+}
+
+#cursorHightlightElement {
+    position: absolute;
     z-index: 1;
 }
 

@@ -55,14 +55,22 @@ telnet_db(){
 reinit(){
     echo 'Redeploy stack'
 
-    if [[ $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q) ]]
-    then
-        docker container rm $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q)
-    fi
+    #if [[ $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q) ]]
+    #then
+#        docker container rm $(docker container ls -a --filter=STATUS=exited --filter=Name=PYIDE_pyide -q)
+    #fi
 
-    docker stack rm PYIDE
-    while [ $(docker network ls --filter=Name=PYIDE_pyide -q) ] ; do echo 'Deleting network'; sleep 1 ; done
-    docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
+    #docker stack rm PYIDE
+    #while [ $(docker network ls --filter=Name=PYIDE_pyide -q) ] ; do echo 'Deleting network'; sleep 1 ; done
+    #docker stack deploy -c "$PROJECT_DIR_ON_HOST/build/docker-compose.yml" PYIDE
+
+    docker container stop  $(docker container ls | grep pyide | awk '{print $1}')
+
+    docker run -d --rm -e PYTHONPATH=/opt/pyide/server/src -e PYTHONUNBUFFERED=true -p=31415:31415 -p=5555:5555 \
+        -v /home/akayunov/pyide/server:/opt/pyide/server:ro -v /home/akayunov/pyide/client:/opt/pyide/client:ro \
+        --log-driver=json-file \
+        registry.hub.docker.com/akayunov/pyide:latest \
+        python3 -m pyide -d
 }
 
 check_stack(){

@@ -5,16 +5,17 @@ export class TxtCursor {
     public code: Code;
 
     private _cursorParentElement: HTMLElement = null;
-    private cursorElement: HTMLElement;
-    private newLineFlag: boolean = false; // firefox bug about new line character
+    cursorElement: HTMLElement;
     private position: number = null;
+    private hightlightElement: HTMLElement = null;
     // private cursorText: string = '';  use setter/getter
-    // private cursorParentElement: HTMLElement = null; use setter/getter
+    // cursorParentElement: HTMLElement = null; use setter/getter
 
 
     constructor(code: Code) {
         this.code = code;
         this.createCursorHTMLElement();
+        this.createCursorHightlightElement();
 
         let parentElement = this.code.getFirstElement();
         this.cursorParentElement = parentElement;
@@ -24,9 +25,17 @@ export class TxtCursor {
 
         if (parentElement.textContent === '') {
             // document is empty so do this way
-            this.cursorText = ' ';
-            this.cursorElement.id = 'to-remove'
+            this.cursorText = '\n';
         }
+    }
+
+    private createCursorHightlightElement() {
+        // TODO create cursor by web component
+        this.hightlightElement = document.createElement('div');
+        this.hightlightElement.id = 'cursorHightlightElement';
+        this.hightlightElement.style.width = '10px'; //TODO calculate it in runtime
+        this.hightlightElement.style.height = '18px'; //TODO calculate it in runtime
+        this.hightlightElement.style.background = 'black';
     }
 
     private createCursorHTMLElement(cursorText = '') {
@@ -64,12 +73,18 @@ export class TxtCursor {
                 previousSiblingText = this.cursorParentElement.textContent.slice(0, cursorPositionInNode);
                 cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
                 nextSiblingText = this.cursorParentElement.textContent.slice(cursorPositionInNode + 1);
-
                 this.cursorElement.previousSibling.textContent = previousSiblingText;
                 this.cursorText = cursorText;
                 this.cursorElement.nextSibling.textContent = nextSiblingText;
             }
         }
+
+        let rect = this.cursorElement.getBoundingClientRect();
+        let rect2 = this.cursorParentElement.parentElement.getBoundingClientRect();
+        this.hightlightElement.style.top = (rect.top - rect2.top).toString() + 'px';
+        this.hightlightElement.style.left = (rect.left - rect2.left).toString() + 'px';
+        this.cursorParentElement.appendChild(this.hightlightElement);
+
         this.scrollIntoView();
     }
 
@@ -87,12 +102,16 @@ export class TxtCursor {
         }
     };
 
+    getLineNumber(){
+        return this.code.getLineNumber(this.cursorParentElement);
+    }
     private scrollIntoView(): void {
         this.cursorElement.scrollIntoView({'block': 'nearest', 'inline': 'nearest'});
     }
 
     set cursorParentElement(el) {
         if (el === null) {
+            this.cursorParentElement.removeChild(this.hightlightElement);
             this.cursorElement.replaceWith(this.cursorText);
             this.cursorParentElement.normalize();
             this._cursorParentElement = null;
@@ -111,30 +130,12 @@ export class TxtCursor {
         return this._cursorParentElement;
     }
 
-    set cursorText(cursorText: string) {
-        if (cursorText === '\n') {
-            this.newLineFlag = true;
-            this.cursorElement.id = 'to-remove';
-            this.cursorElement.textContent = ' ';
-        } else {
-            this.newLineFlag = false;
-            this.cursorElement.removeAttribute('id');
-            this.cursorElement.textContent = cursorText;
-        }
+    private set cursorText(cursorText: string) {
+        this.cursorElement.textContent = cursorText;
     }
 
-    get cursorText(): string {
-        let result = '';
-        if (this.cursorElement.id === 'to-remove') {
-            // remove first space
-            result = this.cursorElement.textContent.slice(1);
-        } else {
-            result = this.cursorElement.textContent;
-        }
-        if (this.newLineFlag) {
-            result += '\n';
-        }
-        return result;
+    private get cursorText(): string {
+        return this.cursorElement.textContent;
     }
 
     putSymbol(char: string) {
@@ -219,6 +220,7 @@ export class TxtCursor {
     setByClick() {
         //TODO works strange fix it
         let selObj = window.getSelection();
+        console.log('selObj', selObj, selObj.getRangeAt(0),selObj.getRangeAt(0), '|' + selObj.toString() + '|');
         let anchorNode = selObj.anchorNode;
         if (anchorNode.nodeType !== Node.TEXT_NODE) {
             console.log('selected node is not text type');

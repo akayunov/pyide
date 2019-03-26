@@ -1,4 +1,4 @@
-import {TxtCursor} from './txt';
+import {TxtCursor} from './txt-cursor';
 import {Code} from "../code";
 
 export class PyCursor extends TxtCursor {
