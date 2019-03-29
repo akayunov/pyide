@@ -17,7 +17,7 @@ before_script:
 script:
   - cd ~/pyide
 
-  - ./test/run-test.sh all push
+  - ./test/scripts.sh all push
 
 after_success: true
 

@@ -1,4 +1,13 @@
 npm init
-npm install --save-dev typescript webpack webpack-cli awesome-typescript-loader source-map-loader
+npm install --save-dev typescript webpack webpack-cli awesome-typescript-loader source-map-loader mocha selenium-webdriver chromedriver
+
+docker run -d --rm --user=$(id -u):$(id -g) --network=host \
+    -v=/home/akayunov/pycharm-in-docker/WebStorm-191.6183.63:/home/pyide/webstorm \
+    -v=/home/akayunov/?:/home/pyide/? \
+    -v=/home/akayunov/pyide:/home/pyide/pyide \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e DISPLAY=unix$DISPLAY \
+    -e JAVA_HOME=/home/pyide/pycharm-in-docker/jdk-12 \
+    pyide-client-test /home/pyide/webstorm/bin/webstorm.sh
 
 если надо либу с аннотациями то указываешь имя вот так: @types/[имя либы]
