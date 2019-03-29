@@ -11,7 +11,6 @@ export class CommandHandlers {
     }
 
     registerCommandHandler(msgType: string, callback: CallableFunction) {
-        console.log('getMessage',callback ,msgType,handlers);
         handlers[msgType] = callback;
     }
 }

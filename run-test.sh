@@ -24,7 +24,7 @@ main() {
 
 Possible commands:
   all     - run all tests
-  func    - run functional tests
+  func    - run functional_old tests
   lint    - run lint tests
   cov     - run coverage
   reinit  - reinit stack
@@ -102,12 +102,12 @@ log (){
 }
 
 test_functional(){
-    check_stack
-    # functional test
+#    check_stack
+    # functional_old test
+#        --network=PYIDE_pyide \
     docker run -it --rm \
         -v "${PROJECT_DIR_ON_HOST}/pyide/test":${PROJECT_DIR_ON_GUEST}/test:ro \
         -v "${PROJECT_DIR_ON_HOST}/tmp":${PROJECT_DIR_ON_GUEST}/tmp \
-        --network=PYIDE_pyide \
         registry.hub.docker.com/akayunov/pyide-test:latest pytest -s $@ ${PROJECT_DIR_ON_GUEST}/test
 }
 

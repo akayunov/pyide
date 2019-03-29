@@ -1,10 +1,12 @@
+import traceback
 import tornado.websocket
 import json
+import token
 from pyide import configuration
 import tokenize
 from io import BytesIO
 from tokenize import TokenInfo
-from pyide.handlers.code import tokenize_source_by_xml
+from pyide.handlers.code import tokenize_source_by_xml, AST_PARSER
 import xml.etree.ElementTree as et
 
 
@@ -13,6 +15,12 @@ class Command(tornado.websocket.WebSocketHandler):
         print("WebSocket opened")
 
     def on_message(self, message):
+        try:
+            self.on_message_in(message)
+        except Exception as e:
+            print(e, traceback.format_exc())
+
+    def on_message_in(self, message):
         print("\n\n\nrecieve:", message)
         message = json.loads(message)
         if message['type'] == 'lineParse':
@@ -23,7 +31,9 @@ class Command(tornado.websocket.WebSocketHandler):
             # print(body)
             # if body['type'] == 'parse':
             t_struct_adjusted = []
-            for i in tokenize.tokenize(BytesIO(message['lineText'].encode('utf8')).readline):
+            code_line = et.fromstring(message['outerHTML'])
+            line_text = ''.join(code_line.itertext())
+            for i in tokenize.tokenize(BytesIO(line_text.encode('utf8')).readline):
                 t_struct_adjusted.append(
                     TokenInfo(type=i.type, string=i.string, start=(message['lineNumber'], i.start[1]), end=(message['lineNumber'], i.end[1]), line=i.line)
                 )
@@ -33,7 +43,6 @@ class Command(tornado.websocket.WebSocketHandler):
             elements_to = elements_to[0]
             print([et.tostring(i,encoding="unicode") for i in elements_to])
 
-            code_line = et.fromstring(message['outerHTML'])
             index = 0
             el_to_index_shift = 0
 
@@ -45,19 +54,83 @@ class Command(tornado.websocket.WebSocketHandler):
                     # changed_node_text = orig_el.text
                     # cursor may be in string so need iter
                     changed_node_text = "".join(orig_el.itertext())
-                    new_text = ''
+                    new_text = elements_to[index + el_to_index_shift].text
+                    elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
                     while changed_node_text != new_text:
+                        print('changed_node_text:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
+                        el_to_index_shift += 1
                         new_text += elements_to[index + el_to_index_shift].text
                         elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
-                        el_to_index_shift += 1
+                    print('changed_node_text finished:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
                     index += 1
                 else:
                     index += 1
             self.write_message(
                 json.dumps({
                     'type': 'lineParse',
-                    'lineNumber': message['lineNumber'],
-                    'lineElements': [et.tostring(i,encoding="unicode") for i in elements_to]
+                    'data':{
+                        'lineNumber': message['lineNumber'],
+                        'lineElements': [et.tostring(i,encoding="unicode") for i in elements_to],
+                        'fileName': message['fileName']
+                    }
+                })
+            )
+
+        elif message['type'] == 'autoCompleteShow':
+            # from pyide.rdb import Rdb;
+            # Rdb().set_trace();
+            message['data']['lineText'] = message['data']['lineText'].strip().rstrip()
+            path = configuration.SYS_PATH_PREPEND + message['data']['fileName']
+            t_struct_adjusted = []
+            result = []
+            for i in tokenize.tokenize(BytesIO(message['data']['lineText'].encode('utf8')).readline):
+                if i.type == token.ENDMARKER:
+                    continue
+                t_struct_adjusted.append(
+                    TokenInfo(type=i.type, string=i.string, start=(message['data']['lineNumber'], i.start[1]), end=(message['data']['lineNumber'], i.end[1]), line=i.line)
+                )
+            # pprint(t_struct_adjusted)
+            token_string = ''
+            if t_struct_adjusted[-1].string == '.':
+                # ищем имена
+                result += AST_PARSER[path].get_autocomlete(
+                    token_string='',
+                    owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
+                    col_offset=t_struct_adjusted[-1].start[1]
+                )
+                token_string = ''
+            elif t_struct_adjusted[-2].string == '.':
+                # ищем атрибуты предыдущего имени
+                result += AST_PARSER[path].get_autocomlete(
+                    t_struct_adjusted[-1].string, owner_attribute_string=t_struct_adjusted[-3].string, line_number=t_struct_adjusted[-1].start[0],
+                    col_offset=t_struct_adjusted[-1].start[1]
+                )
+                token_string = t_struct_adjusted[-1].string
+            elif t_struct_adjusted[-1].type == token.NAME:
+                # ищем атрибуты предыдущего имени
+                result += AST_PARSER[path].get_autocomlete(
+                    t_struct_adjusted[-1].string, line_number=t_struct_adjusted[-1].start[0], col_offset=t_struct_adjusted[-1].start[1]
+                )
+                token_string = t_struct_adjusted[-1].string
+            elif t_struct_adjusted[-1].type != token.NAME:
+                # чо возвращать то последнии символы не имя переменно нечего дополять
+                pass
+
+            print({"result": result})
+            # self.write(
+            #     json.dumps({
+            #         "result": result,
+            #         "prefix": token_string
+            #     })
+            # )
+            self.write_message(
+                json.dumps({
+                    'type': 'autoCompleteShow',
+                    'data':{
+                        'lineNumber': message['data']['lineNumber'],
+                        'result': result,
+                        'prefix': token_string
+                    }
                 })
             )
 

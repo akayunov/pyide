@@ -1,3 +1,5 @@
+import {TxtCursor} from "./cursors/txt-cursor";
+
 class PositionInNode {
     public node: HTMLElement;
     public positionInNode: number;
@@ -15,6 +17,7 @@ export class Code {
     //TODO should code.ts be divided by type of file like cursor or no?
     // may be for text file we don't need to generate span tag for each world?
 
+    //TODO tabindex should be uniq in file and should not be reusing
     constructor(fileName: string) {
         this.fileName = '/' + fileName.split('/').slice(3).join('/');
         document.getElementById('code').appendChild(this.createNewLine(1));
@@ -137,6 +140,10 @@ export class Code {
     }
 
 
+    getLineNumber(node: HTMLElement) {
+        return node.parentElement.getAttribute('tabIndex');
+    }
+
     getOverElement(node: HTMLElement, positionInLine: number): PositionInNode {
         if (node.parentElement.previousElementSibling !== null) {
             return this.getNodeByPosition(<HTMLElement>node.parentElement.previousElementSibling, positionInLine);
@@ -220,7 +227,7 @@ export class Code {
         this.recalculateTabIndex(<HTMLElement>elementToRecalculateFrom);
     }
 
-    replaceLine(n: number, lineElements: Array<string>) {
+    replaceLine(n: number, lineElements: Array<string>, cursor: TxtCursor) {
         let line = this.getLineByNumber(n);
         let tmpContainer: HTMLElement = document.createElement('div');
         tmpContainer.innerHTML = lineElements.join('');
@@ -235,6 +242,7 @@ export class Code {
                     }
                 }
                 // check that text is equal and element does't change from send request
+                // if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
                 if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
                     for (let el of elementsToReplace.reverse()) {
                         (<HTMLElement>el).removeAttribute('nodeid');
@@ -242,9 +250,9 @@ export class Code {
                     }
                     oldEl.remove();
                 } else {
-                    console.log('element content is different:', elementsToReplace.map(x => x.textContent).join(''),
-                        ' vs ',
-                        oldEl.textContent
+                    console.log('element content is different:|' + elementsToReplace.map(x => x.textContent).join('') +
+                        '| vs |' +
+                        oldEl.textContent, '|'
                     );
                 }
 
@@ -252,13 +260,12 @@ export class Code {
         }
     }
 
-    commandGetParseLineMsg(codeLine: HTMLElement){
+    commandGetParseLineMsg(codeLine: HTMLElement) {
         // TODO do schema
         return JSON.stringify({
             "type": "lineParse",
             "data": {
                 "fileName": this.fileName,
-                "lineText": codeLine.textContent,
                 "outerHTML": codeLine.outerHTML,
                 "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
             }

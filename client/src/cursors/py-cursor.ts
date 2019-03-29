@@ -1,9 +1,10 @@
 import {TxtCursor} from './txt-cursor';
 import {Code} from "../code";
+import {LineNumber} from "../line-number";
 
 export class PyCursor extends TxtCursor {
-    constructor(code: Code) {
-        super(code);
+    constructor(code: Code, lineNumber: LineNumber) {
+        super(code, lineNumber);
     }
 
     putTab() {

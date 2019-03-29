@@ -1,19 +1,22 @@
 import {Code} from '../code';
+import {LineNumber} from "../line-number";
 
 
 export class TxtCursor {
     public code: Code;
+    public lineNumber:LineNumber;
 
     private _cursorParentElement: HTMLElement = null;
     cursorElement: HTMLElement;
     private position: number = null;
-    private hightlightElement: HTMLElement = null;
+    private cursorHighlightElement: HTMLElement = null;
     // private cursorText: string = '';  use setter/getter
     // cursorParentElement: HTMLElement = null; use setter/getter
 
 
-    constructor(code: Code) {
+    constructor(code: Code, lineNumber: LineNumber) {
         this.code = code;
+        this.lineNumber = lineNumber;
         this.createCursorHTMLElement();
         this.createCursorHightlightElement();
 
@@ -31,11 +34,11 @@ export class TxtCursor {
 
     private createCursorHightlightElement() {
         // TODO create cursor by web component
-        this.hightlightElement = document.createElement('div');
-        this.hightlightElement.id = 'cursorHightlightElement';
-        this.hightlightElement.style.width = '10px'; //TODO calculate it in runtime
-        this.hightlightElement.style.height = '18px'; //TODO calculate it in runtime
-        this.hightlightElement.style.background = 'black';
+        this.cursorHighlightElement = document.createElement('div');
+        this.cursorHighlightElement.id = 'cursorHighlightElement';
+        this.cursorHighlightElement.style.width = '3px'; //TODO calculate it in runtime
+        this.cursorHighlightElement.style.height = '18px'; //TODO calculate it in runtime
+        this.cursorHighlightElement.style.background = 'black';
     }
 
     private createCursorHTMLElement(cursorText = '') {
@@ -68,7 +71,7 @@ export class TxtCursor {
             nextTextNode.textContent = initTextContent.slice(cursorPositionInNode + 1);
             nextTextNode.before(this.cursorElement);
         } else {
-            if (cursorPositionInNode !== this.getPositionInNode() - 1 + 1) {
+            if (cursorPositionInNode !== this.getPositionInNode()) {
                 let previousSiblingText = '', cursorText = '', nextSiblingText = '';
                 previousSiblingText = this.cursorParentElement.textContent.slice(0, cursorPositionInNode);
                 cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
@@ -77,19 +80,29 @@ export class TxtCursor {
                 this.cursorText = cursorText;
                 this.cursorElement.nextSibling.textContent = nextSiblingText;
             }
+            else{
+                console.log('Put cursor in same position.');
+            }
         }
 
+        let lineNumberElement = this.lineNumber.getByNumber(
+            parseInt(parentCursorNode.parentElement.getAttribute('tabIndex')) - 1
+        );
+        let lineNumberRect = lineNumberElement.getBoundingClientRect();
         let rect = this.cursorElement.getBoundingClientRect();
-        let rect2 = this.cursorParentElement.parentElement.getBoundingClientRect();
-        this.hightlightElement.style.top = (rect.top - rect2.top).toString() + 'px';
-        this.hightlightElement.style.left = (rect.left - rect2.left).toString() + 'px';
-        this.cursorParentElement.appendChild(this.hightlightElement);
+        this.cursorHighlightElement.style.top = (rect.top - lineNumberRect.top).toString() + 'px';
+        this.cursorHighlightElement.style.left = (rect.left - lineNumberRect.left - 3).toString() + 'px'; // TODO culculate this(-3 because of width of cursorHiglight element)
+        lineNumberElement.appendChild(this.cursorHighlightElement);
 
         this.scrollIntoView();
     }
 
+    getCoordinate() : ClientRect{
+        return this.cursorElement.getBoundingClientRect();
+    }
+
     getPositionInNode() {
-        return this.cursorElement.previousSibling.textContent.length;
+        return this.cursorElement.previousSibling.textContent.length; // not -1 because cursor include letter
     }
 
     private resetLinePosition() {
@@ -111,7 +124,6 @@ export class TxtCursor {
 
     set cursorParentElement(el) {
         if (el === null) {
-            this.cursorParentElement.removeChild(this.hightlightElement);
             this.cursorElement.replaceWith(this.cursorText);
             this.cursorParentElement.normalize();
             this._cursorParentElement = null;
@@ -140,7 +152,7 @@ export class TxtCursor {
 
     putSymbol(char: string) {
         this.cursorElement.previousSibling.textContent += char;
-        this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1 + 1);
+        this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode());
         this.resetLinePosition();
     };
 
@@ -156,7 +168,7 @@ export class TxtCursor {
 
     moveRight() {
         if (this.cursorElement.nextSibling.textContent !== '') {
-            this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1 + 1 + 1);
+            this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() + 1);
         } else if (this.cursorElement.nextSibling.textContent === '') {
             this.putCursorByPositionInNode(this.code.getNextElement(this.cursorParentElement), 0);
         }
@@ -251,6 +263,12 @@ export class TxtCursor {
     putTab() {
         // TODO why is it here
         this.putSymbol('\t');
+    }
+
+    putString(str: string){
+        for (let i of str){
+            this.putSymbol(i);
+        }
     }
 
 }

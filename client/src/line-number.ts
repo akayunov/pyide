@@ -21,4 +21,7 @@ export class LineNumber {
             }
         }
     }
+    getByNumber(number: number){
+        return <HTMLElement>document.getElementsByClassName('line-number').item(number);
+    }
 }

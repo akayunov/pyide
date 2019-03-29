@@ -1,11 +1,12 @@
-import {LineNumber} from './linenumber';
-import {AutoComplete} from './autocomplete/autocomplete';
-import {FileListing} from './filelisting';
-import {TxtCursor} from './cursors/txt';
-import {PyCursor} from './cursors/py';
+import {LineNumber} from './line-number';
+import {PyAutocomplete} from './autocomplete/py-autocomplete';
+import {TxtAutocomplete} from "./autocomplete/txt-autocomplete";
+import {FileListing} from './file-listing';
+import {TxtCursor} from './cursors/txt-cursor';
+import {PyCursor} from './cursors/py-cursor';
 import {Tags} from './tags/tags';
 import {Code} from './code';
-import {CommandBus} from './commandbus';
+import {CommandBus} from './command-bus';
 import {CommandHandlers} from './command';
 
 
@@ -15,8 +16,24 @@ interface KeyCodes {
 
 interface LineParse {
     type: string;
-    lineNumber: number;
-    lineElements: Array<string>;
+    data: {
+        lineNumber: number;
+        lineElements: Array<string>;
+        fileName: string;
+    }
+}
+
+interface AutocompleteShow {
+    type: string;
+    data: {
+        lineNumber: number;
+        variants: Array<string>;
+        fileName: string;
+        lineText: string;
+        positionInLine: number
+        result: Array<string>;
+        prefix: Array<string>;
+    }
 }
 
 class Main extends CommandHandlers {
@@ -24,7 +41,7 @@ class Main extends CommandHandlers {
     public cursor: TxtCursor;
     public tags: Tags;
     public fileListing: FileListing;
-    public autoComplete: AutoComplete;
+    public autoComplete: TxtAutocomplete;
     public lineNumber: LineNumber;
     public pressedKeys: KeyCodes;
     private readonly serverUrl: string;
@@ -32,37 +49,56 @@ class Main extends CommandHandlers {
 
     constructor() {
         super();
-        let self = this;
         //TODO change firefox-> about:config  -> network.websocket.allowInsecureFromHTTPS to false
         this.serverUrl = "ws://" + window.location.host + "/server/command";
+        let self = this;
         document.addEventListener('DOMContentLoaded', function () {
             self.setKeyBoardEventListeners();
             self.setMouseEventListeners();
             self.code = new Code('');
 
-            self.cursor = new TxtCursor(self.code);
-
             self.tags = new Tags();
 
             self.fileListing = new FileListing(self.code);
 
-            self.autoComplete = new AutoComplete();
+            self.autoComplete = new TxtAutocomplete();
 
             self.lineNumber = new LineNumber(1);
+
+            self.cursor = new TxtCursor(self.code, self.lineNumber);
 
             self.pressedKeys = {};
             self.commandBus = new CommandBus(self.serverUrl);
 
-            self.registerCommandHandler("lineParse", (x) => {self.handlerLineParse(x)});
+            self.registerCommandHandler("lineParse", (x: LineParse) => {
+                self.handlerLineParse(x)
+            });
+            self.registerCommandHandler("autoCompleteShow", (x: AutocompleteShow) => {
+                self.handlerAutocompleteShow(x)
+            });
         })
     }
 
     handlerLineParse(jsonData: LineParse) {
-        let line = this.code.getLineByNumber(jsonData.lineNumber);
+        // console.log('jsonData.data.fileName', jsonData.data, jsonData.data.fileName);
+        if (this.code.fileName !== jsonData.data.fileName) {
+            return;
+        }
+        let line = this.code.getLineByNumber(jsonData.data.lineNumber);
+        let currentLineNumber = this.cursor.getLineNumber();
         let oldPosition = this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode());
-        this.code.replaceLine(jsonData.lineNumber, jsonData.lineElements);
-        let newPosition = this.code.getNodeByPosition(line, oldPosition);
-        this.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
+
+        this.code.replaceLine(jsonData.data.lineNumber, jsonData.data.lineElements, this.cursor);
+        // TODO in case line removal tabIndex will be the same on another line
+        if (parseInt(currentLineNumber) === jsonData.data.lineNumber) {
+            let newPosition = this.code.getNodeByPosition(line, oldPosition);
+            this.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
+        }
+    }
+
+    handlerAutocompleteShow(jsonData: AutocompleteShow) {
+        this.autoComplete.refill(jsonData.data.result);
+        this.autoComplete.show(this.cursor.getCoordinate(),this.lineNumber.getByNumber(jsonData.data.lineNumber));
     }
 
     setKeyBoardEventListeners() {
@@ -79,30 +115,22 @@ class Main extends CommandHandlers {
                 self.cursor.addNewRow();
                 event.preventDefault();
             } else if (event.code === 'Tab') {
-                if (document.getElementById('active-autocomplete')) {
-                    const activeAutoComplete = document.getElementById('active-autocomplete');
-                    let insertedText = activeAutoComplete.children[1].textContent;
-                    if (insertedText) {
-                        for (let i = 0; i < insertedText.length; i++) {
-                            self.cursor.putSymbol(insertedText[i]);
-                        }
-                        self.autoComplete.hide();
-                    } else {
-                        console.log('insertedText is empty in  main')
-                    }
+                if (self.autoComplete.active) {
+                    self.cursor.putString(self.autoComplete.getSymbols(self.cursor.getPositionInNode()));
+                    self.autoComplete.hide();
                 } else {
                     self.cursor.putTab();
                 }
                 event.preventDefault();
             } else if (event.code === 'ArrowUp') {
-                if (document.getElementsByClassName('autocomplete').length) {
+                if (self.autoComplete.active) {
                     self.autoComplete.hlPrev();
                 } else {
                     self.cursor.moveUpRow();
                 }
                 event.preventDefault();
             } else if (event.code === 'ArrowDown') {
-                if (document.getElementsByClassName('autocomplete').length) {
+                if (self.autoComplete.active) {
                     self.autoComplete.hlNext();
                 } else {
                     self.cursor.moveDownRow();
@@ -111,7 +139,6 @@ class Main extends CommandHandlers {
             } else if (event.code === 'Space') {
                 self.cursor.putSymbol(event.key);
                 self.autoComplete.hide();
-                self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
                 event.preventDefault();
             } else if (event.code === 'PageUp') {
                 self.cursor.pageUp();
@@ -137,20 +164,27 @@ class Main extends CommandHandlers {
             } else if (event.code === 'F5') {
             } else if (event.code === 'Backspace') {
                 self.cursor.deleteSymbolBefore();
-                // autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
                 event.preventDefault();
             } else if (event.code === 'Delete') {
                 self.cursor.deleteSymbolUnder();
                 event.preventDefault();
             } else {
                 self.cursor.putSymbol(event.key);
-                // autoComlete.show(cursor._getCursorPosition(), fileListing.curentFile);
+                self.commandBus.sendCommand('autoCompleteShow',
+                    self.autoComplete.commandGetAutocompleteShow(
+                        <HTMLElement>event.target,
+                        self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
+                        self.code.fileName
+                    )
+                );
                 event.preventDefault();
             }
+
+            self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
         })
     }
 
-    setMouseEventListeners(){
+    setMouseEventListeners() {
         let self = this;
         document.getElementById('code').addEventListener('click', function (event) {
             self.cursor.setByClick();
@@ -172,10 +206,12 @@ class Main extends CommandHandlers {
                 let fileName = target.getAttribute('href');
                 if (fileName.endsWith('.py')) {
                     self.code = new Code(fileName);
-                    self.cursor = new PyCursor(self.code);
+                    self.cursor = new PyCursor(self.code, self.lineNumber);
+                    self.autoComplete = new PyAutocomplete();
                 } else {
                     self.code = new Code(fileName);
-                    self.cursor = new TxtCursor(self.code);
+                    self.cursor = new TxtCursor(self.code, self.lineNumber);
+                    self.autoComplete = new TxtAutocomplete();
                 }
             } else if (target.parentElement.className === 'folderlink') {
                 self.fileListing.get(event);

@@ -18,7 +18,10 @@
 }
 .content-line {
     white-space:pre;
-    position: relative;
+}
+
+.line-number {
+    position: relative; /* need to position cursorHighlight and autocomplete*/
 }
 
 div {
@@ -28,9 +31,6 @@ div {
 .cursor {
     /*animation: 1s blink step-end infinite;*/
     background: #ff7b80;
-}
-#to-remove {
-    -moz-user-select: none;
 }
 
 /*@keyframes "blink" {*/
@@ -50,7 +50,7 @@ div {
     z-index: 1;
 }
 
-#cursorHightlightElement {
+#cursorHighlightElement {
     position: absolute;
     z-index: 1;
 }
