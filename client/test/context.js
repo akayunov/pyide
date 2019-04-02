@@ -6,5 +6,8 @@ let chromeOptions = {
 };
 
 chromeCapabilities.set('chromeOptions', chromeOptions);
-exports.driver = new webdriver.Builder().withCapabilities(chromeCapabilities).build();
+exports.getDriver = async function (){
+    return new webdriver.Builder().withCapabilities(chromeCapabilities).build();
+}
+
 exports.url = 'http://127.0.0.1:31415/client/resourses/pyide.html';

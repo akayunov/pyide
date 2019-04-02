@@ -55,7 +55,8 @@ class Main extends CommandHandlers {
         document.addEventListener('DOMContentLoaded', function () {
             self.setKeyBoardEventListeners();
             self.setMouseEventListeners();
-            self.code = new Code('');
+            self.lineNumber = new LineNumber(1);
+            self.code = new Code('', self.lineNumber);
 
             self.tags = new Tags();
 
@@ -63,7 +64,7 @@ class Main extends CommandHandlers {
 
             self.autoComplete = new TxtAutocomplete();
 
-            self.lineNumber = new LineNumber(1);
+
 
             self.cursor = new TxtCursor(self.code, self.lineNumber);
 
@@ -205,11 +206,11 @@ class Main extends CommandHandlers {
                 // tags.init(event);
                 let fileName = target.getAttribute('href');
                 if (fileName.endsWith('.py')) {
-                    self.code = new Code(fileName);
+                    self.code = new Code(fileName, self.lineNumber);
                     self.cursor = new PyCursor(self.code, self.lineNumber);
                     self.autoComplete = new PyAutocomplete();
                 } else {
-                    self.code = new Code(fileName);
+                    self.code = new Code(fileName, self.lineNumber);
                     self.cursor = new TxtCursor(self.code, self.lineNumber);
                     self.autoComplete = new TxtAutocomplete();
                 }

@@ -24,4 +24,10 @@ export class LineNumber {
     getByNumber(number: number){
         return <HTMLElement>document.getElementsByClassName('line-number').item(number);
     }
+    addNumber(){
+        let el = document.createElement('div');
+        el.className = 'line-number';
+        el.textContent = (document.getElementsByClassName('line-number').length + 1).toString();
+        document.getElementById('line-number').appendChild(el);
+    }
 }

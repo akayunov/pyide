@@ -1,4 +1,5 @@
 import {TxtCursor} from "./cursors/txt-cursor";
+import {LineNumber} from "./line-number";
 
 class PositionInNode {
     public node: HTMLElement;
@@ -13,13 +14,15 @@ class PositionInNode {
 export class Code {
     private screenSize: number = 40; // TODO calculate it on run time and adjust on screen size change
     public fileName: string;
+    public lineNumber: LineNumber;
 
     //TODO should code.ts be divided by type of file like cursor or no?
     // may be for text file we don't need to generate span tag for each world?
 
     //TODO tabindex should be uniq in file and should not be reusing
-    constructor(fileName: string) {
+    constructor(fileName: string, lineNumber: LineNumber) {
         this.fileName = '/' + fileName.split('/').slice(3).join('/');
+        this.lineNumber = lineNumber;
         document.getElementById('code').appendChild(this.createNewLine(1));
     }
 
@@ -37,6 +40,7 @@ export class Code {
     private putNewLineAfter(node: HTMLElement, text = '') {
         let newLine = this.createNewLine(1, text);
         node.parentElement.after(newLine);
+        this.lineNumber.addNumber();
         return newLine;
     }
 
@@ -191,16 +195,13 @@ export class Code {
 
     divideLine(node: HTMLElement): HTMLElement {
         let newLine = this.putNewLineAfter(node);
-        newLine.lastChild.replaceWith(node.parentElement.removeChild(node.parentElement.lastChild));
-
-        while (node.parentElement.lastChild) {
-            if (node.parentElement.lastChild === node) {
-                newLine.insertBefore(node.parentElement.lastChild.cloneNode(), newLine.firstChild);
-                newLine.firstChild.textContent = node.parentElement.lastChild.textContent;
-                break;
+        newLine.lastChild.replaceWith(node.cloneNode());
+        newLine.lastChild.textContent = node.textContent;
+        while (node.nextElementSibling) {
+            newLine.appendChild(node.nextElementSibling);
+            node = <HTMLElement>node.nextElementSibling;
             }
-            newLine.insertBefore(node.parentElement.removeChild(node.parentElement.lastChild), newLine.firstChild);
-        }
+
         this.recalculateTabIndex(newLine);
         return <HTMLElement>newLine.firstChild;
     }

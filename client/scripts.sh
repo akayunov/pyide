@@ -15,7 +15,7 @@ Possible commands:
 }
 
 test(){
-    PATH=/home/pyide/pyide/client/node_modules/chromedriver/bin:$PATH ./node_modules/.bin/mocha test/functional/first.js
+    PATH=/home/pyide/pyide/client/node_modules/chromedriver/bin:$PATH ./node_modules/.bin/mocha test/functional/cursor.js
 }
 
 main "$@"
