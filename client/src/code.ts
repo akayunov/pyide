@@ -197,11 +197,16 @@ export class Code {
         let newLine = this.putNewLineAfter(node);
         newLine.lastChild.replaceWith(node.cloneNode());
         newLine.lastChild.textContent = node.textContent;
-        while (node.nextElementSibling) {
-            newLine.appendChild(node.nextElementSibling);
-            node = <HTMLElement>node.nextElementSibling;
+        let inserted = [];
+        while (node.parentElement.lastElementChild) {
+            if (node.parentElement.lastElementChild === node){
+                break;
             }
-
+            inserted.push(node.parentElement.removeChild(node.parentElement.lastElementChild));
+        }
+        for (let n of inserted.reverse()){
+            newLine.append(n);
+        }
         this.recalculateTabIndex(newLine);
         return <HTMLElement>newLine.firstChild;
     }

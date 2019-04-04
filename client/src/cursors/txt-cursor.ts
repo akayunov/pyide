@@ -7,32 +7,25 @@ export class TxtCursor {
     public lineNumber:LineNumber;
 
     private _cursorParentElement: HTMLElement = null;
-    cursorElement: HTMLElement;
+    private cursorElement: HTMLElement;
     private position: number = null;
     private cursorHighlightElement: HTMLElement = null;
-    // private cursorText: string = '';  use setter/getter
     // cursorParentElement: HTMLElement = null; use setter/getter
-
 
     constructor(code: Code, lineNumber: LineNumber) {
         this.code = code;
         this.lineNumber = lineNumber;
         this.createCursorHTMLElement();
-        this.createCursorHightlightElement();
+        this.createCursorHighlightElement();
 
         let parentElement = this.code.getFirstElement();
         this.cursorParentElement = parentElement;
         this.cursorParentElement.appendChild(this.cursorElement);
         this.cursorParentElement.appendChild(document.createTextNode(''));
         this.putCursorByPositionInNode(parentElement, 0);
-
-        if (parentElement.textContent === '') {
-            // document is empty so do this way
-            this.cursorText = '\n';
-        }
     }
 
-    private createCursorHightlightElement() {
+    private createCursorHighlightElement() {
         // TODO create cursor by web component
         this.cursorHighlightElement = document.createElement('div');
         this.cursorHighlightElement.id = 'cursorHighlightElement';
@@ -41,11 +34,10 @@ export class TxtCursor {
         this.cursorHighlightElement.style.background = 'black';
     }
 
-    private createCursorHTMLElement(cursorText = '') {
+    private createCursorHTMLElement() {
         // TODO create cursor by web component
         this.cursorElement = document.createElement('span');
         this.cursorElement.className = 'cursor';
-        this.cursorText = cursorText;
     }
 
     putCursorByPositionInNode(parentCursorNode: HTMLElement, cursorPositionInNode: number) {
@@ -67,17 +59,14 @@ export class TxtCursor {
                 console.log('childNodes.length:=', childNodes.length);
             }
             let nextTextNode = (<Text>childNodes.item(0)).splitText(cursorPositionInNode);
-            this.cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
-            nextTextNode.textContent = initTextContent.slice(cursorPositionInNode + 1);
+            nextTextNode.textContent = initTextContent.slice(cursorPositionInNode);
             nextTextNode.before(this.cursorElement);
         } else {
             if (cursorPositionInNode !== this.getPositionInNode()) {
-                let previousSiblingText = '', cursorText = '', nextSiblingText = '';
+                let previousSiblingText = '', nextSiblingText = '';
                 previousSiblingText = this.cursorParentElement.textContent.slice(0, cursorPositionInNode);
-                cursorText = this.cursorParentElement.textContent.slice(cursorPositionInNode, cursorPositionInNode + 1);
-                nextSiblingText = this.cursorParentElement.textContent.slice(cursorPositionInNode + 1);
+                nextSiblingText = this.cursorParentElement.textContent.slice(cursorPositionInNode);
                 this.cursorElement.previousSibling.textContent = previousSiblingText;
-                this.cursorText = cursorText;
                 this.cursorElement.nextSibling.textContent = nextSiblingText;
             }
             else{
@@ -128,14 +117,9 @@ export class TxtCursor {
 
     set cursorParentElement(el) {
         if (el === null) {
-            this.cursorElement.replaceWith(this.cursorText);
+            this.cursorElement.remove();
             this.cursorParentElement.normalize();
             this._cursorParentElement = null;
-            this.cursorText = '';
-
-            // remove by code parsing alghoritm
-            // this._cursorParentElement.removeAttribute('nodeid');
-
         } else {
             el.setAttribute('nodeid', Math.floor((Math.random() * 1000000000) + 1).toString());
             this._cursorParentElement = el;
@@ -144,14 +128,6 @@ export class TxtCursor {
 
     get cursorParentElement() {
         return this._cursorParentElement;
-    }
-
-    private set cursorText(cursorText: string) {
-        this.cursorElement.textContent = cursorText;
-    }
-
-    private get cursorText(): string {
-        return this.cursorElement.textContent;
     }
 
     putSymbol(char: string) {
@@ -264,13 +240,11 @@ export class TxtCursor {
     addNewRow() {
         let newNode = this.code.divideLine(this.cursorParentElement);
         let positionInNode = this.getPositionInNode();
-        this.moveLeft();
         if (this.cursorElement.nextSibling.textContent !== ''){
             this.cursorElement.nextSibling.textContent = '\n';
         }
         newNode.textContent = newNode.textContent.slice(positionInNode);
         this.putCursorByPositionInNode(newNode, 0);
-        // this.moveRight();
         this.cursorElement.previousSibling.textContent = '';
     };
 
