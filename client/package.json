@@ -7,6 +7,7 @@
   "devDependencies": {
     "@types/jquery": "^3.3.29",
     "@types/jsdom": "^12.2.2",
+    "@types/mocha": "^5.2.6",
     "awesome-typescript-loader": "^5.2.1",
     "chromedriver": "^2.46.0",
     "mocha": "^6.0.2",

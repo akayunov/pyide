@@ -27,50 +27,53 @@ class Command(tornado.websocket.WebSocketHandler):
             message = message['data']
 
             path = configuration.SYS_PATH_PREPEND + message['fileName']
+            if not path.endswith('py'):
+                return
             # body = json.loads(self.request.body)
             # print(body)
             # if body['type'] == 'parse':
             t_struct_adjusted = []
-            code_line = et.fromstring(message['outerHTML'])
-            line_text = ''.join(code_line.itertext())
+            code_line_as_html_elements = et.fromstring(message['outerHTML'])
+            line_text = ''.join(code_line_as_html_elements.itertext())
             for i in tokenize.tokenize(BytesIO(line_text.encode('utf8')).readline):
                 t_struct_adjusted.append(
                     TokenInfo(type=i.type, string=i.string, start=(message['lineNumber'], i.start[1]), end=(message['lineNumber'], i.end[1]), line=i.line)
                 )
             t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
-            print(t_struct_adjusted)
-            elements_to = tokenize_source_by_xml(t_struct_adjusted, file_name=path, current_line=message['lineNumber'])
-            elements_to = elements_to[0]
-            print([et.tostring(i,encoding="unicode") for i in elements_to])
+            print('x0:', t_struct_adjusted)
+            tokenized_elements_to = tokenize_source_by_xml(t_struct_adjusted, file_name=path, current_line=message['lineNumber'])
+            tokenized_elements_to = tokenized_elements_to[0]
+            print('xx1:', [et.tostring(i,encoding="unicode") for i in tokenized_elements_to])
 
             index = 0
             el_to_index_shift = 0
 
             # from pyide.rdb import Rdb;
             # Rdb().set_trace();
-            while index < min([len(code_line), len(elements_to)]):
-                orig_el = code_line[index]
+            while index < min([len(code_line_as_html_elements), len(tokenized_elements_to)]):
+                orig_el = code_line_as_html_elements[index]
                 if orig_el.attrib.get('nodeid'):
                     # changed_node_text = orig_el.text
                     # cursor may be in string so need iter
                     changed_node_text = "".join(orig_el.itertext())
-                    new_text = elements_to[index + el_to_index_shift].text
-                    elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
+                    new_text = tokenized_elements_to[index + el_to_index_shift].text
+                    tokenized_elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
                     while changed_node_text != new_text:
                         print('changed_node_text:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
                         el_to_index_shift += 1
-                        new_text += elements_to[index + el_to_index_shift].text
-                        elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
+                        new_text += tokenized_elements_to[index + el_to_index_shift].text
+                        tokenized_elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
                     print('changed_node_text finished:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
                     index += 1
                 else:
                     index += 1
+
             self.write_message(
                 json.dumps({
                     'type': 'lineParse',
                     'data':{
                         'lineNumber': message['lineNumber'],
-                        'lineElements': [et.tostring(i,encoding="unicode") for i in elements_to],
+                        'lineElements': [et.tostring(i,encoding="unicode") for i in tokenized_elements_to],
                         'fileName': message['fileName']
                     }
                 })

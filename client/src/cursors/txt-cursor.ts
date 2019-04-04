@@ -97,6 +97,10 @@ export class TxtCursor {
         this.scrollIntoView();
     }
 
+    clean(){
+        this.cursorElement.remove();
+        this.cursorHighlightElement.remove();
+    }
     getCoordinate() : ClientRect{
         return this.cursorElement.getBoundingClientRect();
     }
@@ -162,11 +166,12 @@ export class TxtCursor {
         } else if (this.cursorElement.previousSibling.textContent === '') {
             let previousElement = this.code.getPreviousElement(this.cursorParentElement);
             if (previousElement === null){
-                return;
+                return false;
             }
             this.putCursorByPositionInNode(previousElement, previousElement.textContent.length - 1);
         }
         this.resetLinePosition();
+        return true;
     };
 
     moveRight() {
@@ -175,11 +180,12 @@ export class TxtCursor {
         } else if (this.cursorElement.nextSibling.textContent === '') {
             let nextElement = this.code.getNextElement(this.cursorParentElement);
             if (nextElement === null){
-                return;
+                return false;
             }
             this.putCursorByPositionInNode(nextElement, 0);
         }
         this.resetLinePosition();
+        return true;
     };
 
     moveUpRow() {
@@ -218,22 +224,23 @@ export class TxtCursor {
     };
 
     deleteSymbolUnder() {
-        this.moveRight();
-        if (this.getPositionInNode() !== 0) {
-            this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.getPositionInNode() - 1)
-        } else {
-            let prevElement = this.code.getPreviousElement(this.cursorParentElement);
-            prevElement.textContent = prevElement.textContent.slice(0, prevElement.textContent.length - 1);
-            if (prevElement.textContent.length === 0) {
-                this.code.removeNode(prevElement);
+        if (this.moveRight()) {
+            if (this.getPositionInNode() !== 0) {
+                this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.getPositionInNode() - 1)
+            } else {
+                let prevElement = this.code.getPreviousElement(this.cursorParentElement);
+                prevElement.textContent = prevElement.textContent.slice(0, prevElement.textContent.length - 1);
+                if (prevElement.textContent.length === 0) {
+                    this.code.removeNode(prevElement);
+                }
             }
         }
-
     };
 
     deleteSymbolBefore() {
-        this.moveLeft();
-        this.deleteSymbolUnder();
+        if (this.moveLeft()){
+            this.deleteSymbolUnder();
+        }
     };
 
     setByClick() {

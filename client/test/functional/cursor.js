@@ -5,7 +5,7 @@ let assert = require('assert');
 
 
 mocha.describe('Put some symbols', function () {
-    it('Put qwertyEnterasd', async function () {
+    it('qwertyENTERasd', async function () {
         let driver = await context.getDriver();
         await driver.get(context.url);
         //TODO may be I don't need tabindex on code-line elements??
@@ -18,7 +18,7 @@ mocha.describe('Put some symbols', function () {
         await driver.quit();
     });
 
-    it('Put 5 Enters', async function () {
+    it('5 Enters', async function () {
         let driver = await context.getDriver();
         await driver.get(context.url);
         //TODO may be I don't need tabindex on code-line elements??
@@ -36,6 +36,34 @@ mocha.describe('Put some symbols', function () {
         assert.strictEqual(await els[3].getAttribute('textContent'), "\n");
         assert.strictEqual(await els[4].getAttribute('textContent'), "\n");
         assert.strictEqual(await els[5].getAttribute('textContent'), "qwe\n");
+        await driver.quit();
+    });
+
+    it('ENDqwe in text', async function () {
+        let driver = await context.getDriver();
+        await driver.get(context.url);
+        let folderCursorEl = await driver.findElements(webdriver.By.linkText('cursor'));
+        await folderCursorEl[0].click();
+        let fileNameEl = await driver.findElements(webdriver.By.linkText('cursor.txt'));
+        await fileNameEl[0].click();
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(webdriver.Key.END, 'qwe');
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[0].getAttribute('textContent'), "tratataqwe\n");
+        await driver.quit();
+    });
+
+    it('ENDqwe in py code', async function () {
+        let driver = await context.getDriver();
+        await driver.get(context.url);
+        let folderCursorEl = await driver.findElements(webdriver.By.linkText('cursor'));
+        await folderCursorEl[0].click();
+        let fileNameEl = await driver.findElements(webdriver.By.linkText('cursor.py'));
+        await fileNameEl[0].click();
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(webdriver.Key.END, 'qwe');
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[0].getAttribute('textContent'), "import osqwe\n");
         await driver.quit();
     });
 });

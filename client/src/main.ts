@@ -82,6 +82,7 @@ class Main extends CommandHandlers {
 
     handlerLineParse(jsonData: LineParse) {
         // console.log('jsonData.data.fileName', jsonData.data, jsonData.data.fileName);
+        //TODO need to add lock to avoid race condition with typing
         if (this.code.fileName !== jsonData.data.fileName) {
             return;
         }
@@ -171,17 +172,17 @@ class Main extends CommandHandlers {
                 event.preventDefault();
             } else {
                 self.cursor.putSymbol(event.key);
-                self.commandBus.sendCommand('autoCompleteShow',
-                    self.autoComplete.commandGetAutocompleteShow(
-                        <HTMLElement>event.target,
-                        self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
-                        self.code.fileName
-                    )
-                );
+                // self.commandBus.sendCommand('autoCompleteShow',
+                //     self.autoComplete.commandGetAutocompleteShow(
+                //         <HTMLElement>event.target,
+                //         self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
+                //         self.code.fileName
+                //     )
+                // );
                 event.preventDefault();
             }
 
-            self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
+            // self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
         })
     }
 
@@ -207,10 +208,12 @@ class Main extends CommandHandlers {
                 let fileName = target.getAttribute('href');
                 if (fileName.endsWith('.py')) {
                     self.code = new Code(fileName, self.lineNumber);
+                    self.cursor.clean();
                     self.cursor = new PyCursor(self.code, self.lineNumber);
                     self.autoComplete = new PyAutocomplete();
                 } else {
                     self.code = new Code(fileName, self.lineNumber);
+                    self.cursor.clean();
                     self.cursor = new TxtCursor(self.code, self.lineNumber);
                     self.autoComplete = new TxtAutocomplete();
                 }

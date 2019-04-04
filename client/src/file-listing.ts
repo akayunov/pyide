@@ -73,7 +73,8 @@ export class FileListing {
     }
 
     showFile(event: MouseEvent) {
-        let self = this, lineCount;
+        let lineCount = 0;
+        let self = this;
         $.ajax({
             async: false,
             method: "GET",

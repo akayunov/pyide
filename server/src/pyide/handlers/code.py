@@ -230,21 +230,31 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
 
 class Code(tornado.web.RequestHandler):
     def get(self, path):
+        ast_parser = None
         path = configuration.SYS_PATH_PREPEND + '/' + path
         if os.path.isdir(path):
             for file_path in get_next_file(path):
-                with open(file_path, 'rb') as code_file:
+                if file_path.endswith('py'):
+                    with open(file_path, 'rb') as code_file:
+                        ast_parser = AstParser(code_file.read(), None)
+        else:
+            if path.endswith('py'):
+                with open(path, 'rb') as code_file:
                     ast_parser = AstParser(code_file.read(), None)
+
+        if ast_parser:
+            AST_PARSER[path] = ast_parser
+            ast_parser.parse_content()
+            # import pdb;pdb.set_trace()
+            result = tokenize_source(ast_parser.tokenizer_structure, path)
+
+            self.write(json.dumps(result))
         else:
             with open(path, 'rb') as code_file:
-                ast_parser = AstParser(code_file.read(), None)
-
-        AST_PARSER[path] = ast_parser
-        ast_parser.parse_content()
-        # import pdb;pdb.set_trace()
-        result = tokenize_source(ast_parser.tokenizer_structure, path)
-
-        self.write(json.dumps(result))
+                result = []
+                for index, line in enumerate(code_file.readlines()):
+                    result.append(f'''<div tabindex="{index + 1}" class="content-line"><span>{line.decode('utf8')}</span></div>''')
+                self.write(json.dumps(result))
 
     def post(self, path):
         path = configuration.SYS_PATH_PREPEND + '/' + path
