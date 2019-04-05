@@ -18,7 +18,7 @@ main() {
     "lint") test_lint;;
     "cov") test_coverage "$@";;
     "reinit") reinit;;
-    "enter") enter;;
+    "enter") enter "$@";;
     "telnet") telnet_db;;
     "log") log;;
     *) echo "Run as: $0 command
@@ -75,7 +75,12 @@ reinit(){
 }
 
 enter(){
-    docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash
+    if [[ $@ ]]
+    then
+        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash -c "$@"
+    else
+        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash
+    fi
 }
 
 check_stack(){

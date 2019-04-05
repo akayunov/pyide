@@ -5,17 +5,17 @@ main() {
     shift
 
   case ${cmd} in
-    "test") test "$@";;
+    "tt") tt "$@";;
     *) echo "Run as: $0 command
 
 Possible commands:
-  test    - run all tests
+  tt    - run all tests
   "; exit 255;;
   esac
 }
 
-test(){
-    PATH=/home/pyide/pyide/client/node_modules/chromedriver/bin:$PATH ./node_modules/.bin/mocha "$@" test/functional/cursor.js
+tt(){
+    mocha "$@" test/functional/cursor.js
 }
 
 main "$@"

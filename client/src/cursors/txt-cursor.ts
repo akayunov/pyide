@@ -83,7 +83,7 @@ export class TxtCursor {
         this.cursorHighlightElement.style.left = (rect.left - lineNumberRect.left - 3).toString() + 'px'; // TODO culculate this(-3 because of width of cursorHiglight element)
         lineNumberElement.appendChild(this.cursorHighlightElement);
 
-        this.scrollIntoView();
+        this.scrollIntoView();  //TODO it should work like to save row position on page change
     }
 
     clean(){
