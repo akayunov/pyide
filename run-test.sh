@@ -18,6 +18,7 @@ main() {
     "lint") test_lint;;
     "cov") test_coverage "$@";;
     "reinit") reinit;;
+    "enter") enter;;
     "telnet") telnet_db;;
     "log") log;;
     *) echo "Run as: $0 command
@@ -71,6 +72,10 @@ reinit(){
         --log-driver=json-file \
         registry.hub.docker.com/akayunov/pyide:latest \
         python3 -m pyide -d
+}
+
+enter(){
+    docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash
 }
 
 check_stack(){

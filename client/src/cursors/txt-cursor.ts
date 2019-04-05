@@ -95,7 +95,7 @@ export class TxtCursor {
     }
 
     getPositionInNode() {
-        return this.cursorElement.previousSibling.textContent.length; // not -1 because cursor include letter
+        return this.cursorElement.previousSibling.textContent.length;
     }
 
     private resetLinePosition() {
@@ -179,6 +179,7 @@ export class TxtCursor {
     pageDown() {
         this.setLinePosition();
         let newElement = this.code.pageDown(this.cursorParentElement, this.position);
+        console.log('newElement',newElement);
         this.putCursorByPositionInNode(newElement.node, newElement.positionInNode);
     };
 
@@ -240,10 +241,12 @@ export class TxtCursor {
     addNewRow() {
         let newNode = this.code.divideLine(this.cursorParentElement);
         let positionInNode = this.getPositionInNode();
-        if (this.cursorElement.nextSibling.textContent !== ''){
-            this.cursorElement.nextSibling.textContent = '\n';
+        this.cursorElement.nextSibling.textContent = '\n';
+        let newText = newNode.textContent.slice(positionInNode);
+        newNode.textContent = newText;
+        if (newText === ''){
+            newNode.appendChild(document.createTextNode(''));
         }
-        newNode.textContent = newNode.textContent.slice(positionInNode);
         this.putCursorByPositionInNode(newNode, 0);
         this.cursorElement.previousSibling.textContent = '';
     };

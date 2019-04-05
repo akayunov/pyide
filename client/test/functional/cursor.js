@@ -33,7 +33,7 @@ mocha.describe('Put some symbols', function () {
         assert.strictEqual(await els[2].getAttribute('textContent'), "\n");
         assert.strictEqual(await els[3].getAttribute('textContent'), "\n");
         assert.strictEqual(await els[4].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[5].getAttribute('textContent'), "qwe\n");
+        assert.strictEqual(await els[5].getAttribute('textContent'), "qwe");
         await driver.quit();
     });
 
@@ -62,7 +62,16 @@ mocha.describe('Put some symbols', function () {
         let el = await driver.findElement(webdriver.By.id('code'));
         await el.sendKeys(webdriver.Key.END, 'qwe');
         let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[0].getAttribute('textContent'), "import osqwe\n");
+        assert.strictEqual(await els[0].getAttribute('textContent'), "tratataqwe\n");
+        await driver.quit();
+    });
+    it('Double Page Down', async function () {
+        let driver = await context.getDriver();
+        await context.openFile('cursor/cursor-many-row.txt', driver);
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(webdriver.Key.PAGE_DOWN, webdriver.Key.PAGE_DOWN, 'qwe');
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[80].getAttribute('textContent'), "qwe0 0 0 0 0 0 0 0 df\n");
         await driver.quit();
     });
 });

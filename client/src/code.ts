@@ -73,7 +73,7 @@ export class Code {
         }
         if (!breakFlag) {
             newNode = line.lastChild;
-            newPositionInNode = newNode.textContent.length - 1;
+            newPositionInNode = newNode.textContent.length > 0 ? newNode.textContent.length - 1 : 0;
         }
         return new PositionInNode(<HTMLElement>newNode, newPositionInNode);
     }
