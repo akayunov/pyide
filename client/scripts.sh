@@ -5,11 +5,11 @@ main() {
     shift
 
   case ${cmd} in
-    "tt") tt "$@";;
+    "test") tt "$@";;
     *) echo "Run as: $0 command
 
 Possible commands:
-  tt    - run all tests
+  test    - run all tests
   "; exit 255;;
   esac
 }
