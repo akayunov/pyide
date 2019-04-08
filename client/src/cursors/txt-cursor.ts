@@ -88,6 +88,7 @@ export class TxtCursor {
 
     clean(){
         this.cursorElement.remove();
+        this.cursorElement = null;
         this.cursorHighlightElement.remove();
     }
     getCoordinate() : ClientRect{

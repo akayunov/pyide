@@ -1,102 +1,56 @@
 export class FileListing {
-    public curentFile: string='';
-    public code;
-    constructor(code) {
-        this.curentFile = '';
-        this.code= code;
-        $.ajax({
-            method: "GET",
-            dataType: 'json',
-            contentType: 'application/json; charset=utf-8',
-            url: '/server/filelisting'
-        }).done(function (response) {
-            response.forEach(
-                function (element: string) {
-                    let node = $(element)[0];
-                    const myElement: HTMLElement | null = document.getElementById('filelisting');
-                    if ( myElement){
-                        myElement.appendChild(node);
-                    }
-                    else{
-                        console.log('нет елемента filelisting')
-                    }
-                }
-            );
-            // console.log('folder listing respone', response)
-        }).fail(function (jqXHR, textStatus) {
-            console.log('все сломалось в folder listing', jqXHR, textStatus)
-        });
+    private fileListingElement: HTMLElement;
+    public currentFileName: string = '';
+
+    constructor() {
+        this.fileListingElement = document.getElementById('filelisting');
+        this.initListing().then();
     }
 
-    get(event: MouseEvent) {
-        const target : HTMLElement | null = <HTMLElement>event.target;
-        if (!target){
-            console.log('event.target is empty in folder listing get')
-            return;
-        }
-        let parentDiv: Node | null = target.parentNode;
-        if (!parentDiv){
-            console.log('event.target.parentNode is empty in folder listing get')
-            return;
-        }
-        const childNode0 : HTMLElement = parentDiv.childNodes[0] as HTMLElement;
+    async initListing() {
+        let self = this;
+        let response = await (await fetch('/server/filelisting')).json();
+
+        response.forEach(
+            function (element: string) {
+                let divElement = document.createElement('div');
+                self.fileListingElement.appendChild(divElement);
+                divElement.outerHTML = element;
+            }
+        );
+    }
+
+    async get(event: MouseEvent) {
+        const target = <HTMLElement>event.target;
+        let parentDiv = target.parentElement;
+        const childNode0 = <HTMLElement>parentDiv.childNodes[0];
+
         if (parentDiv && childNode0.style.transform === 'rotate(180deg)') {
             childNode0.style.transform = 'rotate(90deg)';
-            for (let i = parentDiv.childNodes.length - 1; i >= 0; i--) {
-                if (['folderlink', 'filelink'].includes((parentDiv.childNodes[i] as HTMLElement).className)) {
-                    parentDiv.removeChild(parentDiv.childNodes[i]);
+            let childElement = parentDiv.lastChild;
+            while (childElement) {
+                if (['folderlink', 'filelink'].includes((<HTMLElement>childElement).className)) {
+                    parentDiv.removeChild(childElement);
+                    childElement = parentDiv.lastChild;
+                } else {
+                    break;
                 }
             }
-        }
-        else if (childNode0.style.transform === 'rotate(90deg)') {
+        } else if (childNode0.style.transform === 'rotate(90deg)') {
             childNode0.style.transform = 'rotate(180deg)';
-            $.ajax({
-                method: "GET",
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                url: (<HTMLAnchorElement>event.target).href
-            }).done(function (response) {
-                response.forEach(function (element: string) {
-                    $(parentDiv).append($(element));
-                    let node = $(element)[0];
-                    document.getElementById('filelisting').appendChild(node);
-                });
-            }).fail(function (jqXHR, textStatus) {
-                console.log('все сломалось в folder listing', jqXHR, textStatus)
+            let response = await (await fetch((<HTMLAnchorElement>event.target).href)).json();
+            response.forEach(function (element: string) {
+                let divElement = document.createElement('div');
+                parentDiv.appendChild(divElement);
+                divElement.outerHTML = element;
             });
-        }
-        else {
+        } else {
             childNode0.style.transform = 'rotate(90deg)';
         }
-        event.preventDefault();
-        event.stopPropagation();
     }
 
-    showFile(event: MouseEvent) {
-        let lineCount = 0;
-        let self = this;
-        $.ajax({
-            async: false,
-            method: "GET",
-            url: (<Element>event.target).attributes['href'].value,
-            dataType: 'json',
-            contentType: 'application/json; charset=utf-8'
-        }).done(function (response) {
-            Array.from(document.getElementById('code').children).forEach(
-                function (element) {
-                    element.remove()
-                }
-            );
-            response.forEach(
-                function (element: string) {
-                    document.getElementById('code').appendChild($(element)[0])
-                }
-            );
-            self.curentFile = (<Element>event.target).attributes['href'].value;
-            lineCount = response.length;
-        }).fail(function (jqXHR, textStatus) {
-            console.log('все сломалось в get CODE', jqXHR, textStatus)
-        });
-        return lineCount;
+    async showFile(url: string) {
+        this.currentFileName = url.split('/').slice(-1)[0];
+        return await (await fetch(url)).json();
     }
 }

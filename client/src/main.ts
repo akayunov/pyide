@@ -53,14 +53,12 @@ class Main extends CommandHandlers {
         this.serverUrl = "ws://" + window.location.host + "/server/command";
         let self = this;
         document.addEventListener('DOMContentLoaded', function () {
-            self.setKeyBoardEventListeners();
-            self.setMouseEventListeners();
             self.lineNumber = new LineNumber(1);
             self.code = new Code('', self.lineNumber);
 
             self.tags = new Tags();
 
-            self.fileListing = new FileListing(self.code);
+            self.fileListing = new FileListing();
 
             self.autoComplete = new TxtAutocomplete();
 
@@ -70,6 +68,9 @@ class Main extends CommandHandlers {
 
             self.pressedKeys = {};
             self.commandBus = new CommandBus(self.serverUrl);
+
+            self.setKeyBoardEventListeners();
+            self.setMouseEventListeners();
 
             self.registerCommandHandler("lineParse", (x: LineParse) => {
                 self.handlerLineParse(x)
@@ -192,36 +193,36 @@ class Main extends CommandHandlers {
             self.cursor.setByClick();
             self.autoComplete.hide();
             if (self.pressedKeys['ControlLeft']) {
-                self.cursor.goToDefinition(self.fileListing.curentFile)
+                self.cursor.goToDefinition(self.fileListing.currentFileName)
             }
             event.preventDefault();
         });
 
-        document.getElementById('filelisting').addEventListener('click', function (event) {
+        document.getElementById('filelisting').addEventListener('click', async function (event) {
+            event.preventDefault();
             const target: HTMLElement = event.target as HTMLElement;
             if (target.parentElement.className === 'filelink') {
-
-                let lineCount = self.fileListing.showFile(event);
-                // should count multi line string like ''' '''
-                self.lineNumber.adjust(lineCount);
-                // tags.init(event);
+                let lines = await self.fileListing.showFile(target.getAttribute('href'));
+                // TODO should count multi line string like ''' '''
+                self.lineNumber.adjust(lines.length);
+                await self.tags.init(self.fileListing.currentFileName);
                 let fileName = target.getAttribute('href');
+                self.cursor.clean();
+                self.code.clean();
                 if (fileName.endsWith('.py')) {
-                    self.code = new Code(fileName, self.lineNumber);
-                    self.cursor.clean();
+                    self.code = new Code(fileName, self.lineNumber, lines);
                     self.cursor = new PyCursor(self.code, self.lineNumber);
                     self.autoComplete = new PyAutocomplete();
                 } else {
-                    self.code = new Code(fileName, self.lineNumber);
-                    self.cursor.clean();
+                    self.code = new Code(fileName, self.lineNumber, lines);
                     self.cursor = new TxtCursor(self.code, self.lineNumber);
                     self.autoComplete = new TxtAutocomplete();
                 }
+                self.setKeyBoardEventListeners();
+                self.setMouseEventListeners();
             } else if (target.parentElement.className === 'folderlink') {
-                self.fileListing.get(event);
+                await self.fileListing.get(event);
             }
-
-            event.preventDefault();
         });
     }
 }

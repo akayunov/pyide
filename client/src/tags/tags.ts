@@ -1,35 +1,21 @@
 export class Tags {
-    constructor (){}
-    init (event: MouseEvent){
-        $.ajax({
-            method: "GET",
-            dataType: 'json',
-            contentType: 'application/json; charset=utf-8',
-            url: (<HTMLAnchorElement>event.target).href.replace(/:31415\/server\/code/, ':31415\/server/tags')
-        }).done(function (response) {
-            const parentDiv: HTMLElement | null = document.getElementById('tags');
-            if (parentDiv){
-                for (let i = parentDiv.childNodes.length - 1; i >=0; i--){
-                    parentDiv.removeChild(parentDiv.childNodes[i]);
-                }
+    private tagElement: HTMLElement;
+    constructor (){
+        this.tagElement = document.getElementById('tags');
+    }
+
+    async init (fileName: string){
+        let self = this;
+        let response = await (await fetch(`/server/tags/${fileName}`)).json();
+        while (this.tagElement.lastChild){
+            this.tagElement.removeChild(this.tagElement.lastChild);
+        }
+        response.forEach(
+            function (element: string){
+                let divElement = document.createElement('div');
+                self.tagElement.appendChild(divElement);
+                divElement.outerHTML = element;
             }
-            else{
-                console.log('parentDiv is empty in  tags listing')
-            }
-            response.forEach(
-                function (element: string){
-                    const tags: HTMLElement | null = document.getElementById('tags');
-                    if(tags){
-                        tags.appendChild($(element)[0]);
-                    }
-                    else{
-                        console.log('tags is empty in  tags listing')
-                    }
-                   }
-            );
-            // console.log('folder listing respone', response)
-        }).fail(function (jqXHR, textStatus) {
-            console.log('все сломалось в tags listing',jqXHR, textStatus)
-        });
+        );
     }
 }
