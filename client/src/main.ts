@@ -106,12 +106,12 @@ class Main extends CommandHandlers {
 
     setKeyBoardEventListeners() {
         let self = this;
-        document.getElementById('code').addEventListener('keyup', function (event: KeyboardEvent) {
+        document.getElementById('lines').addEventListener('keyup', function (event: KeyboardEvent) {
             self.pressedKeys[event.code] = false;
             event.preventDefault();
         });
 
-        document.getElementById('code').addEventListener('keydown', function (event) {
+        document.getElementById('lines').addEventListener('keydown', function (event) {
             self.pressedKeys[event.code] = true;
             // console.log('code', event.code);
             if (event.code === 'Enter') {
@@ -189,7 +189,7 @@ class Main extends CommandHandlers {
 
     setMouseEventListeners() {
         let self = this;
-        document.getElementById('code').addEventListener('click', function (event) {
+        document.getElementById('lines').addEventListener('click', function (event) {
             self.cursor.setByClick();
             self.autoComplete.hide();
             if (self.pressedKeys['ControlLeft']) {
@@ -218,8 +218,6 @@ class Main extends CommandHandlers {
                     self.cursor = new TxtCursor(self.code, self.lineNumber);
                     self.autoComplete = new TxtAutocomplete();
                 }
-                self.setKeyBoardEventListeners();
-                self.setMouseEventListeners();
             } else if (target.parentElement.className === 'folderlink') {
                 await self.fileListing.get(event);
             }
