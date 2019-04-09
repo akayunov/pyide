@@ -5,7 +5,7 @@ let assert = require('assert');
 
 
 mocha.describe('Put some symbols', function () {
-    it('qwertyENTERasd', async function () {
+    it('qwerty,ENTER,asd', async function () {
         let driver = await context.getDriver();
         //TODO may be I don't need tabindex on code-line elements??
         let el = await driver.findElement(webdriver.By.id('code'));
@@ -21,11 +21,7 @@ mocha.describe('Put some symbols', function () {
         let driver = await context.getDriver();
         //TODO may be I don't need tabindex on code-line elements??
         let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(webdriver.Key.ENTER);
-        await el.sendKeys(webdriver.Key.ENTER);
-        await el.sendKeys(webdriver.Key.ENTER);
-        await el.sendKeys(webdriver.Key.ENTER);
-        await el.sendKeys(webdriver.Key.ENTER);
+        await el.sendKeys(...Array(5).fill(webdriver.Key.ENTER));
         await el.sendKeys('qwe');
         let els = await driver.findElements(webdriver.By.className('content-line'));
         assert.strictEqual(await els[0].getAttribute('textContent'), "\n");
@@ -37,7 +33,7 @@ mocha.describe('Put some symbols', function () {
         await driver.quit();
     });
 
-    it('ENDqwe in text', async function () {
+    it('END,qwe in text', async function () {
         let driver = await context.getDriver();
         await context.openFile('cursor/cursor.txt', driver);
         let el = await driver.findElement(webdriver.By.id('code'));
@@ -47,7 +43,7 @@ mocha.describe('Put some symbols', function () {
         await driver.quit();
     });
 
-    it('ENDqwe in py code', async function () {
+    it('END,qwe in py code', async function () {
         let driver = await context.getDriver();
         await context.openFile('cursor/cursor.py', driver);
         let el = await driver.findElement(webdriver.By.id('code'));
@@ -72,6 +68,39 @@ mocha.describe('Put some symbols', function () {
         await el.sendKeys(webdriver.Key.PAGE_DOWN, webdriver.Key.PAGE_DOWN, 'qwe');
         let els = await driver.findElements(webdriver.By.className('content-line'));
         assert.strictEqual(await els[80].getAttribute('textContent'), "qwe0 0 0 0 0 0 0 0 df\n");
+        await driver.quit();
+    });
+    it('8 move rigth, qwe', async function () {
+        let driver = await context.getDriver();
+        await context.openFile('cursor/cursor.txt', driver);
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(...Array(8).fill(webdriver.Key.ARROW_RIGHT),'qwe');
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[1].getAttribute('textContent'), "qwe\n");
+        await driver.quit();
+    });
+    it('10 move rigth, qwe for py code', async function () {
+        let driver = await context.getDriver();
+        await context.openFile('cursor/cursor.py', driver);
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(...Array(10).fill(webdriver.Key.ARROW_RIGHT),'qwe');
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[1].getAttribute('textContent'), "qwe\n");
+        await driver.quit();
+    });
+    it('Move to the end of file and father for py code', async function () {
+        this.timeout(0);
+        let driver = await context.getDriver();
+        await context.openFile('cursor/cursor.py', driver);
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(
+            ...Array(6).fill(webdriver.Key.ARROW_DOWN),
+            ...Array(100).fill(webdriver.Key.ARROW_RIGHT),
+            webdriver.Key.ENTER,
+            'qwe'
+        );
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[7].getAttribute('textContent'), "qwe\n");
         await driver.quit();
     });
 });

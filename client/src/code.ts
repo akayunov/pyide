@@ -47,6 +47,7 @@ export class Code {
     }
 
     clean (){
+        // TODO do I really should remove it?
         this.codeElement.remove();
         this.codeElement = null;
     }

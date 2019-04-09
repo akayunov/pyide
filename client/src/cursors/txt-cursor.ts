@@ -159,8 +159,16 @@ export class TxtCursor {
             if (nextElement === null){
                 return false;
             }
+            this.putCursorByPositionInNode(nextElement, 1);
+        }
+        if (this.cursorElement.previousSibling.textContent.endsWith('\n')){
+            let nextElement = this.code.getNextElement(this.cursorParentElement);
+            if (nextElement === null){
+                nextElement = this.cursorParentElement;
+            }
             this.putCursorByPositionInNode(nextElement, 0);
         }
+
         this.resetLinePosition();
         return true;
     };

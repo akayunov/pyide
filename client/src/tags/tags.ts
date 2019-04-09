@@ -6,16 +6,19 @@ export class Tags {
 
     async init (fileName: string){
         let self = this;
-        let response = await (await fetch(`/server/tags/${fileName}`)).json();
+        let response = await fetch(`/server/tags/${fileName}`);
         while (this.tagElement.lastChild){
             this.tagElement.removeChild(this.tagElement.lastChild);
         }
-        response.forEach(
-            function (element: string){
-                let divElement = document.createElement('div');
-                self.tagElement.appendChild(divElement);
-                divElement.outerHTML = element;
-            }
-        );
+        if (response.ok){
+            let resJson = await (response).json();
+            resJson.forEach(
+                function (element: string){
+                    let divElement = document.createElement('div');
+                    self.tagElement.appendChild(divElement);
+                    divElement.outerHTML = element;
+                }
+            );
+        }
     }
 }
