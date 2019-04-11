@@ -173,13 +173,13 @@ class Main extends CommandHandlers {
                 event.preventDefault();
             } else {
                 self.cursor.putSymbol(event.key);
-                // self.commandBus.sendCommand('autoCompleteShow',
-                //     self.autoComplete.commandGetAutocompleteShow(
-                //         <HTMLElement>event.target,
-                //         self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
-                //         self.code.fileName
-                //     )
-                // );
+                self.commandBus.sendCommand('autoCompleteShow',
+                    self.autoComplete.commandGetAutocompleteShow(
+                        <HTMLElement>event.target,
+                        self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
+                        self.code.fileName
+                    )
+                );
                 event.preventDefault();
             }
 

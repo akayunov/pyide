@@ -4,6 +4,8 @@ let webdriver = require('selenium-webdriver');
 let assert = require('assert');
 
 
+//TODO move it to separate files
+
 mocha.describe('Put some symbols', function () {
     this.timeout(0);
 
