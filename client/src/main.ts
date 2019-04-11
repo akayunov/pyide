@@ -166,10 +166,10 @@ class Main extends CommandHandlers {
             } else if (event.code === 'AltLeft') {
             } else if (event.code === 'F5') {
             } else if (event.code === 'Backspace') {
-                self.cursor.deleteSymbolBefore();
+                self.cursor.backspace();
                 event.preventDefault();
             } else if (event.code === 'Delete') {
-                self.cursor.deleteSymbolUnder();
+                self.cursor.delete();
                 event.preventDefault();
             } else {
                 self.cursor.putSymbol(event.key);

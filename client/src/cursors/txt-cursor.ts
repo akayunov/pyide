@@ -229,23 +229,25 @@ export class TxtCursor {
         this.resetLinePosition();
     };
 
-    deleteSymbolUnder() {
-        if (this.moveRight()) {
-            if (this.getPositionInNode() !== 0) {
-                this.cursorElement.previousSibling.textContent = this.cursorElement.previousSibling.textContent.slice(0, this.getPositionInNode() - 1)
-            } else {
-                let prevElement = this.code.getPreviousElement(this.cursorParentElement);
-                prevElement.textContent = prevElement.textContent.slice(0, prevElement.textContent.length - 1);
-                if (prevElement.textContent.length === 0) {
-                    this.code.removeNode(prevElement);
-                }
+    delete() {
+        if (this.getPositionInNode() < this.cursorParentElement.textContent.length) {
+            this.cursorElement.nextSibling.textContent = this.cursorElement.nextSibling.textContent.slice(1, this.cursorElement.nextSibling.textContent.length)
+        }
+        else {
+            let nextElement = this.code.getNextElement(this.cursorParentElement);
+            if( nextElement === null){
+                return;
+            }
+            nextElement.textContent = nextElement.textContent.slice(1, nextElement.textContent.length);
+            if (nextElement.textContent.length === 0) {
+                this.code.removeNode(nextElement);
             }
         }
     };
 
-    deleteSymbolBefore() {
+    backspace() {
         if (this.moveLeft()){
-            this.deleteSymbolUnder();
+            this.delete();
         }
     };
 

@@ -46,6 +46,7 @@ mocha.describe('Move right', function () {
         await driver.quit();
     });
     it.skip('Move by multiline string for py code', async function () {
+        //TODO split multi line in different div elements
         let driver = await context.getDriver();
         await context.openFile('cursor/cursor-multiline-string.py', driver);
         // let el = await driver.findElement(webdriver.By.id('code'));
