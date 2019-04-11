@@ -97,6 +97,7 @@ body {
     overflow-y: scroll;
     overflow-x: scroll;
     white-space:nowrap;
+    user-select: none;  /*doesn't' select text */
 }
 
 #lines {
@@ -105,12 +106,14 @@ body {
     height: 100vh;
     overflow-y: scroll;
     overflow-x: scroll;
+
 }
 
 #line-number{
     display: inline-block;
     width: 4ch;
     vertical-align: top;
+    user-select: none;  /*doesn't' select text */
 }
 
 #code {
@@ -128,6 +131,7 @@ body {
     overflow-y: scroll;
     overflow-x: scroll;
     white-space:nowrap;
+    user-select: none;  /*doesn't' select text */
 }
 
 

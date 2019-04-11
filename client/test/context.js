@@ -34,5 +34,3 @@ exports.openFile = async function (filePath, driver) {
     await driver.wait(webdriver.until.elementLocated(webdriver.By.className('content-line')), 1000);
 
 };
-
-

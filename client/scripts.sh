@@ -15,7 +15,7 @@ Possible commands:
 }
 
 tt(){
-    mocha "$@" test/functional/cursor.js
+    mocha "$@" test/functional/*
 }
 
 main "$@"

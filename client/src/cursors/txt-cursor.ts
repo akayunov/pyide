@@ -59,11 +59,20 @@ export class TxtCursor {
                 console.log('childNodes.length:=', childNodes.length);
             }
             let nextTextNode = (<Text>childNodes.item(0)).splitText(cursorPositionInNode);
+            if (childNodes.item(0).textContent[cursorPositionInNode - 1] === '\n'){
+                childNodes.item(0).textContent = childNodes.item(0).textContent.slice(0, -1);
+                cursorPositionInNode -= 1;
+
+            }
             nextTextNode.textContent = initTextContent.slice(cursorPositionInNode);
             nextTextNode.before(this.cursorElement);
         } else {
             if (cursorPositionInNode !== this.getPositionInNode()) {
                 let previousSiblingText = '', nextSiblingText = '';
+                if (this.cursorParentElement.textContent[cursorPositionInNode - 1] === '\n'){
+                    // always stay before newline symbol
+                    cursorPositionInNode -= 1;
+                }
                 previousSiblingText = this.cursorParentElement.textContent.slice(0, cursorPositionInNode);
                 nextSiblingText = this.cursorParentElement.textContent.slice(cursorPositionInNode);
                 this.cursorElement.previousSibling.textContent = previousSiblingText;
@@ -153,20 +162,31 @@ export class TxtCursor {
 
     moveRight() {
         if (this.cursorElement.nextSibling.textContent !== '') {
-            this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() + 1);
+            if (this.cursorElement.nextSibling.textContent === '\n') {
+                let nextElement = this.code.getNextElement(this.cursorParentElement);
+                if (nextElement === null){
+                    return false;
+                }
+                this.putCursorByPositionInNode(nextElement, 0);
+            }
+            else {
+                this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() + 1);
+            }
         } else if (this.cursorElement.nextSibling.textContent === '') {
             let nextElement = this.code.getNextElement(this.cursorParentElement);
             if (nextElement === null){
                 return false;
             }
-            this.putCursorByPositionInNode(nextElement, 1);
-        }
-        if (this.cursorElement.previousSibling.textContent.endsWith('\n')){
-            let nextElement = this.code.getNextElement(this.cursorParentElement);
-            if (nextElement === null){
-                nextElement = this.cursorParentElement;
+            if (nextElement.textContent === '\n'){
+                let nextNextElement = this.code.getNextElement(nextElement);
+                if (nextNextElement === null){
+                    return false;
+                }
+                this.putCursorByPositionInNode(nextNextElement, 0);
             }
-            this.putCursorByPositionInNode(nextElement, 0);
+            else {
+                this.putCursorByPositionInNode(nextElement, 1);
+            }
         }
 
         this.resetLinePosition();
@@ -205,7 +225,7 @@ export class TxtCursor {
 
     moveEnd() {
         let lastElement = this.code.getLastElementOnLineByNode(this.cursorParentElement);
-        this.putCursorByPositionInNode(lastElement, lastElement.textContent.length - 1);
+        this.putCursorByPositionInNode(lastElement, lastElement.textContent.length);
         this.resetLinePosition();
     };
 

@@ -5,102 +5,30 @@ let assert = require('assert');
 
 
 mocha.describe('Put some symbols', function () {
-    it('qwerty,ENTER,asd', async function () {
-        let driver = await context.getDriver();
-        //TODO may be I don't need tabindex on code-line elements??
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys('qwerty\nasd');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
+    this.timeout(0);
 
-        assert.strictEqual(await els[0].getText(), "qwerty");
-        assert.strictEqual(await els[1].getText(), "asd");
-        await driver.quit();
-    });
-
-    it('5 Enters', async function () {
-        let driver = await context.getDriver();
-        //TODO may be I don't need tabindex on code-line elements??
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(...Array(5).fill(webdriver.Key.ENTER));
-        await el.sendKeys('qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[0].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[1].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[2].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[3].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[4].getAttribute('textContent'), "\n");
-        assert.strictEqual(await els[5].getAttribute('textContent'), "qwe");
-        await driver.quit();
-    });
-
-    it('END,qwe in text', async function () {
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.txt', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(webdriver.Key.END, 'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[0].getAttribute('textContent'), "tratataqwe\n");
-        await driver.quit();
-    });
-
-    it('END,qwe in py code', async function () {
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.py', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(webdriver.Key.END, 'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[0].getAttribute('textContent'), "import osqwe\n");
-        await driver.quit();
-    });
-    it('Split row', async function () {
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.txt', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(webdriver.Key.END, 'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[0].getAttribute('textContent'), "tratataqwe\n");
-        await driver.quit();
-    });
-    it('Double Page Down', async function () {
+    it('Page Down to end of file + qwe', async function () {
         let driver = await context.getDriver();
         await context.openFile('cursor/cursor-many-row.txt', driver);
         let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(webdriver.Key.PAGE_DOWN, webdriver.Key.PAGE_DOWN, 'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[80].getAttribute('textContent'), "qwe0 0 0 0 0 0 0 0 df\n");
-        await driver.quit();
-    });
-    it('8 move rigth, qwe', async function () {
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.txt', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(...Array(8).fill(webdriver.Key.ARROW_RIGHT),'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[1].getAttribute('textContent'), "qwe\n");
-        await driver.quit();
-    });
-    it('10 move rigth, qwe for py code', async function () {
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.py', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
-        await el.sendKeys(...Array(10).fill(webdriver.Key.ARROW_RIGHT),'qwe');
-        let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[1].getAttribute('textContent'), "qwe\n");
-        await driver.quit();
-    });
-    it('Move to the end of file and father for py code', async function () {
-        this.timeout(0);
-        let driver = await context.getDriver();
-        await context.openFile('cursor/cursor.py', driver);
-        let el = await driver.findElement(webdriver.By.id('code'));
         await el.sendKeys(
-            ...Array(6).fill(webdriver.Key.ARROW_DOWN),
-            ...Array(100).fill(webdriver.Key.ARROW_RIGHT),
-            webdriver.Key.ENTER,
+            ...Array(10).fill(webdriver.Key.PAGE_DOWN),
             'qwe'
         );
         let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[7].getAttribute('textContent'), "qwe\n");
+        assert.strictEqual(await els[170].getAttribute('textContent'), "qwe0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 df");
+        await driver.quit();
+    });
+    it('Page Up to start of file + qwe', async function () {
+        let driver = await context.getDriver();
+        await context.openFile('cursor/cursor-many-row.txt', driver);
+        let el = await driver.findElement(webdriver.By.id('code'));
+        await el.sendKeys(
+            ...Array(1).fill(webdriver.Key.PAGE_UP),
+            'qwe'
+        );
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[0].getAttribute('textContent'), "qwe1 123\n");
         await driver.quit();
     });
 });

@@ -106,7 +106,14 @@ def mark_token(k, current_position, ast_parser):
     else:
         if k.exact_type == 3:
             # STRING
-            tagged_string = padding + '<span class=string>' + k.string + '</span>'
+            # check for multiline
+            if '\n' in k.string:
+                # TODO move to generator
+                tagged_string = padding
+                for item in k.string.split('\n'):
+                    tagged_string += '<span class=string>' + item + '</span>' + '<span>\n</span>'
+            else:
+                tagged_string = padding + '<span class=string>' + k.string + '</span>'
         elif k.exact_type == 54:
             # COMMENT
             tagged_string = padding + '<span class=comment>' + k.string + '</span>'
@@ -194,7 +201,7 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
     string = ''
     result = []
     for k in tokenize_structure:
-        # print(k)
+        print(k)
         if k.exact_type == 59:
             # file encoding
             continue
