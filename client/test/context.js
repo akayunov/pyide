@@ -26,6 +26,7 @@ exports.openFile = async function (filePath, driver) {
             href = href.replace('filelisting', 'code')
         }
         href += '/' + part;
+        await driver.wait(webdriver.until.elementLocated(webdriver.By.css('a[href*="' + href + '"]')), 1000);
         let folderCursorEl = await driver.findElement(webdriver.By.css('a[href*="' + href + '"]'));
         await folderCursorEl.click();
     }
