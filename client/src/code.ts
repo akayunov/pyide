@@ -1,4 +1,3 @@
-import {TxtCursor} from "./cursors/txt-cursor";
 import {LineNumber} from "./line-number";
 
 class PositionInNode {
@@ -33,14 +32,18 @@ export class Code {
             }
         }
         else {
-            this.codeElement.appendChild(this.createNewLine(1));
+            // TODO new line to right way select focus element
+            this.codeElement.appendChild(this.createNewLine(1, '\n'));
         }
+        this.getFirstElement().focus();
+        document.getSelection().collapse(this.getFirstElement(), 0)
     }
 
     createCodeElement(){
         let codeElement = document.createElement('div');
         codeElement.tabIndex = 1;
         codeElement.id = 'code';
+        codeElement.contentEditable = 'true';
         document.getElementById('lines').appendChild(codeElement);
         this.codeElement = codeElement;
 
@@ -259,38 +262,38 @@ export class Code {
         this.recalculateTabIndex(<HTMLElement>elementToRecalculateFrom);
     }
 
-    replaceLine(n: number, lineElements: Array<string>, cursor: TxtCursor) {
-        let line = this.getLineByNumber(n);
-        let tmpContainer: HTMLElement = document.createElement('div');
-        tmpContainer.innerHTML = lineElements.join('');
-        for (let oldEl of line.childNodes) {
-            let nodeId = (<HTMLElement>oldEl).getAttribute('nodeid');
-            if (nodeId !== null) {
-                let elementsToReplace = [];
-                for (let newEl of Array.from(tmpContainer.childNodes)) {
-                    // console.log('tartata', newEl);
-                    if ((<HTMLElement>newEl).getAttribute('nodeid') === nodeId) {
-                        elementsToReplace.push(newEl);
-                    }
-                }
-                // check that text is equal and element does't change from send request
-                // if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
-                if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
-                    for (let el of elementsToReplace.reverse()) {
-                        (<HTMLElement>el).removeAttribute('nodeid');
-                        oldEl.after(el);
-                    }
-                    oldEl.remove();
-                } else {
-                    console.log('element content is different:|' + elementsToReplace.map(x => x.textContent).join('') +
-                        '| vs |' +
-                        oldEl.textContent, '|'
-                    );
-                }
-
-            }
-        }
-    }
+    // replaceLine(n: number, lineElements: Array<string>, cursor: TxtCursor) {
+    //     let line = this.getLineByNumber(n);
+    //     let tmpContainer: HTMLElement = document.createElement('div');
+    //     tmpContainer.innerHTML = lineElements.join('');
+    //     for (let oldEl of line.childNodes) {
+    //         let nodeId = (<HTMLElement>oldEl).getAttribute('nodeid');
+    //         if (nodeId !== null) {
+    //             let elementsToReplace = [];
+    //             for (let newEl of Array.from(tmpContainer.childNodes)) {
+    //                 // console.log('tartata', newEl);
+    //                 if ((<HTMLElement>newEl).getAttribute('nodeid') === nodeId) {
+    //                     elementsToReplace.push(newEl);
+    //                 }
+    //             }
+    //             // check that text is equal and element does't change from send request
+    //             // if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
+    //             if (elementsToReplace.map(x => x.textContent).join('') === oldEl.textContent) {
+    //                 for (let el of elementsToReplace.reverse()) {
+    //                     (<HTMLElement>el).removeAttribute('nodeid');
+    //                     oldEl.after(el);
+    //                 }
+    //                 oldEl.remove();
+    //             } else {
+    //                 console.log('element content is different:|' + elementsToReplace.map(x => x.textContent).join('') +
+    //                     '| vs |' +
+    //                     oldEl.textContent, '|'
+    //                 );
+    //             }
+    //
+    //         }
+    //     }
+    // }
 
     commandGetParseLineMsg(codeLine: HTMLElement) {
         // TODO do schema
