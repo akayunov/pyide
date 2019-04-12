@@ -5,6 +5,7 @@ const {CheckerPlugin} = require('awesome-typescript-loader');
 const path = require('path');
 
 module.exports = {
+    mode: 'development',
     entry: {
         main: './src/main.ts'
     },
