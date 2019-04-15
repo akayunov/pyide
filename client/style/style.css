@@ -44,8 +44,13 @@ div {
 /*}*/
 
 
-.autocomplete {
-    background: yellow;
+#line-number > .line-number div#cursorHighlightElement {
+    position: absolute;
+    z-index: 1;
+}
+
+#line-number > div.line-number > div.autocomplete  {
+    background-color: yellow;
     position: fixed;
     z-index: 1;
 }
@@ -55,9 +60,10 @@ div {
     z-index: 1;
 }
 
-#active-autocomplete {
+#line-number > div.line-number > div.autocomplete > div#active-autocomplete {
     background: red;
     color: black;
+    position: static;
 }
 
 
@@ -143,10 +149,10 @@ body {
     background: #f0ffef
 }
 
-#line-number div:nth-child(even) {
+#line-number div:nth-child(even).line-number {
     background: #f9fbff;
 }
-#line-number div:nth-child(odd) {
+#line-number div:nth-child(odd).line-number {
     background: #f0ffef
 }
 

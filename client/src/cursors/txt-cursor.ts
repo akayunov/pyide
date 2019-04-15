@@ -140,6 +140,10 @@ export class TxtCursor {
         return this._cursorParentElement;
     }
 
+    getPreviousText(){
+        return this.cursorElement.previousSibling.textContent;
+    }
+
     putSymbol(char: string) {
         this.cursorElement.previousSibling.textContent += char;
         this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode());

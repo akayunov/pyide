@@ -119,7 +119,7 @@ class Main extends CommandHandlers {
                 event.preventDefault();
             } else if (event.code === 'Tab') {
                 if (self.autoComplete.active) {
-                    self.cursor.putString(self.autoComplete.getSymbols(self.cursor.getPositionInNode()));
+                    self.cursor.putString(self.autoComplete.getSymbols(self.cursor.getPreviousText()));
                     self.autoComplete.hide();
                 } else {
                     self.cursor.putTab();
@@ -157,9 +157,11 @@ class Main extends CommandHandlers {
                 event.preventDefault();
             } else if (event.code === 'ArrowLeft') {
                 self.cursor.moveLeft();
+                self.autoComplete.hide();
                 event.preventDefault();
             } else if (event.code === 'ArrowRight') {
                 self.cursor.moveRight();
+                self.autoComplete.hide();
                 event.preventDefault();
             } else if (event.code === 'ShiftLeft') {
             } else if (event.code === 'ControlLeft') {
@@ -167,6 +169,13 @@ class Main extends CommandHandlers {
             } else if (event.code === 'F5') {
             } else if (event.code === 'Backspace') {
                 self.cursor.backspace();
+                self.commandBus.sendCommand('autoCompleteShow',
+                    self.autoComplete.commandGetAutocompleteShow(
+                        self.cursor.cursorParentElement.parentElement,
+                        self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
+                        self.code.fileName
+                    )
+                );
                 event.preventDefault();
             } else if (event.code === 'Delete') {
                 self.cursor.delete();
@@ -175,7 +184,7 @@ class Main extends CommandHandlers {
                 self.cursor.putSymbol(event.key);
                 self.commandBus.sendCommand('autoCompleteShow',
                     self.autoComplete.commandGetAutocompleteShow(
-                        <HTMLElement>event.target,
+                        self.cursor.cursorParentElement.parentElement,
                         self.code.getPositionInLine(self.cursor.cursorParentElement, self.cursor.getPositionInNode()),
                         self.code.fileName
                     )
@@ -220,6 +229,9 @@ class Main extends CommandHandlers {
                 }
             } else if (target.parentElement.className === 'folderlink') {
                 await self.fileListing.get(event);
+            }
+            if (self.autoComplete.active) {
+                self.autoComplete.hide()
             }
         });
     }

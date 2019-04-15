@@ -3,6 +3,7 @@ let chromeCapabilities = webdriver.Capabilities.chrome();
 
 let chromeOptions = {
     'args': ['--no-sandbox']
+    // , '--headless'
 };
 
 chromeCapabilities.set('chromeOptions', chromeOptions);
@@ -32,6 +33,6 @@ exports.openFile = async function (filePath, driver) {
     }
     // wait until old code will be replaced by page refresh and find some content-line
     await driver.wait(webdriver.until.stalenessOf(codeBefore), 1000);
-    await driver.wait(webdriver.until.elementLocated(webdriver.By.className('content-line')), 1000);
+    return await driver.wait(webdriver.until.elementLocated(webdriver.By.className('content-line')), 1000);
 
 };

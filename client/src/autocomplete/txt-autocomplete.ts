@@ -1,7 +1,7 @@
 export class TxtAutocomplete {
     public active: Boolean;
     public autoCompleteElement: HTMLElement = null;
-    public activeVariant : number = 0;
+    public activeVariant: HTMLElement = null;
 
     constructor() {
         this.createAutocompleteElement([]);
@@ -23,27 +23,34 @@ export class TxtAutocomplete {
     }
 
     createAutocompleteElement(result: Array<string>) {
-        if (this.active === true){
+        if (this.active) {
             this.hide();
         }
         this.active = true;
         this.autoCompleteElement = document.createElement('div');
         this.autoCompleteElement.className = 'autocomplete';
-        // this.autoCompleteElement.style.background = 'yellow';
+
         this.refill(result);
 
     }
 
-    refill(result: Array<string>){
+    refill(result: Array<string>) {
         while (this.autoCompleteElement.firstChild) {
             this.autoCompleteElement.removeChild(this.autoCompleteElement.firstChild);
         }
+        let flag = false;
         for (let line of  result) {
             let span = document.createElement('div');
             span.textContent = line;
+            if (!flag) {
+                span.id = 'active-autocomplete';
+                flag = true;
+                this.activeVariant = span;
+            }
             this.autoCompleteElement.appendChild(span);
         }
     }
+
     show(rect: ClientRect, parentElement: HTMLElement) {
         this.active = true;
         // this.autoCompleteElement.setAttribute('style', '"top:' + rect.bottom + 'px;left:' + rect.left + 'px"');
@@ -52,39 +59,37 @@ export class TxtAutocomplete {
         parentElement.appendChild(this.autoCompleteElement);
     }
 
-    getSymbols(startPosition:number) {
-        return this.autoCompleteElement.childNodes.item(this.activeVariant).textContent.slice(startPosition);
+    getSymbols(lineText: string) {
+        let completeText = this.activeVariant.textContent;
+        while (!lineText.endsWith(completeText)){
+            completeText = completeText.slice(0, -1)
+        }
+        return this.activeVariant.textContent.slice(completeText.length, this.activeVariant.textContent.length);
     }
 
     hide() {
+        console.log('hide', this);
         if (this.active) {
             this.active = false;
             this.autoCompleteElement.remove();
-            this.activeVariant = 0;
         }
     }
 
     hlNext() {
-        if (this.activeVariant === this.autoCompleteElement.childNodes.length){
-            return;
-        }
-        (<HTMLElement>this.autoCompleteElement.childNodes.item(this.activeVariant)).removeAttribute('id');
-        this.activeVariant += 1;
-        if (this.active) {
-            let activeVariant = <HTMLElement>this.autoCompleteElement.childNodes.item(this.activeVariant);
-            activeVariant.setAttribute('id', 'active-autocomplete');
+        let nextElement = this.activeVariant.nextElementSibling || (<HTMLElement>this.autoCompleteElement.firstChild);
+        if (nextElement !== null) {
+            this.activeVariant.id = '';
+            this.activeVariant = (<HTMLElement>nextElement);
+            this.activeVariant.id = 'active-autocomplete';
         }
     }
 
     hlPrev() {
-        if (this.activeVariant === 0){
-            return;
-        }
-        (<HTMLElement>this.autoCompleteElement.childNodes.item(this.activeVariant)).removeAttribute('id');
-        this.activeVariant -= 1;
-        if (this.active) {
-            let activeVariant = <HTMLElement>this.autoCompleteElement.childNodes.item(this.activeVariant);
-            activeVariant.setAttribute('id', 'active-autocomplete');
+        let nextElement = this.activeVariant.previousElementSibling || (<HTMLElement>this.autoCompleteElement.lastChild);
+        if (nextElement !== null) {
+            this.activeVariant.id = '';
+            this.activeVariant = (<HTMLElement>nextElement);
+            this.activeVariant.id = 'active-autocomplete';
         }
     }
 }
