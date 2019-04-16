@@ -83,25 +83,43 @@ class Main extends CommandHandlers {
 
     handlerLineParse(jsonData: LineParse) {
         // console.log('jsonData.data.fileName', jsonData.data, jsonData.data.fileName);
-        //TODO need to add lock to avoid race condition with typing
+        //TODO file can parsed in background then you have many code objects
         if (this.code.fileName !== jsonData.data.fileName) {
             return;
         }
         let line = this.code.getLineByNumber(jsonData.data.lineNumber);
         let currentLineNumber = this.cursor.getLineNumber();
-        let oldPosition = this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode());
+        if (jsonData.data.lineNumber === currentLineNumber){
+            // cursor in this line so should be saved
+            let oldPosition = this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode());
 
-        this.code.replaceLine(jsonData.data.lineNumber, jsonData.data.lineElements, this.cursor);
-        // TODO in case line removal tabIndex will be the same on another line
-        if (parseInt(currentLineNumber) === jsonData.data.lineNumber) {
+            //TODO optimize, how? // TODO performance tests
+            Array.from(line.childNodes).forEach(x => {x.remove()});
+            Array.from(jsonData.data.lineElements).forEach(x => {
+                let span = document.createElement('span');
+                line.appendChild(span);
+                span.outerHTML = x;
+            });
+
+            // TODO in case line removal tabIndex will be the same on another line
             let newPosition = this.code.getNodeByPosition(line, oldPosition);
             this.cursor.putCursorByPositionInNode(newPosition.node, newPosition.positionInNode);
+        }
+        else{
+            //TODO optimize, how? // TODO performance tests
+            Array.from(line.childNodes).forEach(x => {x.remove()});
+            Array.from(jsonData.data.lineElements).forEach(x => {
+                let span = document.createElement('span');
+                line.appendChild(span);
+                span.outerHTML = x;
+            });
         }
     }
 
     handlerAutocompleteShow(jsonData: AutocompleteShow) {
-        this.autoComplete.refill(jsonData.data.result);
-        this.autoComplete.show(this.cursor.getCoordinate(),this.lineNumber.getByNumber(jsonData.data.lineNumber));
+        if (jsonData.data.result.length > 0) {
+            this.autoComplete.refill(jsonData.data.result, this.cursor.getPreviousText(),this.cursor.getCoordinate(), this.lineNumber.getByNumber(jsonData.data.lineNumber));
+        }
     }
 
     setKeyBoardEventListeners() {
@@ -113,7 +131,7 @@ class Main extends CommandHandlers {
 
         document.getElementById('lines').addEventListener('keydown', function (event) {
             self.pressedKeys[event.code] = true;
-            // console.log('code', event.code);
+            console.log('code', event.code);
             if (event.code === 'Enter') {
                 self.cursor.addNewRow();
                 event.preventDefault();
@@ -152,6 +170,8 @@ class Main extends CommandHandlers {
             } else if (event.code === 'End') {
                 self.cursor.moveEnd();
                 event.preventDefault();
+            } else if (event.code === 'ShiftLeft') {
+            } else if (event.code === 'ShiftRight') {
             } else if (event.code === 'Home') {
                 self.cursor.moveHome();
                 event.preventDefault();
@@ -191,8 +211,7 @@ class Main extends CommandHandlers {
                 );
                 event.preventDefault();
             }
-
-            // self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
+            self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
         })
     }
 

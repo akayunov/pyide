@@ -34,37 +34,48 @@ export class TxtAutocomplete {
 
     }
 
-    refill(result: Array<string>) {
+    refill(result: Array<string>, lineText: string='', rect: ClientRect=null, parentElement: HTMLElement=null) {
         while (this.autoCompleteElement.firstChild) {
             this.autoCompleteElement.removeChild(this.autoCompleteElement.firstChild);
         }
+        this.active = false;
         let flag = false;
         for (let line of  result) {
-            let span = document.createElement('div');
-            span.textContent = line;
-            if (!flag) {
-                span.id = 'active-autocomplete';
-                flag = true;
-                this.activeVariant = span;
+            if (this.getSymbols(lineText, line).length > 0){
+                // there is exists something that needed to complete or all symbols were putted by user
+                let span = document.createElement('div');
+                span.textContent = line;
+                if (!flag) {
+                    span.id = 'active-autocomplete';
+                    flag = true;
+                    this.activeVariant = span;
+                }
+                this.autoCompleteElement.appendChild(span);
+                this.active = true;
             }
-            this.autoCompleteElement.appendChild(span);
+        }
+        if (this.active){
+            // TODO should check that autocomplete can be late and not suitable to current cursor position(performance tests)
+            this.autoCompleteElement.style.top = rect.bottom.toString() + 'px';
+            this.autoCompleteElement.style.left = rect.left.toString() + 'px';
+            parentElement.appendChild(this.autoCompleteElement);
         }
     }
 
-    show(rect: ClientRect, parentElement: HTMLElement) {
-        this.active = true;
-        // this.autoCompleteElement.setAttribute('style', '"top:' + rect.bottom + 'px;left:' + rect.left + 'px"');
-        this.autoCompleteElement.style.top = rect.bottom.toString() + 'px';
-        this.autoCompleteElement.style.left = rect.left.toString() + 'px';
-        parentElement.appendChild(this.autoCompleteElement);
-    }
-
-    getSymbols(lineText: string) {
-        let completeText = this.activeVariant.textContent;
-        while (!lineText.endsWith(completeText)){
+    getSymbols(textCompletedTo: string, completeVariant: string=null) {
+        let initCompleteTo = '';
+        let completeText = '';
+        if (completeVariant !== null){
+            completeText = completeVariant;
+        }
+        else{
+            completeText = this.activeVariant.textContent;
+        }
+        initCompleteTo = completeText;
+        while (!textCompletedTo.endsWith(completeText)) {
             completeText = completeText.slice(0, -1)
         }
-        return this.activeVariant.textContent.slice(completeText.length, this.activeVariant.textContent.length);
+        return initCompleteTo.slice(completeText.length, initCompleteTo.length);
     }
 
     hide() {

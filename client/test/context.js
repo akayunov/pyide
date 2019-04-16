@@ -2,8 +2,10 @@ let webdriver = require('selenium-webdriver');
 let chromeCapabilities = webdriver.Capabilities.chrome();
 
 let chromeOptions = {
-    'args': ['--no-sandbox']
-    // , '--headless'
+    'args': [
+        '--no-sandbox'
+        , '--headless'
+    ]
 };
 
 chromeCapabilities.set('chromeOptions', chromeOptions);

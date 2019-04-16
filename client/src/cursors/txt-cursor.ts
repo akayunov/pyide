@@ -126,12 +126,12 @@ export class TxtCursor {
     }
 
     set cursorParentElement(el) {
+        //TODO remove it
         if (el === null) {
             this.cursorElement.remove();
             this.cursorParentElement.normalize();
             this._cursorParentElement = null;
         } else {
-            el.setAttribute('nodeid', Math.floor((Math.random() * 1000000000) + 1).toString());
             this._cursorParentElement = el;
         }
     }

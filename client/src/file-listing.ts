@@ -51,6 +51,13 @@ export class FileListing {
 
     async showFile(url: string) {
         this.currentFileName = url.split('/').slice(-1)[0];
-        return await (await fetch(url)).json();
+        let response = await fetch(url);
+        if (response.ok){
+            return await response.json();
+        }
+        else{
+            alert(`Server say: ${response.status} ${response.statusText}. On file name: ${this.currentFileName}`);
+        }
+
     }
 }

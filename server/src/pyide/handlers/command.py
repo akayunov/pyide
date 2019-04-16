@@ -45,29 +45,6 @@ class Command(tornado.websocket.WebSocketHandler):
             tokenized_elements_to = tokenized_elements_to[0]
             print('xx1:', [et.tostring(i,encoding="unicode") for i in tokenized_elements_to])
 
-            index = 0
-            el_to_index_shift = 0
-
-            # from pyide.rdb import Rdb;
-            # Rdb().set_trace();
-            while index < min([len(code_line_as_html_elements), len(tokenized_elements_to)]):
-                orig_el = code_line_as_html_elements[index]
-                if orig_el.attrib.get('nodeid'):
-                    # changed_node_text = orig_el.text
-                    # cursor may be in string so need iter
-                    changed_node_text = "".join(orig_el.itertext())
-                    new_text = tokenized_elements_to[index + el_to_index_shift].text
-                    tokenized_elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
-                    while changed_node_text != new_text:
-                        print('changed_node_text:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
-                        el_to_index_shift += 1
-                        new_text += tokenized_elements_to[index + el_to_index_shift].text
-                        tokenized_elements_to[index + el_to_index_shift].attrib['nodeid'] = orig_el.attrib['nodeid']
-                    print('changed_node_text finished:' + changed_node_text + '|' + 'new_text:' + new_text + '|')
-                    index += 1
-                else:
-                    index += 1
-
             self.write_message(
                 json.dumps({
                     'type': 'lineParse',
