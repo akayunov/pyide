@@ -20,6 +20,7 @@ interface LineParse {
         lineNumber: number;
         lineElements: Array<string>;
         fileName: string;
+        lineText: string;
     }
 }
 
@@ -88,12 +89,17 @@ class Main extends CommandHandlers {
             return;
         }
         let line = this.code.getLineByNumber(jsonData.data.lineNumber);
+        if (jsonData.data.lineText !== line.textContent){
+            return;
+        }
         let currentLineNumber = this.cursor.getLineNumber();
         if (jsonData.data.lineNumber === currentLineNumber){
             // cursor in this line so should be saved
             let oldPosition = this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode());
 
             //TODO optimize, how? // TODO performance tests
+            console.log(`text before|${line.textContent}|` );
+            console.log(`text after parsing|${jsonData.data.lineElements}|`);
             Array.from(line.childNodes).forEach(x => {x.remove()});
             Array.from(jsonData.data.lineElements).forEach(x => {
                 let span = document.createElement('span');

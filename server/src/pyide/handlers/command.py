@@ -51,7 +51,8 @@ class Command(tornado.websocket.WebSocketHandler):
                     'data':{
                         'lineNumber': message['lineNumber'],
                         'lineElements': [et.tostring(i,encoding="unicode") for i in tokenized_elements_to],
-                        'fileName': message['fileName']
+                        'fileName': message['fileName'],
+                        'lineText': line_text
                     }
                 })
             )
