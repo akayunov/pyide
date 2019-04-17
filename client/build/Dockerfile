@@ -36,4 +36,4 @@ RUN useradd -m -s /bin/bash $UNAME
 USER $UNAME
 WORKDIR /home/$UNAME
 
-#docker build -f Dockerfile  -t pyide-client-test .
+#docker build -f Dockerfile  -t akayunov/pyide-client-test:0.1 .

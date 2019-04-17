@@ -35,9 +35,9 @@ tt(){
 enter(){
     if [[ $@ ]]
     then
-        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash -c "$@"
+        docker exec -it $(docker ps -a -q  --filter ancestor=registry.hub.docker.com/akayunov/pyide-client-test:0.1) bash -c "$@"
     else
-        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash
+        docker exec -it $(docker ps -a -q  --filter ancestor=registry.hub.docker.com/akayunov/pyide-client-test:0.1) bash
     fi
 }
 
@@ -45,27 +45,27 @@ run(){
     if [[ $@ ]]
     then
         docker run -it --rm --user=$(id -u):$(id -g) --network=host \
-            -v=$PROJECT_DIR_ON_HOST:$PROJECT_DIR_ON_GUEST \
-            -v=$HOME/.npm:$HOME_DIR_ON_GUEST/.npm \
-            pyide-client-test bash -c "$@"
+            -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+            -v=$HOME/.npm:${HOME_DIR_ON_GUEST}/.npm \
+            registry.hub.docker.com/akayunov/pyide-client-test:0.1 bash -c "$@"
     else
         docker run -it --rm --user=$(id -u):$(id -g) --network=host \
-            -v=$PROJECT_DIR_ON_HOST:$PROJECT_DIR_ON_GUEST \
-            -v=$HOME/.npm:$HOME_DIR_ON_GUEST/.npm \
-            pyide-client-test bash -c "$@"
+            -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+            -v=$HOME/.npm:${HOME_DIR_ON_GUEST}/.npm \
+            registry.hub.docker.com/akayunov/pyide-client-test:0.1 bash -c "$@"
     fi
 }
 
 webstorm(){
     docker run -d --rm --user=$(id -u):$(id -g) --network=host \
-    -v=$HOME/pycharm-in-docker/WebStorm-191.6183.63:$HOME_DIR_ON_GUEST/webstorm \
-    -v=$HOME/?:$HOME_DIR_ON_GUEST/? \
-    -v=$PROJECT_DIR_ON_HOST:$PROJECT_DIR_ON_GUEST \
-    -v=$HOME/.npm:$HOME_DIR_ON_GUEST/.npm \
+    -v=$HOME/pycharm-in-docker/WebStorm-191.6183.63:${HOME_DIR_ON_GUEST}/webstorm \
+    -v=$HOME/?:${HOME_DIR_ON_GUEST}/? \
+    -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+    -v=$HOME/.npm:${HOME_DIR_ON_GUEST}/.npm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e DISPLAY=unix$DISPLAY \
-    -e JAVA_HOME=$HOME_DIR_ON_GUEST/pycharm-in-docker/jdk-12 \
-    pyide-client-test $HOME_DIR_ON_GUEST/webstorm/bin/webstorm.sh
+    -e DISPLAY=unix${DISPLAY} \
+    -e JAVA_HOME=${HOME_DIR_ON_GUEST}/pycharm-in-docker/jdk-12 \
+    registry.hub.docker.com/akayunov/pyide-client-test:0.1 ${HOME_DIR_ON_GUEST}/webstorm/bin/webstorm.sh
 }
 
 main "$@"
