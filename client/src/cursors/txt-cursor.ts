@@ -258,7 +258,7 @@ export class TxtCursor {
     setByClick() {
         //TODO works strange fix it
         let selObj = window.getSelection();
-        console.log('selObj', selObj, selObj.getRangeAt(0),selObj.getRangeAt(0), '|' + selObj.toString() + '|');
+        // console.log('selObj', selObj, selObj.getRangeAt(0),selObj.getRangeAt(0), '|' + selObj.toString() + '|');
         let anchorNode = selObj.anchorNode;
         if (anchorNode.nodeType !== Node.TEXT_NODE) {
             console.log('selected node is not text type');

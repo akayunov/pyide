@@ -122,6 +122,35 @@ class Main extends CommandHandlers {
         }
     }
 
+    async handlerGoToDefinition(){
+        let response = await fetch(
+            `/server/code/${this.fileListing.currentFileName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                    {
+                        code_string: this.code.getLineByNumber(this.cursor.getLineNumber()).textContent,
+                        cursor_position: this.code.getPositionInLine(this.cursor.cursorParentElement, this.cursor.getPositionInNode()),
+                        code_line_number: this.cursor.getLineNumber(),
+                        type: 'gotodefinition'
+                    }
+                )
+            }
+        );
+        if (response.ok){
+            let data = await response.json();
+            console.log(`Go to definition: ${data.code_line_number}, ${data.cursor_position}`);
+            let contentLine = this.code.getLineByNumber(data.code_line_number);
+            contentLine.scrollIntoView(true);
+            this.cursor.putCursorByPositionInNode(this.code.getNodeByPosition(contentLine, data.cursor_position).node, 0);
+        }
+        else{
+            console.log(`Go to definition is failed, server say: ${response.status}, ${response.statusText}`);
+        }
+    }
+
     setKeyBoardEventListeners() {
         let self = this;
         document.getElementById('lines').addEventListener('keyup', function (event: KeyboardEvent) {
@@ -196,9 +225,11 @@ class Main extends CommandHandlers {
                         self.code.fileName
                     )
                 );
+                self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
                 event.preventDefault();
             } else if (event.code === 'Delete') {
                 self.cursor.delete();
+                self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
                 event.preventDefault();
             } else {
                 self.cursor.putSymbol(event.key);
@@ -209,21 +240,21 @@ class Main extends CommandHandlers {
                         self.code.fileName
                     )
                 );
+                self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
                 event.preventDefault();
             }
-            self.commandBus.sendCommand('lineParse', self.code.commandGetParseLineMsg(<HTMLElement>event.target));
         })
     }
 
     setMouseEventListeners() {
         let self = this;
-        document.getElementById('lines').addEventListener('click', function (event) {
+        document.getElementById('lines').addEventListener('click', async function (event) {
+            event.preventDefault();
             self.cursor.setByClick();
             self.autoComplete.hide();
             if (self.pressedKeys['ControlLeft']) {
-                self.cursor.goToDefinition(self.fileListing.currentFileName)
+                await self.handlerGoToDefinition();
             }
-            event.preventDefault();
         });
 
         document.getElementById('filelisting').addEventListener('click', async function (event) {

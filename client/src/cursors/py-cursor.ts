@@ -14,6 +14,7 @@ export class PyCursor extends TxtCursor {
         this.putSymbol(' ');
     };
 
+
     // goToDefinition(curentFile:string) {
     //     let self = this;
     //     $.ajax({

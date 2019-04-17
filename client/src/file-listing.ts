@@ -50,7 +50,7 @@ export class FileListing {
     }
 
     async showFile(url: string) {
-        this.currentFileName = url.split('/').slice(-1)[0];
+        this.currentFileName = url.split('/').slice(3).join('/');
         let response = await fetch(url);
         if (response.ok){
             return await response.json();

@@ -1,5 +1,5 @@
 let mocha = require('mocha');
-let context = require('../../context.js');
+let context = require('../context.js');
 let webdriver = require('selenium-webdriver');
 let assert = require('assert');
 
@@ -17,7 +17,7 @@ mocha.describe('Line parse', function () {
         );
         let els = await driver.wait(webdriver.until.elementLocated(webdriver.By.className('keyword')), 1000);
         console.log(els[0]);
-        // await driver.quit();
+        await driver.quit();
     });
 
 });

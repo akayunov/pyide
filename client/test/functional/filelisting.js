@@ -1,5 +1,5 @@
 let mocha = require('mocha');
-let context = require('../../context.js');
+let context = require('../context.js');
 let webdriver = require('selenium-webdriver');
 let assert = require('assert');
 

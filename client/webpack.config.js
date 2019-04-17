@@ -17,10 +17,10 @@ module.exports = {
     // Currently we need to add '.ts' to the resolve.extensions array.
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
-        modules: ['/usr/local/lib/node_modules']
+        modules: ['/usr/lib/node_modules']
     },
     resolveLoader: {
-        modules: ['/usr/local/lib/node_modules'],
+        modules: ['/usr/lib/node_modules'],
         // extensions: ['.js', '.json'],
         // mainFields: ['loader', 'main']
     },

@@ -334,6 +334,7 @@ class Code(tornado.web.RequestHandler):
             # pdb.set_trace()
             node = AST_PARSER[path].get_assign_node_information(token_info.string, line_number=body['code_line_number'], col_offset=token_info.start[1])
             if node:
+                # TODO add file name in case cross file definition
                 self.write(
                     json.dumps({
                         'code_line_number': node.lineno.lineno,
@@ -341,4 +342,4 @@ class Code(tornado.web.RequestHandler):
                     })
                 )
             else:
-                self.write({})
+                raise tornado.web.HTTPError(status_code=404, log_message=f'Go to definition not found: {body}')
