@@ -54,7 +54,7 @@ reinit(){
     docker run \
         -d \
         --rm \
-        -e PYTHONPATH=/home/pyide/pyide/server/src \
+        -e PYTHONPATH=${PROJECT_DIR_ON_GUEST}/server/src \
         -e PYTHONUNBUFFERED=true \
         -p=31415:31415 \
         -p=5555:5555 \
@@ -67,6 +67,19 @@ reinit(){
 
 log (){
     docker logs -f --tail=100 $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide:0.1)
+}
+
+run(){
+    if [[ $@ ]]
+    then
+        docker run -it --rm --user=$(id -u):$(id -g) --network=host \
+            -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+            registry.hub.docker.com/akayunov/pyide-test:0.1 bash -c "$@"
+    else
+        docker run -it --rm --user=$(id -u):$(id -g) --network=host \
+            -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+            registry.hub.docker.com/akayunov/pyide-test:0.1 bash
+    fi
 }
 
 enter(){
@@ -92,8 +105,8 @@ pycharm(){
     -v=$HOME/pycharm-config-pyide:${HOME_DIR_ON_GUEST}/? \
     -v=$HOME/pycharm-in-docker/pycharm-community-2018.3.5:${HOME_DIR_ON_GUEST}/pycharm \
     -v=$HOME/pycharm-in-docker/jdk-12:${HOME_DIR_ON_GUEST}/jdk-12 \
-    -v=$HOME/pyide:${HOME_DIR_ON_GUEST}/pyide \
-    -v=$HOME/pycharm.idea:${HOME_DIR_ON_GUEST}/pyide/.idea \
+    -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
+    -v=$HOME/pycharm.idea:${PROJECT_DIR_ON_GUEST}/.idea \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=unix${DISPLAY} \
     -e JAVA_HOME=${HOME_DIR_ON_GUEST}/jdk-12 \

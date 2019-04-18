@@ -2,38 +2,39 @@ import argparse
 import logging
 import os
 
-import tornado.ioloop
-import tornado.web
+from aiohttp import web
+
 from pyide.handlers.code import Code
-from pyide.handlers.command import Command
+from pyide.handlers.command import websocket_handler
 from pyide.handlers.tags import Tags
 
 from pyide.handlers.filelisting import FileListing
 
-LOGGER = logging.getLogger('tornado.access')
-LOGGER.setLevel(logging.WARN)
-
 
 def main():
     parser = argparse.ArgumentParser(description='Pyide args')
+    parser.add_argument('--host', metavar='host', type=str, default='0.0.0.0', help='Host name')
     parser.add_argument('-p', '--port', metavar='port', type=int, default=31415, help='Listen port number')
     parser.add_argument('-d', '--debug', action='store_true', default=False, help='Debug mode')
     args = parser.parse_args()
 
     settings = {'debug': args.debug}
     if args.debug:
-        LOGGER.setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
 
-    app = tornado.web.Application(
+    app = web.Application(**settings)
+    app.add_routes(
         [
-            (r'/server/command', Command),
-            (r'/server/filelisting(.*)', FileListing),
-            (r'/server/code/(.*)', Code),
-            (r'/server/tags/(.*)', Tags),
-            (r'/client/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', '..','..','client'))),
-            (r'/favicon.ico(.*)?', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), '..', '..','..','client', 'resourses', 'favicon.ico'))),
-        ],
-        **settings
+            web.get('/server/command', websocket_handler),
+            web.get('/server/filelisting/{file_name:.*}', FileListing),
+            web.get('/server/filelisting', FileListing),
+            web.get('/server/code/{file_name:.*}', Code),
+            web.post('/server/code/{file_name:.*}', Code),
+            web.get('/server/tags/{file_name:.*}', Tags),
+            web.get('/server/filelisting{name}', FileListing),
+            web.static('/client', os.path.join(os.path.dirname(__file__), '..', '..', '..', 'client')),
+            # web.static('/{file_name:favicon\.ico}', os.path.join(os.path.dirname(__file__), '..', '..','..','client', 'resourses'))
+        ]
     )
-    app.listen(args.port)
-    tornado.ioloop.IOLoop.current().start()
+
+    web.run_app(app, host=args.host, port=args.port)

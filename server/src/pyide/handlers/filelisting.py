@@ -1,11 +1,12 @@
-import json
 import os
-import tornado.web
 from pyide.configuration import SYS_PATH_PREPEND
+from aiohttp import web
 
 
-class FileListing(tornado.web.RequestHandler):
-    def get(self, path):
+class FileListing(web.View):
+    async def get(self):
+        path = self.request.match_info.get('file_name', '')
+        path = '/' + path
         result = []
         for root, dirs, files in os.walk((SYS_PATH_PREPEND + path)):
             padding_size = path.count('/')
@@ -21,4 +22,4 @@ class FileListing(tornado.web.RequestHandler):
                     '''<div class=filelink   ><img class="triange-img" style="transform: rotate(90deg);"src="/client/resourses/blank.png"><span class="padding_{}">{}</span>\
 <a href="/server/code/{}">{}</a></div>'''.format(padding_size, '  ' * padding_size, f_file_path, f_file))
             break
-        self.write(json.dumps(result))
+        return web.json_response(result)

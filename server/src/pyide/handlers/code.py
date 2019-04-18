@@ -1,15 +1,14 @@
+import aiohttp.web
 import os.path
 import keyword
 import token
-import json
 from io import BytesIO
 import tokenize
 from tokenize import TokenInfo
-import tornado.web
 from pyide.astparser import AstParser
 from pyide import configuration
 import xml.etree.ElementTree as et
-
+from aiohttp import web
 
 AST_PARSER = {}
 
@@ -155,7 +154,7 @@ def tokenize_source_by_xml(tokenize_structure, file_name, current_line=1):
     result_tokens = []
     for k in tokenize_structure:
         print(k, k.exact_type)
-        if k.exact_type == 59:
+        if k.exact_type == 57:
             # file encoding
             continue
 
@@ -202,7 +201,7 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
     result = []
     for k in tokenize_structure:
         print(k)
-        if k.exact_type == 59:
+        if k.exact_type == 57:
             # file encoding
             continue
 
@@ -235,9 +234,10 @@ def tokenize_source(tokenize_structure, file_name, current_line=1):
     return result
 
 
-class Code(tornado.web.RequestHandler):
-    def get(self, path):
+class Code(web.View):
+    async def get(self):
         ast_parser = None
+        path = self.request.match_info.get('file_name', '')
         path = configuration.SYS_PATH_PREPEND + '/' + path
         if os.path.isdir(path):
             for file_path in get_next_file(path):
@@ -255,17 +255,20 @@ class Code(tornado.web.RequestHandler):
             # import pdb;pdb.set_trace()
             result = tokenize_source(ast_parser.tokenizer_structure, path)
 
-            self.write(json.dumps(result))
+            # self.write(json.dumps(result))
+            return web.json_response(result)
         else:
             with open(path, 'rb') as code_file:
                 result = []
                 for index, line in enumerate(code_file.readlines()):
                     result.append(f'''<div tabindex="{index + 1}" class="content-line"><span>{line.decode('utf8')}</span></div>''')
-                self.write(json.dumps(result))
+                # self.write(json.dumps(result))
+                return web.json_response(result)
 
-    def post(self, path):
+    async def post(self):
+        path = self.request.match_info.get('file_name', '')
         path = configuration.SYS_PATH_PREPEND + '/' + path
-        body = json.loads(self.request.body)
+        body = await self.request.json()
         # print(body)
         if body['type'] == 'parse':
             t_struct_adjusted = []
@@ -276,9 +279,7 @@ class Code(tornado.web.RequestHandler):
             t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
             code_sting = tokenize_source(t_struct_adjusted, file_name=path, current_line=body['code_line_number'])
             # print(code_sting)
-            self.write(
-                json.dumps({'code_string': code_sting})
-            )
+            return web.json_response({'code_string': code_sting})
         elif body['type'] == 'autocomplete':
             t_struct_adjusted = []
             result = []
@@ -317,12 +318,10 @@ class Code(tornado.web.RequestHandler):
                 pass
 
             # print({"result": result})
-            self.write(
-                json.dumps({
+            return web.json_response({
                     "result": result,
                     "prefix": token_string
                 })
-            )
         elif body['type'] == 'gotodefinition':
             token_info = None
             for i in tokenize.tokenize(BytesIO(body['code_string'].encode('utf8')).readline):
@@ -335,11 +334,9 @@ class Code(tornado.web.RequestHandler):
             node = AST_PARSER[path].get_assign_node_information(token_info.string, line_number=body['code_line_number'], col_offset=token_info.start[1])
             if node:
                 # TODO add file name in case cross file definition
-                self.write(
-                    json.dumps({
+                return web.json_response({
                         'code_line_number': node.lineno.lineno,
                         'cursor_position': node.col_offset
                     })
-                )
             else:
-                raise tornado.web.HTTPError(status_code=404, log_message=f'Go to definition not found: {body}')
+                raise aiohttp.web.HTTPNotFound(text=f'Go to definition not found: {body}')

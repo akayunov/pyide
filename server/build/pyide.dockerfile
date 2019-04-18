@@ -13,7 +13,7 @@ RUN apt-get update && apt-get -y install \
 RUN pip3 install -U \
     pip
 
-#RUN pip install tornado aiohttp
+#RUN pip install aiohttp watchdog
 
 RUN pip install \
     aiohttp==3.5.4 \
@@ -36,7 +36,6 @@ RUN pip install \
     SecretStorage==2.3.1 \
     setuptools==40.8.0 \
     six==1.12.0 \
-    tornado==6.0.2 \
     watchdog==0.9.0 \
     wheel==0.32.3 \
     yarl==1.3.0

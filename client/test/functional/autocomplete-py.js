@@ -81,6 +81,21 @@ mocha.describe('Auto complete', function () {
         await driver.quit();
     });
 
+    it.skip('Enter in case active autocomplete', async function () {
+        // let driver = await context.getDriver();
+        // await context.openFile('cursor/cursor-many-row.txt', driver);
+        // let el = await driver.findElement(webdriver.By.id('code'));
+        // await el.sendKeys(
+        //     'tratata.',
+        //     ...Array(5).fill(webdriver.Key.BACK_SPACE),
+        //     'qwe'
+        // );
+        // // TODO check highlight position
+        // // let els = await driver.findElements(webdriver.By.className('content-line'));
+        // // assert.strictEqual(await els[170].getAttribute('textContent'), "qwe0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 df");
+        // await driver.quit();
+    });
+
     it.skip('Long auto compelete, mouse scroll', async function () {
         // let driver = await context.getDriver();
         // await context.openFile('cursor/cursor-many-row.txt', driver);
