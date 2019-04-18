@@ -20,6 +20,7 @@ main() {
     "cov") test_coverage "$@";;
     "reinit") reinit;;
     "enter") enter "$@";;
+    "enter-test") enter_test "$@";;
     "telnet") telnet_db;;
     "log") log;;
     "pycharm") pycharm;;
@@ -61,7 +62,7 @@ reinit(){
         -v ${PROJECT_DIR_ON_HOST}/client:${PROJECT_DIR_ON_GUEST}/client:ro \
         --log-driver=json-file \
         registry.hub.docker.com/akayunov/pyide:0.1 \
-        watchmedo auto-restart -p='*.*' --recursive --ignore-directories  python3 -- -m pyide -d
+        watchmedo auto-restart -p='*.py' --recursive --ignore-directories  python3 -- -m pyide -d
 }
 
 log (){
@@ -77,18 +78,36 @@ enter(){
     fi
 }
 
+enter_test(){
+    if [[ $@ ]]
+    then
+        docker exec -it $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide-test:0.1) bash -c "$@"
+    else
+        docker exec -it $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide-test:0.1) bash
+    fi
+}
+
 pycharm(){
     docker run -d --rm  --user=$(id -u):$(id -g) --network=host \
     -v=$HOME/pycharm-config-pyide:${HOME_DIR_ON_GUEST}/? \
     -v=$HOME/pycharm-in-docker/pycharm-community-2018.3.5:${HOME_DIR_ON_GUEST}/pycharm \
     -v=$HOME/pycharm-in-docker/jdk-12:${HOME_DIR_ON_GUEST}/jdk-12 \
-    -v=$HOME/pyide/server:${HOME_DIR_ON_GUEST}/pyide/server \
+    -v=$HOME/pyide:${HOME_DIR_ON_GUEST}/pyide \
+    -v=$HOME/pycharm.idea:${HOME_DIR_ON_GUEST}/pyide/.idea \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=unix${DISPLAY} \
     -e JAVA_HOME=${HOME_DIR_ON_GUEST}/jdk-12 \
     registry.hub.docker.com/akayunov/pyide-test:0.1 ${HOME_DIR_ON_GUEST}/pycharm/bin/pycharm.sh
 
 }
+
+telnet_db(){
+    docker exec -it \
+        $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide-test:0.1) \
+        telnet 127.0.0.1 5555
+}
+
+
 #test_lint(){
 #    # lint tests
 #    docker run -it --rm \
@@ -101,11 +120,6 @@ pycharm(){
 #            "
 #}
 
-#telnet_db(){
-#    docker run -it --rm \
-#        --network=PYIDE_pyide \
-#        pyide-test:latest telnet pyide 5555
-#}
 
 
 

@@ -6,7 +6,8 @@ RUN apt-get install -y \
     libxtst6 \
     libxrender1 \
     libfreetype6 \
-    git
+    git \
+    telnet
 
 RUN pip install \
     coverage==4.5.3 \
