@@ -17,6 +17,7 @@ RUN pip3 install -U \
 
 RUN pip install \
     aiohttp==3.5.4 \
+    argh==0.26.2 \
     asn1crypto==0.24.0 \
     async-timeout==3.0.1 \
     attrs==19.1.0 \
@@ -27,13 +28,16 @@ RUN pip install \
     keyring==17.1.1 \
     keyrings.alt==3.1.1 \
     multidict==4.5.2 \
+    pathtools==0.1.2 \
     pip==19.0.3 \
     pycrypto==2.6.1 \
     pyxdg==0.25 \
+    PyYAML==5.1 \
     SecretStorage==2.3.1 \
     setuptools==40.8.0 \
     six==1.12.0 \
     tornado==6.0.2 \
+    watchdog==0.9.0 \
     wheel==0.32.3 \
     yarl==1.3.0
     #PyGObject==3.30.4

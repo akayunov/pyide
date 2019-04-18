@@ -3,7 +3,7 @@
 script_dir_name="`dirname \"$0\"`"              # relative
 
 PROJECT_DIR_ON_HOST="`( cd \"${script_dir_name}/\" && dirname $(pwd) )`"  # absolutized and normalized
-PROJECT_DIR_ON_GUEST='/opt/pyide'
+PROJECT_DIR_ON_GUEST='/home/pyide/pyide'
 
 echo 'PROJECT_DIR_ON_HOST:  ' ${PROJECT_DIR_ON_HOST}
 echo 'PROJECT_DIR_ON_GUEST: ' ${PROJECT_DIR_ON_GUEST}
@@ -51,19 +51,28 @@ reinit(){
     docker run \
         -d \
         --rm \
-        -e PYTHONPATH=/opt/pyide/server/src \
+        -e PYTHONPATH=/home/pyide/pyide/server/src \
         -e PYTHONUNBUFFERED=true \
         -p=31415:31415 \
         -p=5555:5555 \
-        -v /home/akayunov/pyide/server:/opt/pyide/server:ro \
-        -v /home/akayunov/pyide/client:/opt/pyide/client:ro \
+        -v ${PROJECT_DIR_ON_HOST}/server:${PROJECT_DIR_ON_GUEST}/server:ro \
+        -v ${PROJECT_DIR_ON_HOST}/client:${PROJECT_DIR_ON_GUEST}/client:ro \
         --log-driver=json-file \
         registry.hub.docker.com/akayunov/pyide:0.1 \
-        python3 -m pyide -d
+        watchmedo auto-restart -p='*.*' --recursive --ignore-directories  python3 -- -m pyide -d
 }
 
 log (){
     docker logs -f --tail=100 $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide:0.1)
+}
+
+enter(){
+    if [[ $@ ]]
+    then
+        docker exec -it $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide:0.1) bash -c "$@"
+    else
+        docker exec -it $(docker container ls -a -q --filter=STATUS=running --filter ancestor=registry.hub.docker.com/akayunov/pyide:0.1) bash
+    fi
 }
 
 #test_lint(){
@@ -85,14 +94,7 @@ log (){
 #}
 
 
-#enter(){
-#    if [[ $@ ]]
-#    then
-#        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash -c "$@"
-#    else
-#        docker exec -it $(docker container ls | grep "pyide-client-test" | awk '{print $1}') bash
-#    fi
-#}
+
 
 #check_stack(){
 #    if [[ $(docker service ps  PYIDE_pyide --format {{.CurrentState}}) == Running* ]]
