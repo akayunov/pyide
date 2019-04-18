@@ -4,6 +4,7 @@ script_dir_name="`dirname \"$0\"`"              # relative
 
 PROJECT_DIR_ON_HOST="`( cd \"${script_dir_name}/\" && dirname $(pwd) )`"  # absolutized and normalized
 PROJECT_DIR_ON_GUEST='/home/pyide/pyide'
+HOME_DIR_ON_GUEST='/home/pyide'
 
 echo 'PROJECT_DIR_ON_HOST:  ' ${PROJECT_DIR_ON_HOST}
 echo 'PROJECT_DIR_ON_GUEST: ' ${PROJECT_DIR_ON_GUEST}
@@ -21,6 +22,7 @@ main() {
     "enter") enter "$@";;
     "telnet") telnet_db;;
     "log") log;;
+    "pycharm") pycharm;;
     *) echo "Run as: $0 command
 
 Possible commands:
@@ -75,6 +77,18 @@ enter(){
     fi
 }
 
+pycharm(){
+    docker run -d --rm  --user=$(id -u):$(id -g) --network=host \
+    -v=$HOME/pycharm-config-pyide:${HOME_DIR_ON_GUEST}/? \
+    -v=$HOME/pycharm-in-docker/pycharm-community-2018.3.5:${HOME_DIR_ON_GUEST}/pycharm \
+    -v=$HOME/pycharm-in-docker/jdk-12:${HOME_DIR_ON_GUEST}/jdk-12 \
+    -v=$HOME/pyide/server:${HOME_DIR_ON_GUEST}/pyide/server \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e DISPLAY=unix${DISPLAY} \
+    -e JAVA_HOME=${HOME_DIR_ON_GUEST}/jdk-12 \
+    registry.hub.docker.com/akayunov/pyide-test:0.1 ${HOME_DIR_ON_GUEST}/pycharm/bin/pycharm.sh
+
+}
 #test_lint(){
 #    # lint tests
 #    docker run -it --rm \

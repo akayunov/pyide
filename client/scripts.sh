@@ -59,7 +59,7 @@ run(){
 webstorm(){
     docker run -d --rm --user=$(id -u):$(id -g) --network=host \
     -v=$HOME/pycharm-in-docker/WebStorm-191.6183.63:${HOME_DIR_ON_GUEST}/webstorm \
-    -v=$HOME/?:${HOME_DIR_ON_GUEST}/? \
+    -v=$HOME/webstorm-config-pyide:${HOME_DIR_ON_GUEST}/? \
     -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
     -v=$HOME/.npm:${HOME_DIR_ON_GUEST}/.npm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
