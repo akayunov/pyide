@@ -71,10 +71,9 @@ webstorm(){
 }
 
 webpack(){
-    docker run -it --rm --user=$(id -u):$(id -g) --network=host \
-        -v=${PROJECT_DIR_ON_HOST}:${PROJECT_DIR_ON_GUEST} \
-        -v=$HOME/.npm:${HOME_DIR_ON_GUEST}/.npm \
-        registry.hub.docker.com/akayunov/pyide-client-test:0.1 bash -c 'cd pyide/client; webpack -w'
+    docker exec -it --user=$(id -u):$(id -g) \
+        $(docker ps -a -q  --filter ancestor=registry.hub.docker.com/akayunov/pyide-client-test:0.1) \
+         bash -c 'cd pyide/client; webpack -w'
 }
 
 main "$@"

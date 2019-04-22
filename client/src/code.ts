@@ -22,7 +22,7 @@ export class Code {
 
     //TODO tabindex should be uniq in file and should not be reusing
     constructor(fileName: string, lineNumber: LineNumber, lines:Array<string>=null) {
-        this.fileName = '/' + fileName.split('/').slice(3).join('/');
+        this.fileName = fileName.split('/').slice(3).join('/');
         this.lineNumber = lineNumber;
         this.createCodeElement();
         if (lines){

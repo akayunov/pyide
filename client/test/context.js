@@ -4,7 +4,7 @@ let chromeCapabilities = webdriver.Capabilities.chrome();
 let chromeOptions = {
     'args': [
         '--no-sandbox'
-        // , '--headless'
+        , '--headless'
     ]
 };
 

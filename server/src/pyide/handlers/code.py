@@ -267,62 +267,9 @@ class Code(web.View):
 
     async def post(self):
         path = self.request.match_info.get('file_name', '')
-        path = configuration.PROJECT_PATH + '/' + path
+        path = configuration.PROJECT_PATH / path
         body = await self.request.json()
-        # print(body)
-        if body['type'] == 'parse':
-            t_struct_adjusted = []
-            for i in tokenize.tokenize(BytesIO(body['code_string'].encode('utf8')).readline):
-                t_struct_adjusted.append(
-                    TokenInfo(type=i.type, string=i.string, start=(body['code_line_number'], i.start[1]), end=(body['code_line_number'], i.end[1]), line=i.line)
-                )
-            t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
-            code_sting = tokenize_source(t_struct_adjusted, file_name=path, current_line=body['code_line_number'])
-            # print(code_sting)
-            return web.json_response({'code_string': code_sting})
-        elif body['type'] == 'autocomplete':
-            t_struct_adjusted = []
-            result = []
-            body['code_string'] = body['code_string'].strip().rstrip()
-            for i in tokenize.tokenize(BytesIO(body['code_string'].encode('utf8')).readline):
-                if i.type == token.ENDMARKER:
-                    continue
-                t_struct_adjusted.append(
-                    TokenInfo(type=i.type, string=i.string, start=(body['code_line_number'], i.start[1]), end=(body['code_line_number'], i.end[1]), line=i.line)
-                )
-            # pprint(t_struct_adjusted)
-            token_string = ''
-            if t_struct_adjusted[-1].string == '.':
-                # ищем имена
-                result += AST_PARSER[path].get_autocomlete(
-                    token_string='',
-                    owner_attribute_string=t_struct_adjusted[-2].string, line_number=t_struct_adjusted[-1].start[0],
-                    col_offset=t_struct_adjusted[-1].start[1]
-                )
-                token_string = ''
-            elif t_struct_adjusted[-2].string == '.':
-                # ищем атрибуты предыдущего имени
-                result += AST_PARSER[path].get_autocomlete(
-                    t_struct_adjusted[-1].string, owner_attribute_string=t_struct_adjusted[-3].string, line_number=t_struct_adjusted[-1].start[0],
-                    col_offset=t_struct_adjusted[-1].start[1]
-                )
-                token_string = t_struct_adjusted[-1].string
-            elif t_struct_adjusted[-1].type == token.NAME:
-                # ищем атрибуты предыдущего имени
-                result += AST_PARSER[path].get_autocomlete(
-                    t_struct_adjusted[-1].string, line_number=t_struct_adjusted[-1].start[0], col_offset=t_struct_adjusted[-1].start[1]
-                )
-                token_string = t_struct_adjusted[-1].string
-            elif t_struct_adjusted[-1].type != token.NAME:
-                # чо возвращать то последнии символы не имя переменно нечего дополять
-                pass
-
-            # print({"result": result})
-            return web.json_response({
-                    "result": result,
-                    "prefix": token_string
-                })
-        elif body['type'] == 'gotodefinition':
+        if body['type'] == 'gotodefinition':
             token_info = None
             for i in tokenize.tokenize(BytesIO(body['code_string'].encode('utf8')).readline):
                 if i.end[1] >= body['cursor_position']:
