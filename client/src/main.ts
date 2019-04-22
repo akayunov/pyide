@@ -266,6 +266,7 @@ class Main extends CommandHandlers {
         document.getElementById('filelisting').addEventListener('click', async function (event) {
             event.preventDefault();
             const target: HTMLElement = event.target as HTMLElement;
+            console.log('filelinf target:', target);
             if (target.parentElement.className === 'filelink') {
                 let lines = await self.fileListing.showFile(target.getAttribute('href'));
                 // TODO should count multi line string like ''' '''

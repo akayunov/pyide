@@ -2,11 +2,15 @@ import argparse
 import logging
 import os
 
+from aiohttp.web_log import AccessLogger
+AccessLogger.LOG_FORMAT = '%a %t "%r" %s %b'
 from aiohttp import web
 
+from pyide.const import ROUTING
 from pyide.handlers.code import Code
 from pyide.handlers.command import websocket_handler
 from pyide.handlers.tags import Tags
+from pyide.handlers.favicon import Favicon
 
 from pyide.handlers.filelisting import FileListing
 
@@ -25,15 +29,14 @@ def main():
     app = web.Application(**settings)
     app.add_routes(
         [
-            web.get('/server/command', websocket_handler),
-            web.get('/server/filelisting/{file_name:.*}', FileListing),
-            web.get('/server/filelisting', FileListing),
-            web.get('/server/code/{file_name:.*}', Code),
-            web.post('/server/code/{file_name:.*}', Code),
-            web.get('/server/tags/{file_name:.*}', Tags),
+            web.get(f'{ROUTING["command"]}', websocket_handler),
+            web.get(f'{ROUTING["filelisting"]}/{{file_name:.*}}', FileListing),
+            web.get(f'{ROUTING["filelisting"]}', FileListing),
+            web.get(f'{ROUTING["code"]}/{{file_name:.*}}', Code),
+            web.post(f'{ROUTING["code"]}/{{file_name:.*}}', Code),
+            web.get(f'{ROUTING["tags"]}/{{file_name:.*}}', Tags),
             web.static('/client', os.path.join(os.path.dirname(__file__), '..', '..', '..', 'client')),
-            # web.static('/{file_name:favicon\.ico}', os.path.join(os.path.dirname(__file__), '..', '..','..','client', 'resources'))
+            web.get('/{file_name:favicon\.ico}', Favicon)
         ]
     )
-
     web.run_app(app, host=args.host, port=args.port)

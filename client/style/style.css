@@ -156,7 +156,16 @@ body {
     background: #f0ffef
 }
 
-.triange-img{
+.triangle-img{
+    margin: 0;
+    border: 0;
+    padding: 0;
+    height: 19px;
+    width: 19px;
+    transform: rotate(90deg);
+}
+
+.blank-img{
     margin: 0;
     border: 0;
     padding: 0;

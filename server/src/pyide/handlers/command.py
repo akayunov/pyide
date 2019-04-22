@@ -38,7 +38,7 @@ def on_message_in(message):
     if message['type'] == 'lineParse':
         message = message['data']
 
-        path = configuration.SYS_PATH_PREPEND + message['fileName']
+        path = configuration.PROJECT_PATH + message['fileName']
         if not path.endswith('py'):
             return
         # body = json.loads(self.request.body)
@@ -71,7 +71,7 @@ def on_message_in(message):
         # from pyide.rdb import Rdb;
         # Rdb().set_trace();
         message['data']['lineText'] = message['data']['lineText'].strip().rstrip()
-        path = configuration.SYS_PATH_PREPEND + message['data']['fileName']
+        path = configuration.PROJECT_PATH + message['data']['fileName']
         t_struct_adjusted = []
         result = []
         for i in tokenize.tokenize(BytesIO(message['data']['lineText'].encode('utf8')).readline):

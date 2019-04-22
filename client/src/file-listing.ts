@@ -1,3 +1,7 @@
+interface FListing {
+    files: Array<string>,
+    folders: Array<string>
+}
 export class FileListing {
     private fileListingElement: HTMLElement;
     public currentFileName: string = '';
@@ -7,20 +11,66 @@ export class FileListing {
         this.initListing().then();
     }
 
+    createFolderElement(folderName: string){
+        //TODO use template
+        let divElement = document.createElement('div');
+        divElement.className = 'folderlink';
+
+        let img = document.createElement('img');
+        img.className = 'triangle-img';
+        img.style.transform = 'rotate(90deg)';
+        img.src = '/client/resources/triangle.png';
+        divElement.appendChild(img);
+
+        let padding = Array.from(folderName.split('/')).length - 4;
+        let span = document.createElement('span');
+        span.textContent = '  '.repeat(padding);
+        span.className = `padding_${padding}`;
+        divElement.appendChild(span);
+
+
+        let link = document.createElement('a');
+        link.text = folderName.split('/').slice(-1)[0];
+        link.href = folderName;
+        divElement.appendChild(link);
+        return divElement;
+    }
+
+    createFileElement(fileName: string){
+        //TODO use template
+        let divElement = document.createElement('div');
+        divElement.className = 'filelink';
+
+        let padding = Array.from(fileName.split('/')).length - 3;
+        let span = document.createElement('span');
+        span.textContent = '  '.repeat(padding);
+        span.className = `padding_${padding}`;
+        divElement.appendChild(span);
+
+        let link = document.createElement('a');
+        link.text = fileName.split('/').slice(-1)[0];
+        link.href = fileName;
+        divElement.appendChild(link);
+        return divElement
+    }
+
     async initListing() {
         let self = this;
-        let response = await (await fetch('/server/filelisting')).json();
-
-        response.forEach(
-            function (element: string) {
-                let divElement = document.createElement('div');
-                self.fileListingElement.appendChild(divElement);
-                divElement.outerHTML = element;
+        let response: FListing = await (await fetch('/server/filelisting')).json();
+        response.folders.forEach(
+            function (folderName: string) {
+                self.fileListingElement.appendChild(self.createFolderElement(folderName));
+            }
+        );
+        response.files.forEach(
+            function (fileName: string) {
+                self.fileListingElement.appendChild(self.createFileElement(fileName));
             }
         );
     }
 
     async get(event: MouseEvent) {
+        let self = this;
         const target = <HTMLElement>event.target;
         let parentDiv = target.parentElement;
         const childNode0 = <HTMLElement>parentDiv.childNodes[0];
@@ -38,11 +88,12 @@ export class FileListing {
             }
         } else if (childNode0.style.transform === 'rotate(90deg)') {
             childNode0.style.transform = 'rotate(180deg)';
-            let response = await (await fetch((<HTMLAnchorElement>event.target).href)).json();
-            response.forEach(function (element: string) {
-                let divElement = document.createElement('div');
-                parentDiv.appendChild(divElement);
-                divElement.outerHTML = element;
+            let response: FListing = await (await fetch((<HTMLAnchorElement>event.target).href)).json();
+            response.folders.forEach(function (folderName: string) {
+                parentDiv.appendChild(self.createFolderElement(folderName));
+            });
+            response.files.forEach(function (folderName: string) {
+                parentDiv.appendChild(self.createFileElement(folderName));
             });
         } else {
             childNode0.style.transform = 'rotate(90deg)';

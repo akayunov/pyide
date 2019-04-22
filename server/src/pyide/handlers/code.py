@@ -134,7 +134,7 @@ def mark_token(k, current_position, ast_parser):
 
 
 def get_module_name(path):
-    return path.replace(configuration.SYS_PATH_PREPEND, '').strip('/').replace('/', '.').replace('.py', '')
+    return path.replace(configuration.PROJECT_PATH, '').strip('/').replace('/', '.').replace('.py', '')
 
 
 # TODO move in init stage
@@ -238,14 +238,14 @@ class Code(web.View):
     async def get(self):
         ast_parser = None
         path = self.request.match_info.get('file_name', '')
-        path = configuration.SYS_PATH_PREPEND + '/' + path
+        path = configuration.PROJECT_PATH / path
         if os.path.isdir(path):
             for file_path in get_next_file(path):
                 if file_path.endswith('py'):
                     with open(file_path, 'rb') as code_file:
                         ast_parser = AstParser(code_file.read(), None)
         else:
-            if path.endswith('py'):
+            if path.suffix == '.py':
                 with open(path, 'rb') as code_file:
                     ast_parser = AstParser(code_file.read(), None)
 
@@ -267,7 +267,7 @@ class Code(web.View):
 
     async def post(self):
         path = self.request.match_info.get('file_name', '')
-        path = configuration.SYS_PATH_PREPEND + '/' + path
+        path = configuration.PROJECT_PATH + '/' + path
         body = await self.request.json()
         # print(body)
         if body['type'] == 'parse':
