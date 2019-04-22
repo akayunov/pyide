@@ -10,7 +10,7 @@ let chromeOptions = {
 
 chromeCapabilities.set('chromeOptions', chromeOptions);
 
-url = 'http://127.0.0.1:31415/client/resourses/pyide.html';
+url = 'http://127.0.0.1:31415/client/resources/pyide.html';
 
 exports.getDriver = async function () {
     let driver = new webdriver.Builder().withCapabilities(chromeCapabilities).build();

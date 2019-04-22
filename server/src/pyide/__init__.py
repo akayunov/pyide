@@ -31,9 +31,8 @@ def main():
             web.get('/server/code/{file_name:.*}', Code),
             web.post('/server/code/{file_name:.*}', Code),
             web.get('/server/tags/{file_name:.*}', Tags),
-            web.get('/server/filelisting{name}', FileListing),
             web.static('/client', os.path.join(os.path.dirname(__file__), '..', '..', '..', 'client')),
-            # web.static('/{file_name:favicon\.ico}', os.path.join(os.path.dirname(__file__), '..', '..','..','client', 'resourses'))
+            # web.static('/{file_name:favicon\.ico}', os.path.join(os.path.dirname(__file__), '..', '..','..','client', 'resources'))
         ]
     )
 
