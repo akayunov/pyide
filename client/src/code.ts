@@ -33,7 +33,7 @@ export class Code {
             }
         }
         else {
-            this.codeElement.appendChild(this.createNewLine(1));
+            this.codeElement.appendChild(this.createNewLine(0));
         }
     }
 

@@ -2,7 +2,7 @@ import aiohttp.web
 
 from pathlib import Path
 from pyide.configuration import PROJECT_PATH
-from pyide.handlers.code import AST_PARSER
+from pyide.astparser.astparser import AST_PARSER
 from aiohttp import web
 
 
@@ -13,7 +13,7 @@ class Tags(web.View):
             'tags': []  # just tags
         }
         # TODO file_name should include query string for nested tags
-        file_path = Path(str(PROJECT_PATH / self.request.match_info.get('file_name', '')))
+        file_path = PROJECT_PATH / self.request.match_info.get('file_name', '')
         if file_path in AST_PARSER:
             global_scope = [
                 i for i in AST_PARSER[file_path].child_parent_scope_id_links

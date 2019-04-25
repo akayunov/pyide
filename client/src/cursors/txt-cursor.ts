@@ -84,7 +84,7 @@ export class TxtCursor {
         }
 
         let lineNumberElement = this.lineNumber.getByNumber(
-            parseInt(parentCursorNode.parentElement.getAttribute('tabIndex')) - 1
+            parseInt(parentCursorNode.parentElement.getAttribute('tabIndex'))
         );
         let lineNumberRect = lineNumberElement.getBoundingClientRect();
         let rect = this.cursorElement.getBoundingClientRect();
