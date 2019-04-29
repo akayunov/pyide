@@ -49,4 +49,16 @@ mocha.describe('Backspace tests', function () {
         assert.strictEqual(await els[0].getAttribute('textContent'), "imporqweos\n");
         await driver.quit();
     });
+
+    it('Remove full line', async function () {
+        let driver = await context.getDriver();
+        let codeEl = await context.openFile('cursor/cursor.py', driver);
+        await codeEl.sendKeys(
+            webdriver.Key.ARROW_DOWN,
+            webdriver.Key.BACK_SPACE
+        );
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[1].getAttribute('textContent'), "class Qwe(object):\n");
+        await driver.quit();
+    });
 });

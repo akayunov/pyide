@@ -35,6 +35,6 @@ exports.openFile = async function (filePath, driver) {
     }
     // wait until old code will be replaced by page refresh and find some content-line
     await driver.wait(webdriver.until.stalenessOf(codeBefore), 1000);
-    return await driver.wait(webdriver.until.elementLocated(webdriver.By.className('content-line')), 1000);
+    return await driver.wait(webdriver.until.elementLocated(webdriver.By.id('code')), 1000);
 
 };

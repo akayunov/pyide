@@ -10,11 +10,13 @@ export class TxtCursor {
     private cursorElement: HTMLElement;
     private position: number = null;
     private cursorHighlightElement: HTMLElement = null;
+    public eventQueue: Array<any>;
     // cursorParentElement: HTMLElement = null; use setter/getter
 
-    constructor(code: Code, lineNumber: LineNumber) {
+    constructor(code: Code, lineNumber: LineNumber, eventQueue:Array<any>) {
         this.code = code;
         this.lineNumber = lineNumber;
+        this.eventQueue = eventQueue;
         this.createCursorHTMLElement();
         this.createCursorHighlightElement();
 
@@ -148,13 +150,21 @@ export class TxtCursor {
         this.cursorElement.previousSibling.textContent += char;
         this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode());
         this.resetLinePosition();
+        this.eventQueue.push({
+            "type": "lineChanged",
+            "data": {
+                "fileName": this.code.fileName,
+                "outerHTML": this.cursorElement.parentElement.parentElement.outerHTML,
+                "lineNumber": parseInt(this.cursorElement.parentElement.parentElement.getAttribute('tabIndex'))
+            }
+        })
     };
 
     moveLeft() {
         if (this.cursorElement.previousSibling.textContent !== '') {
             this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode() - 1);
         } else if (this.cursorElement.previousSibling.textContent === '') {
-            let previousElement = this.code.getPreviousElement(this.cursorParentElement);
+            let previousElement = this.code.getPreviousNode(this.cursorParentElement);
             if (previousElement === null){
                 return false;
             }
@@ -236,6 +246,11 @@ export class TxtCursor {
     delete() {
         if (this.getPositionInNode() < this.cursorParentElement.textContent.length) {
             this.cursorElement.nextSibling.textContent = this.cursorElement.nextSibling.textContent.slice(1, this.cursorElement.nextSibling.textContent.length)
+            if (this.cursorParentElement.textContent.length === 0) {
+                let prevNode = this.code.getPreviousNode(this.cursorParentElement);
+                this.code.removeNode(this.cursorParentElement);
+                this.putCursorByPositionInNode(prevNode, prevNode.textContent.length);
+            }
         }
         else {
             let nextElement = this.code.getNextElement(this.cursorParentElement);
@@ -244,7 +259,9 @@ export class TxtCursor {
             }
             nextElement.textContent = nextElement.textContent.slice(1, nextElement.textContent.length);
             if (nextElement.textContent.length === 0) {
+                let prevNode = this.code.getPreviousNode(this.cursorParentElement);
                 this.code.removeNode(nextElement);
+                this.putCursorByPositionInNode(prevNode, prevNode.textContent.length);
             }
         }
     };

@@ -3,8 +3,9 @@ import {Code} from "../code";
 import {LineNumber} from "../line-number";
 
 export class PyCursor extends TxtCursor {
-    constructor(code: Code, lineNumber: LineNumber) {
-        super(code, lineNumber);
+    public eventQueue: Array<any>;
+    constructor(code: Code, lineNumber: LineNumber, eventQueue:Array<any>) {
+        super(code, lineNumber, eventQueue);
     }
 
     putTab() {

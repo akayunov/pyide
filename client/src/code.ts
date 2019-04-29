@@ -16,14 +16,16 @@ export class Code {
     public fileName: string;
     public lineNumber: LineNumber;
     private codeElement: HTMLElement;
+    private eventQueue: Array<any>;
 
     //TODO should code.ts be divided by type of file like cursor or no?
     // may be for text file we don't need to generate span tag for each world?
 
     //TODO tabindex should be uniq in file and should not be reusing
-    constructor(fileName: string, lineNumber: LineNumber, lines:Array<string>=null) {
+    constructor(fileName: string, lineNumber: LineNumber, eventQueue: Array<any>, lines:Array<string>=null) {
         this.fileName = fileName.split('/').slice(3).join('/');
         this.lineNumber = lineNumber;
+        this.eventQueue = eventQueue;
         this.createCodeElement();
         if (lines){
             for (let line of lines){
@@ -106,7 +108,7 @@ export class Code {
 
     // noinspection JSMethodCanBeStatic
     private recalculateTabIndex(line: HTMLElement): void {
-        let tabIndex: number = parseInt(line.previousElementSibling.getAttribute('tabIndex')) + 1;
+        let tabIndex: number = parseInt(line.getAttribute('tabIndex')) + 1;
         line.setAttribute('tabIndex', tabIndex.toString());
         while (line.nextElementSibling) {
             tabIndex += 1;
@@ -130,7 +132,7 @@ export class Code {
     }
 
     // noinspection JSMethodCanBeStatic
-    getPreviousElement(node: HTMLElement): HTMLElement {
+    getPreviousNode(node: HTMLElement): HTMLElement {
         if (node.previousElementSibling !== null) {
             return <HTMLElement>node.previousElementSibling
         } else {
@@ -240,6 +242,14 @@ export class Code {
     removeNode(node: HTMLElement) {
         let elementToRecalculateFrom = node.parentElement.previousElementSibling !== null ? node.parentElement.previousElementSibling : this.getFirstLine();
         if (node.parentElement.childNodes.length === 1) {
+            this.eventQueue.push({
+                "type": "lineDeleted",
+                "data": {
+                    "fileName": this.fileName,
+                    "outerHTML": node.parentElement.outerHTML,
+                    "lineNumber": parseInt(node.parentElement.getAttribute('tabIndex'))
+                }
+            });
             node.parentElement.remove();
         } else {
             if (node.textContent === '') {
