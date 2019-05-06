@@ -61,4 +61,17 @@ mocha.describe('Backspace tests', function () {
         assert.strictEqual(await els[1].getAttribute('textContent'), "class Qwe(object):\n");
         await driver.quit();
     });
+
+    it('Remove last symbol on file', async function () {
+        let driver = await context.getDriver();
+        let codeEl = await context.openFile('lineparse/empty.py', driver);
+        await codeEl.sendKeys(
+            'q',
+            webdriver.Key.BACK_SPACE,
+            'qwe'
+        );
+        let els = await driver.findElements(webdriver.By.className('content-line'));
+        assert.strictEqual(await els[0].getAttribute('textContent'), "qwe");
+        await driver.quit();
+    });
 });

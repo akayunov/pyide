@@ -1,10 +1,11 @@
 import {TxtCursor} from './txt-cursor';
 import {Code} from "../code";
 import {LineNumber} from "../line-number";
+import {EventQueue} from "../event-queue";
 
 export class PyCursor extends TxtCursor {
-    public eventQueue: Array<any>;
-    constructor(code: Code, lineNumber: LineNumber, eventQueue:Array<any>) {
+    public eventQueue: EventQueue;
+    constructor(code: Code, lineNumber: LineNumber, eventQueue:EventQueue) {
         super(code, lineNumber, eventQueue);
     }
 

@@ -1,5 +1,5 @@
-import {TxtCursor} from "./cursors/txt-cursor";
 import {LineNumber} from "./line-number";
+import {EventQueue} from "./event-queue";
 
 class PositionInNode {
     public node: HTMLElement;
@@ -16,18 +16,18 @@ export class Code {
     public fileName: string;
     public lineNumber: LineNumber;
     private codeElement: HTMLElement;
-    private eventQueue: Array<any>;
+    private eventQueue: EventQueue;
 
     //TODO should code.ts be divided by type of file like cursor or no?
     // may be for text file we don't need to generate span tag for each world?
 
     //TODO tabindex should be uniq in file and should not be reusing
-    constructor(fileName: string, lineNumber: LineNumber, eventQueue: Array<any>, lines:Array<string>=null) {
+    constructor(fileName: string, lineNumber: LineNumber, eventQueue: EventQueue, lines:Array<string>=null) {
         this.fileName = fileName.split('/').slice(3).join('/');
         this.lineNumber = lineNumber;
         this.eventQueue = eventQueue;
         this.createCodeElement();
-        if (lines){
+        if (lines && lines.length > 0){
             for (let line of lines){
                 let el = document.createElement('div');
                 this.codeElement.appendChild(el);

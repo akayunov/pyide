@@ -1,5 +1,6 @@
 import {Code} from '../code';
-import {LineNumber} from "../line-number";
+import {LineNumber} from '../line-number';
+import {EventQueue} from "../event-queue";
 
 
 export class TxtCursor {
@@ -10,10 +11,10 @@ export class TxtCursor {
     private cursorElement: HTMLElement;
     private position: number = null;
     private cursorHighlightElement: HTMLElement = null;
-    public eventQueue: Array<any>;
+    public eventQueue: EventQueue;
     // cursorParentElement: HTMLElement = null; use setter/getter
 
-    constructor(code: Code, lineNumber: LineNumber, eventQueue:Array<any>) {
+    constructor(code: Code, lineNumber: LineNumber, eventQueue:EventQueue) {
         this.code = code;
         this.lineNumber = lineNumber;
         this.eventQueue = eventQueue;
@@ -151,11 +152,12 @@ export class TxtCursor {
         this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode());
         this.resetLinePosition();
         this.eventQueue.push({
-            "type": "lineChanged",
-            "data": {
-                "fileName": this.code.fileName,
-                "outerHTML": this.cursorElement.parentElement.parentElement.outerHTML,
-                "lineNumber": parseInt(this.cursorElement.parentElement.parentElement.getAttribute('tabIndex'))
+            'type': 'lineChanged',
+            'id': 'Cursor.putSymbol',
+            'data': {
+                'fileName': this.code.fileName,
+                'outerHTML': this.cursorElement.parentElement.parentElement.outerHTML,
+                'lineNumber': parseInt(this.cursorElement.parentElement.parentElement.getAttribute('tabIndex'))
             }
         })
     };
@@ -244,12 +246,16 @@ export class TxtCursor {
     };
 
     delete() {
+        console.log('this.getPositionInNode()', this.getPositionInNode(), this.cursorElement.previousSibling.textContent);
         if (this.getPositionInNode() < this.cursorParentElement.textContent.length) {
-            this.cursorElement.nextSibling.textContent = this.cursorElement.nextSibling.textContent.slice(1, this.cursorElement.nextSibling.textContent.length)
+            this.cursorElement.nextSibling.textContent = this.cursorElement.nextSibling.textContent.slice(1, this.cursorElement.nextSibling.textContent.length);
             if (this.cursorParentElement.textContent.length === 0) {
                 let prevNode = this.code.getPreviousNode(this.cursorParentElement);
-                this.code.removeNode(this.cursorParentElement);
-                this.putCursorByPositionInNode(prevNode, prevNode.textContent.length);
+                if (prevNode){
+                    this.code.removeNode(this.cursorParentElement);
+                    console.log('prevNode.textContent.length', prevNode.textContent.length) ;
+                    this.putCursorByPositionInNode(prevNode, prevNode.textContent.length);
+                }
             }
         }
         else {
@@ -259,11 +265,18 @@ export class TxtCursor {
             }
             nextElement.textContent = nextElement.textContent.slice(1, nextElement.textContent.length);
             if (nextElement.textContent.length === 0) {
-                let prevNode = this.code.getPreviousNode(this.cursorParentElement);
                 this.code.removeNode(nextElement);
-                this.putCursorByPositionInNode(prevNode, prevNode.textContent.length);
             }
         }
+        this.eventQueue.push({
+            'type': 'lineChanged',
+            'id': 'Cursor.delete',
+            'data': {
+                'fileName': this.code.fileName,
+                'outerHTML': this.cursorElement.parentElement.parentElement.outerHTML,
+                'lineNumber': parseInt(this.cursorElement.parentElement.parentElement.getAttribute('tabIndex'))
+            }
+        })
     };
 
     backspace() {

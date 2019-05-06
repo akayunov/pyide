@@ -42,7 +42,7 @@ mocha.describe('Move right', function () {
             'qwe'
         );
         let els = await driver.findElements(webdriver.By.className('content-line'));
-        assert.strictEqual(await els[7].getAttribute('textContent'), "qwe\n");
+        assert.strictEqual(await els[7].getAttribute('textContent'), "qwe");
         await driver.quit();
     });
     it.skip('Move by multiline string for py code', async function () {

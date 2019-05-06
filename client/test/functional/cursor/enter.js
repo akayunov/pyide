@@ -66,4 +66,19 @@ mocha.describe('Enter', function () {
         assert.strictEqual(await els[3].getAttribute('textContent'), "(object):\n");
         await driver.quit();
     });
+    it('Enter on span with class name == keyword', async function () {
+        let driver = await context.getDriver();
+        let el = await context.openFile('cursor/cursor.py', driver);
+        // TODO
+        // await driver.findElement(webdriver.By.id('code'));
+        // await el.sendKeys(
+        //     ...Array(2).fill(webdriver.Key.ARROW_DOWN),
+        //     ...Array(9).fill(webdriver.Key.ARROW_RIGHT),
+        //     webdriver.Key.ENTER
+        // );
+        // let els = await driver.findElements(webdriver.By.className('content-line'));
+        // assert.strictEqual(await els[2].getAttribute('textContent'), "class Qwe\n");
+        // assert.strictEqual(await els[3].getAttribute('textContent'), "(object):\n");
+        await driver.quit();
+    });
 });

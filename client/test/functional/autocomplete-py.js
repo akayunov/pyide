@@ -72,7 +72,13 @@ mocha.describe('Auto complete', function () {
         let codeElement = await context.openFile('autocomplete/class.py', driver);
         await codeElement.sendKeys(
             ...Array(7).fill(webdriver.Key.ARROW_DOWN),
-            'Tratata',
+            'Tratat',
+        );
+        // TODO it's strange that I should wait wail autocomplete element disappeared, it should be deleted automatic
+        let firstActiveComplete = await driver.wait(webdriver.until.elementLocated(webdriver.By.id('active-autocomplete')), 1000);
+        await codeElement.sendKeys('a');
+        await driver.wait(webdriver.until.stalenessOf(firstActiveComplete), 1000);
+        await codeElement.sendKeys(
             webdriver.Key.TAB,
             webdriver.Key.TAB,
         );

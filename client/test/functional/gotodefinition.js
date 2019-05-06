@@ -10,14 +10,13 @@ mocha.describe('Go to definition', function () {
     it('Class name', async function () {
         let driver = await context.getDriver();
         let codeElement = await context.openFile('gotodefinition/gotodefinition.py', driver);
-        let elms = await driver.findElements(webdriver.By.className('name'));
-        console.log(await elms[1].getAttribute('textContent'));
+        let elms = await driver.findElements(webdriver.By.className('unknown'));  // TODO fix class name to name then ast wiil be ready
         const actions = driver.actions();
         await actions
             .keyDown(webdriver.Key.CONTROL)
             .perform();
 
-        elms[1].click();
+        elms[8].click();
 
         await actions
             .keyUp(webdriver.Key.CONTROL)
