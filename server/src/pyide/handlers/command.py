@@ -24,7 +24,9 @@ class Command(web.View):
                 else:
                     # await ws.send_str(msg.data + '/answer')
                     print('Event recieved', msg)
-                    await ws.send_json(on_message_in(msg.data))
+                    resp = on_message_in(msg.data)
+                    if resp: # TODO remove it it's temporary
+                        await ws.send_json()
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' %
                       ws.exception())
@@ -38,39 +40,40 @@ def on_message_in(message):
     print("\n\n\nrecieve:", message)
     message = json.loads(message)
     if message['type'] == 'lineParse':
-        message = message['data']
-
-        path = configuration.PROJECT_PATH / message['fileName']
-        if not path.suffix =='.py':
-            return
-        # body = json.loads(self.request.body)
-        # print(body)
-        # if body['type'] == 'parse':
-        t_struct_adjusted = []
-        code_line_as_html_elements = et.fromstring(message['outerHTML'])
-        line_text = ''.join(code_line_as_html_elements.itertext())
-        # for i in tokenize.tokenize(BytesIO(line_text.encode('utf8')).readline):
-        #     t_struct_adjusted.append(
-        #         TokenInfo(type=i.type, string=i.string, start=(message['lineNumber'], i.start[1]), end=(message['lineNumber'], i.end[1]), line=i.line)
-        #     )
-        # t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
-        # print('x0:', t_struct_adjusted)
-        # tokenized_elements_to = tokenize_source_by_xml(t_struct_adjusted, file_name=path, current_line=message['lineNumber'])
-        tokenized_elements_to = list(PyideTokenizer().parse_string(0, line_text.encode('utf8')))[0]
-        # print('xx1:', [et.tostring(i,encoding="unicode") for i in tokenized_elements_to])
-        print('xx1:', tokenized_elements_to)
-
-        result_array = et.fromstring(tokenized_elements_to)
-        return {
-            'type': 'lineParse',
-            'data': {
-                'lineNumber': message['lineNumber'],
-                # 'lineElements': [et.tostring(i, encoding="unicode") for i in tokenized_elements_to],
-                'lineElements': [et.tostring(child,encoding="unicode") for child in result_array],  # TODO  remove convrting
-                'fileName': message['fileName'],
-                'lineText': line_text
-            }
-        }
+        pass
+        # message = message['data']
+        #
+        # path = configuration.PROJECT_PATH / message['fileName']
+        # if not path.suffix =='.py':
+        #     return
+        # # body = json.loads(self.request.body)
+        # # print(body)
+        # # if body['type'] == 'parse':
+        # t_struct_adjusted = []
+        # code_line_as_html_elements = et.fromstring(message['outerHTML'])
+        # line_text = ''.join(code_line_as_html_elements.itertext())
+        # # for i in tokenize.tokenize(BytesIO(line_text.encode('utf8')).readline):
+        # #     t_struct_adjusted.append(
+        # #         TokenInfo(type=i.type, string=i.string, start=(message['lineNumber'], i.start[1]), end=(message['lineNumber'], i.end[1]), line=i.line)
+        # #     )
+        # # t_struct_adjusted.append(TokenInfo(type=0, string='', start=(2, 0), end=(2, 0), line=''))
+        # # print('x0:', t_struct_adjusted)
+        # # tokenized_elements_to = tokenize_source_by_xml(t_struct_adjusted, file_name=path, current_line=message['lineNumber'])
+        # tokenized_elements_to = list(PyideTokenizer().parse_string(0, line_text.encode('utf8')))[0]
+        # # print('xx1:', [et.tostring(i,encoding="unicode") for i in tokenized_elements_to])
+        # print('xx1:', tokenized_elements_to)
+        #
+        # result_array = et.fromstring(tokenized_elements_to)
+        # return {
+        #     'type': 'lineParse',
+        #     'data': {
+        #         'lineNumber': message['lineNumber'],
+        #         # 'lineElements': [et.tostring(i, encoding="unicode") for i in tokenized_elements_to],
+        #         'lineElements': [et.tostring(child,encoding="unicode") for child in result_array],  # TODO  remove convrting
+        #         'fileName': message['fileName'],
+        #         'lineText': line_text
+        #     }
+        # }
 
     elif message['type'] == 'autoCompleteShow':
         pass
