@@ -4,6 +4,8 @@ interface FListing {
 }
 export class FileListing {
     private fileListingElement: HTMLElement;
+    private url: string = '/server/file/listing';
+    private codeUrl: string = '/server/file/code';
     public currentFileName: string = '';
 
     constructor() {
@@ -15,6 +17,7 @@ export class FileListing {
         //TODO use template
         let divElement = document.createElement('div');
         divElement.className = 'folderlink';
+        divElement.setAttribute('path', folderName);
 
         let img = document.createElement('img');
         img.className = 'triangle-img';
@@ -22,7 +25,7 @@ export class FileListing {
         img.src = '/client/resources/triangle.png';
         divElement.appendChild(img);
 
-        let padding = Array.from(folderName.split('/')).length - 4;
+        let padding = Array.from(folderName.split('/')).length;
         let span = document.createElement('span');
         span.textContent = '  '.repeat(padding);
         span.className = `padding_${padding}`;
@@ -31,7 +34,7 @@ export class FileListing {
 
         let link = document.createElement('a');
         link.text = folderName.split('/').slice(-1)[0];
-        link.href = folderName;
+        link.href = this.url + `/${folderName}`;
         divElement.appendChild(link);
         return divElement;
     }
@@ -40,8 +43,9 @@ export class FileListing {
         //TODO use template
         let divElement = document.createElement('div');
         divElement.className = 'filelink';
+        divElement.setAttribute('path', fileName);
 
-        let padding = Array.from(fileName.split('/')).length - 3;
+        let padding = Array.from(fileName.split('/')).length;
         let span = document.createElement('span');
         span.textContent = '  '.repeat(padding);
         span.className = `padding_${padding}`;
@@ -49,14 +53,14 @@ export class FileListing {
 
         let link = document.createElement('a');
         link.text = fileName.split('/').slice(-1)[0];
-        link.href = fileName;
+        link.href = this.codeUrl + `/${fileName}`;
         divElement.appendChild(link);
         return divElement
     }
 
     async initListing() {
         let self = this;
-        let response: FListing = await (await fetch('/server/filelisting')).json();
+        let response: FListing = await (await fetch(self.url)).json();
         response.folders.forEach(
             function (folderName: string) {
                 self.fileListingElement.appendChild(self.createFolderElement(folderName));
@@ -101,7 +105,7 @@ export class FileListing {
     }
 
     async showFile(url: string) {
-        this.currentFileName = url.split('/').slice(3).join('/');
+        this.currentFileName = url.split('/').slice(4).join('/');
         let response = await fetch(url);
         if (response.ok){
             return await response.json();

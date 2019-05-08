@@ -5,6 +5,7 @@ interface TList {
 
 export class Tags {
     private tagElement: HTMLElement;
+    private url: string = '/server/file/tags';
     constructor (){
         this.tagElement = document.getElementById('tags');
     }
@@ -55,7 +56,7 @@ export class Tags {
 
     async init (fileName: string){
         let self = this;
-        let response = await fetch(`/server/tags/${fileName}`);
+        let response = await fetch(`${self.url}/${fileName}`);
         while (this.tagElement.lastChild){
             this.tagElement.removeChild(this.tagElement.lastChild);
         }

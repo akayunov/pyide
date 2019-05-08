@@ -72,13 +72,13 @@ class Main extends CommandHandlers {
             self.cursor = new TxtCursor(self.code, self.lineNumber, self.eventQueue);
 
             self.pressedKeys = {};
-            self.commandBus = new CommandBus(self.serverUrl);
+            // self.commandBus = new CommandBus(self.serverUrl);
 
             self.setKeyBoardEventListeners();
             self.setMouseEventListeners();
 
-            self.eventQueue.addHandler('lineChanged', self.handlerLineParse.bind(self));
-            self.eventQueue.addHandler('autoCompleteShow', self.handlerAutocompleteShow.bind(self));
+            self.eventQueue.addHandler(['lineChange', 'lineAdd', 'lineRemove', ], self.handlerLineParse.bind(self));
+            self.eventQueue.addHandler(['autocomplete'], self.handlerAutocompleteShow.bind(self));
         })
     }
 
@@ -132,7 +132,7 @@ class Main extends CommandHandlers {
 
     async handlerGoToDefinition(){
         let response = await fetch(
-            `/server/code/${this.fileListing.currentFileName}`, {
+            `/server/file/gotodefinition/${this.fileListing.currentFileName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ class Main extends CommandHandlers {
             event.preventDefault();
         });
 
-        document.getElementById('lines').addEventListener('keydown', function (event) {
+        document.getElementById('lines').addEventListener('keydown', async function (event) {
             self.pressedKeys[event.code] = true;
             console.log('code', event.code);
             if (event.code === 'Enter') {
@@ -227,7 +227,7 @@ class Main extends CommandHandlers {
             } else if (event.code === 'Backspace') {
                 self.cursor.backspace();
                 self.eventQueue.push({
-                    'type': 'autoCompleteShow',
+                    'type': 'autocomplete',
                     'id': 'Main.autocomplete.backspace',
                     'data': {
                         'fileName': self.code.fileName,
@@ -240,10 +240,14 @@ class Main extends CommandHandlers {
             } else if (event.code === 'Delete') {
                 self.cursor.delete();
                 event.preventDefault();
-            } else {
+            } else if (event.code === 'KeyS' && self.pressedKeys['ControlLeft']) {
+                event.preventDefault();
+                await self.code.save();
+            }
+            else {
                 self.cursor.putSymbol(event.key);
                 self.eventQueue.push({
-                    'type': 'autoCompleteShow',
+                    'type': 'autocomplete',
                     'id': 'Main.autocomplete.putsymbol',
                     'data': {
                         'fileName': self.code.fileName,
@@ -277,7 +281,7 @@ class Main extends CommandHandlers {
                 // TODO should count multi line string like ''' '''
                 self.lineNumber.adjust(lines.length === 0 ? 1 : lines.length);
                 await self.tags.init(self.fileListing.currentFileName);
-                let fileName = target.getAttribute('href');
+                let fileName = target.parentElement.getAttribute('path');
                 self.cursor.clean();
                 self.code.clean();
                 if (fileName.endsWith('.py')) {

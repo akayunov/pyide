@@ -152,7 +152,7 @@ export class TxtCursor {
         this.putCursorByPositionInNode(this.cursorParentElement, this.getPositionInNode());
         this.resetLinePosition();
         this.eventQueue.push({
-            'type': 'lineChanged',
+            'type': 'lineChange',
             'id': 'Cursor.putSymbol',
             'data': {
                 'fileName': this.code.fileName,
@@ -269,7 +269,7 @@ export class TxtCursor {
             }
         }
         this.eventQueue.push({
-            'type': 'lineChanged',
+            'type': 'lineChange',
             'id': 'Cursor.delete',
             'data': {
                 'fileName': this.code.fileName,
@@ -314,6 +314,15 @@ export class TxtCursor {
         }
         this.putCursorByPositionInNode(newNode, 0);
         this.cursorElement.previousSibling.textContent = '';
+        this.eventQueue.push({
+            'type': 'lineAdd',
+            'id': 'Cursor.addNewRow',
+            'data': {
+                'fileName': this.code.fileName,
+                'outerHTML': this.cursorElement.parentElement.parentElement.outerHTML,
+                'lineNumber': parseInt(this.cursorElement.parentElement.parentElement.getAttribute('tabIndex'))
+            }
+        })
     };
 
     goToDefinition(fileName: string) {

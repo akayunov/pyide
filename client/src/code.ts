@@ -1,5 +1,6 @@
 import {LineNumber} from "./line-number";
 import {EventQueue} from "./event-queue";
+import {config} from "./config";
 
 class PositionInNode {
     public node: HTMLElement;
@@ -23,7 +24,7 @@ export class Code {
 
     //TODO tabindex should be uniq in file and should not be reusing
     constructor(fileName: string, lineNumber: LineNumber, eventQueue: EventQueue, lines:Array<string>=null) {
-        this.fileName = fileName.split('/').slice(3).join('/');
+        this.fileName = fileName;
         this.lineNumber = lineNumber;
         this.eventQueue = eventQueue;
         this.createCodeElement();
@@ -39,6 +40,14 @@ export class Code {
         }
     }
 
+    async save(){
+        let response = await fetch(`${config.urls['code']}/${this.fileName}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+    }
     createCodeElement(){
         let codeElement = document.createElement('div');
         codeElement.tabIndex = -1;
@@ -267,17 +276,5 @@ export class Code {
             node.remove();
         }
         this.recalculateTabIndex(<HTMLElement>elementToRecalculateFrom);
-    }
-
-    commandGetParseLineMsg(codeLine: HTMLElement) {
-        // TODO do schema
-        return JSON.stringify({
-            "type": "lineParse",
-            "data": {
-                "fileName": this.fileName,
-                "outerHTML": codeLine.outerHTML,  //TODO send test instead of html
-                "lineNumber": parseInt(codeLine.getAttribute('tabIndex'))
-            }
-        });
     }
 }

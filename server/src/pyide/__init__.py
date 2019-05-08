@@ -8,10 +8,12 @@ from aiohttp import web
 
 from pyide.const import ROUTING
 from pyide.handlers.code import Code
-from pyide.handlers.command import Command
+# from pyide.handlers.command import Command
 from pyide.handlers.tags import Tags
+from pyide.handlers.autocomplete import AutoComplete
+from pyide.handlers.gotodefinition import GoToDefinition
+from pyide.handlers.line import Line
 from pyide.handlers.favicon import Favicon
-
 from pyide.handlers.filelisting import FileListing
 
 
@@ -29,13 +31,18 @@ def main():
     app = web.Application(**settings)
     app.add_routes(
         [
-            web.view(f'{ROUTING["command"]}', Command),
-            web.view(f'{ROUTING["filelisting"]}/{{file_name:.*}}', FileListing),
-            web.view(f'{ROUTING["filelisting"]}', FileListing),
-            web.view(f'{ROUTING["code"]}/{{file_name:.*}}', Code),
-            web.view(f'{ROUTING["tags"]}/{{file_name:.*}}', Tags),
-            web.static('/client', Path(__file__).parent.parent.parent.parent / 'client'),
-            web.view('/{file_name:favicon\.ico}', Favicon)
+            # web.view(ROUTING['command'], Command),
+            web.view(ROUTING['filelisting'] + '/{file_name:.*}', FileListing),
+            web.view(ROUTING['filelisting'], FileListing),
+            web.view(ROUTING['code'] + '/{file_name:.*}', Code),
+            web.view(ROUTING['tags'] + '/{file_name:.*}', Tags),
+            web.view(ROUTING['gotodefinition'] + '/{file_name:.*}', GoToDefinition),
+            web.view(ROUTING['line'] + '/{file_name:.*}', Line),
+            web.view(ROUTING['autocomplete'] + '/{file_name:.*}', AutoComplete),
+
+            web.static('/client', ROUTING['client']),
+
+            web.view(ROUTING['favicon'], Favicon)
 
         ]
     )

@@ -61,7 +61,7 @@ class LineNo:
 
 
 class AstParser:
-    def __init__(self, path, parent_scope_id=None):
+    def __init__(self, content_io, parent_scope_id=None):
         self.scope_id = str(uuid.uuid4())  # curent scope
         self.parent_scope_id = parent_scope_id  # parent scope
 
@@ -80,8 +80,7 @@ class AstParser:
             }
         }
 
-        with open(path, 'rb') as f:
-            self.content = f.read()
+        self.content = content_io.read()
         # for while for easy add remove lines
         # if not content.endswith(b'\n'):
         #     self.content = content + b'\n'

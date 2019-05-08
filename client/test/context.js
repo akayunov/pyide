@@ -20,13 +20,13 @@ exports.getDriver = async function () {
 
 exports.openFile = async function (filePath, driver) {
     let name = filePath.split('/').slice(-1)[0];
-    let href = '/server/filelisting';
+    let href = '/server/file/listing';
 
     let codeBefore = await driver.findElement(webdriver.By.id('code'));
     for (let part of filePath.split('/')){
          // open all folder tree
         if (name === part){
-            href = href.replace('filelisting', 'code')
+            href = href.replace('file/listing', 'file/code')
         }
         href += '/' + part;
         await driver.wait(webdriver.until.elementLocated(webdriver.By.css('a[href*="' + href + '"]')), 1000);

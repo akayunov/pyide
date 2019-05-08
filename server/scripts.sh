@@ -58,7 +58,9 @@ reinit(){
         -e PYTHONUNBUFFERED=true \
         -p=31415:31415 \
         -p=5555:5555 \
+        --user=$(id -u):$(id -g) \
         -v ${PROJECT_DIR_ON_HOST}/server:${PROJECT_DIR_ON_GUEST}/server:ro \
+        -v ${PROJECT_DIR_ON_HOST}/server/test/resources:${PROJECT_DIR_ON_GUEST}/server/test/resources:rw \
         -v ${PROJECT_DIR_ON_HOST}/client:${PROJECT_DIR_ON_GUEST}/client:ro \
         --log-driver=json-file \
         registry.hub.docker.com/akayunov/pyide:0.1 \

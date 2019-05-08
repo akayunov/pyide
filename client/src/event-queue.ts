@@ -1,3 +1,5 @@
+import {config} from "./config";
+
 export interface EventQueueResolver {
     resolver: CallableFunction,
     promise: Promise<null>
@@ -53,9 +55,9 @@ export class EventQueue {
             // console.log('Before await:',self.resolvers);
             let event = await self.resolvers[0].promise;
             let resolver = self.resolvers.shift();
-            console.log('After await:',resolver, event);
+            // console.log('After await:',resolver, event, `${config.urls[event.type]}/${event.data.fileName}`);
             // console.log('Get new event', event);
-            let response = await fetch(`/server/code/${event.data.fileName}`, {
+            let response = await fetch(`${config.urls[event.type]}/${event.data.fileName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,7 +75,9 @@ export class EventQueue {
         }
     }
 
-    addHandler(type:string, handler:CallableFunction){
-        this.handlers[type] = handler;
+    addHandler(types:Array<string>, handler:CallableFunction){
+        for (let type of types){
+            this.handlers[type] = handler;
+        }
     }
 }

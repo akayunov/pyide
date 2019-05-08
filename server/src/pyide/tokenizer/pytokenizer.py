@@ -5,31 +5,31 @@ import xml.etree.ElementTree as Et
 from io import BytesIO
 
 
-class PyideTokenizer:
-    def parse_file(self, file_name):
+class PyTokenizer:
+    def parse_file(self, content):
         index = 0
-        with open(file_name, 'rb') as f:
-            multi_line_statement = b''
-            while True:
-                string = f.readline()
-                if not string:
-                    if multi_line_statement:
-                        el = Et.Element('span', attrib={'class': 'unknown', 'tabindex': f'{index}'})
-                        el.text = multi_line_statement.decode('utf8')
-                        yield Et.tostring(el, encoding='unicode')
-                    break
-                multi_line_statement += string
-                try:
-                    shift_index = yield from self.parse_string(index, multi_line_statement)
-                except tokenize.TokenError:
-                    print('=============Tokenize error!!!.=============')
-                    pass
-                else:
-                    index += 1
-                    multi_line_statement = b''
-                    index += shift_index
+        # with open(file_name, 'rb') as f:
+        multi_line_statement = b''
+        while True:
+            string = content.readline()
+            if not string:
+                if multi_line_statement:
+                    el = Et.Element('span', attrib={'class': 'unknown', 'tabindex': f'{index}'})
+                    el.text = multi_line_statement.decode('utf8')
+                    yield Et.tostring(el, encoding='unicode')
+                break
+            multi_line_statement += string
+            try:
+                shift_index = yield from self.parse_string(index, multi_line_statement)
+            except tokenize.TokenError:
+                print('=============Tokenize error!!!.=============')
+                pass
+            else:
+                index += 1
+                multi_line_statement = b''
+                index += shift_index
 
-    def parse_string(self, index, string):
+    def parse_string(self, index, string, return_string=True):
         multiline_index = 0
         current_position = 0
         div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
@@ -48,10 +48,6 @@ class PyideTokenizer:
             if k.exact_type == token.ENDMARKER:
                 # DEDENT
                 continue
-            # if k.exact_type == token.NEWLINE and k.string == '':
-            #     # by some reason tokenizer add new line symbol at the end of the string if this one doesn't exists
-                  # but it can helps with trailing spaces
-            #     continue
             if k.exact_type == token.STRING:
                 # STRING
                 # check for multi line
@@ -80,9 +76,13 @@ class PyideTokenizer:
                 # next line in multi line statement
                 yield Et.tostring(div, encoding='unicode')
                 div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
+                multiline_index += 1
             div.extend([i for i in self.mark_token(k, current_position)])
             current_position = k.end[1]
-        yield Et.tostring(div, encoding='unicode')
+        if return_string:
+            yield Et.tostring(div, encoding='unicode')
+        else:
+            yield div
         return multiline_index
 
     def mark_token(self, k, current_position):
