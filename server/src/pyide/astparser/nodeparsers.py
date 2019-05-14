@@ -1,18 +1,18 @@
 import ast
 import _ast
-import uuid
-
-from pyide.astparser.nodeinfo import NodeInfo
-from pyide.astparser.scopemanager import ScopeContextManager
 
 
 class Parsers:
-    def __init__(self, ast_tree_obj):
-        self.ast_tree_obj = ast_tree_obj
+    def __init__(self):
+        self.current_scope = None
+        self.previous_scope = None
+
+        self.scope_tree = {}
+
         self.parsers = {
+            _ast.Module: self.parse_module,
             _ast.FunctionDef: self.parse_function,
             _ast.ClassDef: self.parse_class,
-            _ast.Module: self.parse_module,
             _ast.Import: self.parse_import,
             _ast.ImportFrom: self.parse_import_from,
             _ast.Assign: self.parse_assing,
@@ -53,244 +53,107 @@ class Parsers:
             _ast.Global: self.parse_global
         }
 
-    # def __getattr__(self, item):
-    #     return self.parsers_dict[item]
-
-    def parse_module(self, node):
+    def parse_module(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        self.current_scope = node
+        self.scope_tree[self.previous_scope] = self.current_scope
         for i in node.body:
-            self.parsers[i.__class__](i)
+            if token_line is not None and token_line != i.lineno:
+                continue
+            result = self.parsers[i.__class__](i, token_string, token_line, token_position, ctxs)
+            if result:
+                return result
 
-    def parse_class(self, node):
+    def parse_class(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        if token_string is not None and node.name == token_string:
+            return node
         # TODO looks like function def ttry to merge
         for _, decorator in enumerate(node.decorator_list):
-            self.parsers[decorator.__class__](decorator)
-        with ScopeContextManager(self.ast_tree_obj, node) as scope:
-            for body_obj in node.body:
-                self.parsers[body_obj.__class__](body_obj)
-        node_line = node.lineno + len(node.decorator_list)
-        self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node_line)][node.name].append(
-            NodeInfo(
-                node_string=node.name,
-                node_type='class',
-                action=ast.Store,
-                col_offset=node.col_offset,
-                node_id=str(uuid.uuid4()),
-                scope_id=self.ast_tree_obj.scope_id,
-                parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                child_scope_id=scope.new_scope_id,
-                lineno=self.ast_tree_obj.get_lineno(node_line)
-            ))
+            self.parsers[decorator.__class__](decorator, token_string, token_line, token_position, ctxs)
+        self.previous_scope = self.current_scope
+        self.current_scope = node
+        self.scope_tree[self.previous_scope] = self.current_scope
+        for body_obj in node.body:
+            self.parsers[body_obj.__class__](body_obj, token_string, token_line, token_position, ctxs)
 
-    def parse_function(self, node):
+    def parse_function(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         for _, decorator in enumerate(node.decorator_list):
             self.parsers[decorator.__class__](decorator)
         if node.returns:
-            self.parsers[node.returns.__class__](node.returns)
-        with ScopeContextManager(self.ast_tree_obj, node) as scope:
-            for argument in node.args.args:
-                self.parsers[argument.__class__](argument)
-            for body_obj in node.body:
-                self.parsers[body_obj.__class__](body_obj)
-        node_line = node.lineno + len(node.decorator_list)
-        self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node_line)][node.name].append(
-            NodeInfo(
-                node_string=node.name,
-                node_type='function',
-                action=ast.Store,
-                col_offset=node.col_offset,
-                node_id=str(uuid.uuid4()),
-                scope_id=self.ast_tree_obj.scope_id,
-                parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                child_scope_id=scope.new_scope_id,
-                lineno=self.ast_tree_obj.get_lineno(node_line)
-            ))
+            self.parsers[node.returns.__class__](node.returns, token_string, token_line, token_position, ctxs)
+        self.previous_scope = self.current_scope
+        self.current_scope = node
+        self.scope_tree[self.previous_scope] = self.current_scope
+        for argument in node.args.args:
+            self.parsers[argument.__class__](argument, token_string, token_line, token_position, ctxs)
+        for body_obj in node.body:
+            self.parsers[body_obj.__class__](body_obj, token_string, token_line, token_position, ctxs)
 
-    def parse_return(self, node: ast.Return):
+    def parse_return(self, node: ast.Return, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         if node.value is not None:
-            self.parsers[node.value.__class__](node.value)
+            self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
-    def parse_name(self, node: ast.Name):
-        node_info = NodeInfo(
-            node_string=node.id,
-            node_type='name',
-            col_offset=node.col_offset,
-            node_id=str(uuid.uuid4()),
-            action=node.ctx.__class__,
-            scope_id=self.ast_tree_obj.scope_id,
-            parent_scope_id=self.ast_tree_obj.parent_scope_id,
-            child_scope_id=None,
-            lineno=self.ast_tree_obj.get_lineno(node.lineno)
-        )
-        self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][node.id].append(node_info)
-        return node_info
+    def parse_name(self, node: ast.Name, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        if node.id == token_string and \
+                type(node.ctx) in ctxs and \
+                token_line is not None and token_line == node.lineno and \
+                token_position is not None and token_position == node.col_offset:
+            return node
 
-    def parse_argument(self, node: ast.arg):
-        self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][node.arg].append(
-            NodeInfo(
-                node_string=node.arg,
-                node_type='argument',
-                action=ast.Store,
-                col_offset=node.col_offset,
-                node_id=str(uuid.uuid4()),
-                scope_id=self.ast_tree_obj.scope_id,
-                parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                child_scope_id=None,
-                lineno=self.ast_tree_obj.get_lineno(node.lineno)
-            ))
+    def parse_argument(self, node: ast.arg, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        pass
 
-    def parse_import(self, node: ast.Import):
-        for alias_name in node.names:
-            for mod in filter(None, alias_name.name.split('.')):
-                self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][mod].append(
-                    NodeInfo(
-                        node_string=alias_name.name,
-                        node_type='module',
-                        col_offset=node.col_offset,
-                        node_id=str(uuid.uuid4()),
-                        scope_id=self.ast_tree_obj.scope_id,
-                        action=ast.Store,  # TODO fix it and pass to standart lib
-                        parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                        child_scope_id=None,
-                        lineno=self.ast_tree_obj.get_lineno(node.lineno)
-                    ))
-            if alias_name.asname:
-                self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][alias_name.asname].append(
-                    NodeInfo(
-                        node_string=alias_name.asname,
-                        node_type='module_alias',
-                        col_offset=node.col_offset,
-                        node_id=str(uuid.uuid4()),
-                        action=ast.Store,
-                        scope_id=self.ast_tree_obj.scope_id,
-                        parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                        child_scope_id=None,
-                        lineno=self.ast_tree_obj.get_lineno(node.lineno)
-                    ))
+    def parse_import(self, node: ast.Import, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        pass
 
-    def parse_import_from(self, node: ast.ImportFrom):
-        for mod in filter(None, node.module.split('.')):
-            self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][mod].append(
-                NodeInfo(
-                    node_string=node.module,
-                    node_type='module',
-                    col_offset=node.col_offset,
-                    node_id=str(uuid.uuid4()),
-                    scope_id=self.ast_tree_obj.scope_id,
-                    parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                    child_scope_id=None,
-                    lineno=self.ast_tree_obj.get_lineno(node.lineno)
-                ))
-        for alias_name in node.names:
-            self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][alias_name.name].append(
-                NodeInfo(
-                    node_string=alias_name.name,
-                    node_type='imported_name',
-                    col_offset=node.col_offset,
-                    node_id=str(uuid.uuid4()),
-                    scope_id=self.ast_tree_obj.scope_id,
-                    action=ast.Store,  # TODO fix it and pass to standart lib
-                    parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                    child_scope_id=None,
-                    lineno=self.ast_tree_obj.get_lineno(node.lineno)
-                ))
-            if alias_name.asname:
-                self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][alias_name.asname].append(
-                    NodeInfo(
-                        node_string=alias_name.asname,
-                        node_type='module_alias',
-                        col_offset=node.col_offset,
-                        node_id=str(uuid.uuid4()),
-                        scope_id=self.ast_tree_obj.scope_id,
-                        action=ast.Store,
-                        parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                        child_scope_id=None,
-                        lineno=self.ast_tree_obj.get_lineno(node.lineno)
-                    ))
+    def parse_import_from(self, node: ast.ImportFrom, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        pass
 
-    def parse_assing(self, node: ast.Assign):
-        value_node_info = self.parsers[node.value.__class__](node.value)
+    def parse_assing(self, node: ast.Assign, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         for target in node.targets:
             if target.__class__ == ast.Name:
-                self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][target.id].append(
-                    NodeInfo(
-                        node_string=target.id,
-                        node_type='name',
-                        col_offset=node.col_offset,
-                        node_id=str(uuid.uuid4()),
-                        action=ast.Store,
-                        scope_id=self.ast_tree_obj.scope_id,
-                        parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                        child_scope_id=None,
-                        lineno=self.ast_tree_obj.get_lineno(node.lineno),
-                        value=value_node_info
-                    ))
+                pass
             else:
-                self.parsers[target.__class__](target)
+                self.parsers[target.__class__](target, token_string, token_line, token_position, ctxs)
 
-    def parse_list(self, node: ast.List):
+    def parse_list(self, node: ast.List, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         for list_el in node.elts:
             # parse value
-            self.parsers[list_el.__class__](list_el)
+            self.parsers[list_el.__class__](list_el, token_string, token_line, token_position, ctxs)
 
-    def parse_tuple(self, node: ast.Tuple):
+    def parse_tuple(self, node: ast.Tuple, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         for tuple_el in node.elts:
             # parse value
-            self.parsers[tuple_el.__class__](tuple_el)
+            self.parsers[tuple_el.__class__](tuple_el, token_string, token_line, token_position, ctxs)
 
-    def parse_string(self, node: ast.Str):
+    def parse_string(self, node: ast.Str, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         pass
 
-    def parse_number(self, node: ast.Num):
+    def parse_number(self, node: ast.Num, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         pass
 
-    def parse_pass(self, node: ast.Pass):
+    def parse_pass(self, node: ast.Pass, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         pass
 
-    def parse_attribute(self, node: ast.Attribute):
-        value_node_info = self.parsers[node.value.__class__](node.value)
-        node_info = None
-        if value_node_info:
-            node_info = NodeInfo(
-                node_string=node.attr,
-                node_type='attribute',
-                owner=value_node_info,
-                col_offset=node.col_offset,
-                node_id=str(uuid.uuid4()),
-                scope_id=self.ast_tree_obj.scope_id,
-                parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                child_scope_id=None,
-                lineno=self.ast_tree_obj.get_lineno(node.lineno)
-            )
-            self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][node.attr].append(node_info)
-            node_info = node_info
-        else:
-            # for builtins we will be here
-            pass
-        return node_info
+    def parse_attribute(self, node: ast.Attribute, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        return self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
     def parse_raise(self, node: ast.Raise):
         self.parsers[node.exc.__class__](node.exc)
 
-    def parse_expression(self, node: ast.Expr):
-        self.parsers[node.value.__class__](node.value)
+    def parse_expression(self, node: ast.Expr, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+        return self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
-    def parse_call(self, node: ast.Call):
+    def parse_call(self, node: ast.Call, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
         if node.func.__class__ is ast.Name:
-            node_info = NodeInfo(
-                node_string=node.func.id,
-                node_type='name',
-                col_offset=node.col_offset,
-                node_id=str(uuid.uuid4()),
-                scope_id=self.ast_tree_obj.scope_id,
-                parent_scope_id=self.ast_tree_obj.parent_scope_id,
-                lineno=self.ast_tree_obj.get_lineno(node.lineno)
-            )
-            self.ast_tree_obj.line_structure[self.ast_tree_obj.get_lineno(node.lineno)][node.func.id].append(node_info)
+            pass
         else:
-            node_info = self.parsers[node.func.__class__](node.func)
+            node_info = self.parsers[node.func.__class__](node.func, token_string, token_line, token_position, ctxs)
+            if node_info:
+                return node_info
         for argument in node.args:
-            self.parsers[argument.__class__](argument)
-        return node_info
+            arg_info = self.parsers[argument.__class__](argument, token_string, token_line, token_position, ctxs)
+            if arg_info:
+                return arg_info
 
     def parse_for(self, node: ast.For):
         self.parsers[node.target.__class__](node.target)
