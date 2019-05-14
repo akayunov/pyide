@@ -8,7 +8,6 @@ from io import BytesIO
 class PyTokenizer:
     def parse_file(self, content):
         index = 0
-        # with open(file_name, 'rb') as f:
         multi_line_statement = b''
         while True:
             string = content.readline()
@@ -29,7 +28,7 @@ class PyTokenizer:
                 multi_line_statement = b''
                 index += shift_index
 
-    def parse_string(self, index, string, return_string=True):
+    def parse_string(self, index, string, return_value_type='html_string'):  # return_value_type set('html_string', 'html_obj')
         multiline_index = 0
         current_position = 0
         div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
@@ -56,7 +55,12 @@ class PyTokenizer:
                     el = Et.Element('span', attrib={'class': 'string'})
                     el.text = first_part
                     div.append(el)
-                    yield Et.tostring(div, encoding='unicode')
+                    if return_value_type == 'html_string':
+                        yield Et.tostring(div, encoding='unicode')
+                    elif return_value_type == 'html_obj':
+                        yield div
+                    else:
+                        raise Exception('Unknown retrun_value_type')
                     for str_index, item in enumerate(string_parts):
                         multiline_index += 1
                         div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
@@ -66,7 +70,12 @@ class PyTokenizer:
                         new_line.text = '\n'
                         div.append(el)
                         div.append(new_line)
-                        yield Et.tostring(div, encoding='unicode')
+                        if return_value_type == 'html_string':
+                            yield Et.tostring(div, encoding='unicode')
+                        elif return_value_type == 'html_obj':
+                            yield div
+                        else:
+                            raise Exception('Unknown return_value_type')
                     multiline_index += 1
                     div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
                     current_position = k.end[1]
@@ -74,15 +83,22 @@ class PyTokenizer:
             if k.start[0] > multiline_index + 1:
             # TODO check how to do it with token.NL  if k.exact_type == token.NL:
                 # next line in multi line statement
-                yield Et.tostring(div, encoding='unicode')
+                if return_value_type == 'html_string':
+                    yield Et.tostring(div, encoding='unicode')
+                elif return_value_type == 'html_obj':
+                    yield div
+                else:
+                    raise Exception('Unknown return_value_type')
                 div = Et.Element('div', attrib={'class': 'content-line', 'tabindex': f'{index + multiline_index}'})
                 multiline_index += 1
             div.extend([i for i in self.mark_token(k, current_position)])
             current_position = k.end[1]
-        if return_string:
+        if return_value_type == 'html_string':
             yield Et.tostring(div, encoding='unicode')
-        else:
+        elif return_value_type == 'html_obj':
             yield div
+        else:
+            raise Exception('Unknown return_value_type')
         return multiline_index
 
     def mark_token(self, k, current_position):
