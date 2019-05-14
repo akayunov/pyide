@@ -15,7 +15,7 @@ class Code(aiohttp.web.View):
             AST_PARSER[path] = {}
             AST_PARSER[path]['content'] = content_io
             if path.suffix == '.py':
-                AST_PARSER[path]['ast_tree'] = AstParser(content_io).parse_content()
+                AST_PARSER[path]['ast_tree'] = AstParser.parse_content(content_io)
                 result = list(PyTokenizer().parse_file(content_io))
                 return aiohttp.web.json_response(result)
             else:

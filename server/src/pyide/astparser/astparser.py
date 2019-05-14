@@ -6,6 +6,7 @@ from pyide.astparser.nodeparsers import Parsers
 class AstParser:
     @staticmethod
     def search_token(token_info, node_to_start):
+        #  TODO may be add decorator with reinit all structure in Parsers and use singleton?
         parsers = Parsers()
         result = parsers.parsers[node_to_start.__class__](node_to_start, token_string=token_info.string, token_line=token_info.start[0], token_position=token_info.start[1], ctxs=tuple([ast.Store, ast.Load, ast.Del]))
         return result, parsers.current_scope, parsers.scope_tree

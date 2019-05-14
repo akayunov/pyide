@@ -1,6 +1,7 @@
 import ast
 import _ast
 
+ALL_CTX = tuple([ast.Store, ast.Load, ast.Del])
 
 class Parsers:
     def __init__(self):
@@ -53,7 +54,7 @@ class Parsers:
             _ast.Global: self.parse_global
         }
 
-    def parse_module(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_module(self, node, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         self.current_scope = node
         self.scope_tree[self.previous_scope] = self.current_scope
         for i in node.body:
@@ -63,7 +64,7 @@ class Parsers:
             if result:
                 return result
 
-    def parse_class(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_class(self, node, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         if token_string is not None and node.name == token_string:
             return node
         # TODO looks like function def ttry to merge
@@ -75,7 +76,7 @@ class Parsers:
         for body_obj in node.body:
             self.parsers[body_obj.__class__](body_obj, token_string, token_line, token_position, ctxs)
 
-    def parse_function(self, node, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_function(self, node, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         for _, decorator in enumerate(node.decorator_list):
             self.parsers[decorator.__class__](decorator)
         if node.returns:
@@ -88,62 +89,62 @@ class Parsers:
         for body_obj in node.body:
             self.parsers[body_obj.__class__](body_obj, token_string, token_line, token_position, ctxs)
 
-    def parse_return(self, node: ast.Return, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_return(self, node: ast.Return, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         if node.value is not None:
             self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
-    def parse_name(self, node: ast.Name, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_name(self, node: ast.Name, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         if node.id == token_string and \
                 type(node.ctx) in ctxs and \
                 token_line is not None and token_line == node.lineno and \
                 token_position is not None and token_position == node.col_offset:
             return node
 
-    def parse_argument(self, node: ast.arg, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_argument(self, node: ast.arg, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_import(self, node: ast.Import, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_import(self, node: ast.Import, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_import_from(self, node: ast.ImportFrom, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_import_from(self, node: ast.ImportFrom, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_assing(self, node: ast.Assign, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_assing(self, node: ast.Assign, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         for target in node.targets:
             if target.__class__ == ast.Name:
                 pass
             else:
                 self.parsers[target.__class__](target, token_string, token_line, token_position, ctxs)
 
-    def parse_list(self, node: ast.List, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_list(self, node: ast.List, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         for list_el in node.elts:
             # parse value
             self.parsers[list_el.__class__](list_el, token_string, token_line, token_position, ctxs)
 
-    def parse_tuple(self, node: ast.Tuple, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_tuple(self, node: ast.Tuple, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         for tuple_el in node.elts:
             # parse value
             self.parsers[tuple_el.__class__](tuple_el, token_string, token_line, token_position, ctxs)
 
-    def parse_string(self, node: ast.Str, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_string(self, node: ast.Str, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_number(self, node: ast.Num, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_number(self, node: ast.Num, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_pass(self, node: ast.Pass, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_pass(self, node: ast.Pass, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         pass
 
-    def parse_attribute(self, node: ast.Attribute, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_attribute(self, node: ast.Attribute, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         return self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
     def parse_raise(self, node: ast.Raise):
         self.parsers[node.exc.__class__](node.exc)
 
-    def parse_expression(self, node: ast.Expr, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_expression(self, node: ast.Expr, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         return self.parsers[node.value.__class__](node.value, token_string, token_line, token_position, ctxs)
 
-    def parse_call(self, node: ast.Call, token_string, token_line=None, token_position=None, ctxs=tuple([ast.Store, ast.Load, ast.Del])):
+    def parse_call(self, node: ast.Call, token_string, token_line=None, token_position=None, ctxs=ALL_CTX):
         if node.func.__class__ is ast.Name:
             pass
         else:
