@@ -1,9 +1,6 @@
 import uuid
 
 
-
-
-
 class ScopeContextManager:
     def __init__(self, ast_parser_obj, node):
         self.ast_parser_obj = ast_parser_obj
@@ -15,7 +12,7 @@ class ScopeContextManager:
         #         (Pdb)
         #         node.col_offset
         #         4
-        # и они показывают где определаена йункция или класс
+        # и они показывают где определаена функция или класс
         self.previous_scope_id = ast_parser_obj.scope_id
         self.previous_parent_scope_id = ast_parser_obj.parent_scope_id
         self.ast_parser_obj.child_parent_scope_id_links[self.new_scope_id] = {
