@@ -117,8 +117,7 @@ export class Code {
 
     // noinspection JSMethodCanBeStatic
     private recalculateTabIndex(line: HTMLElement): void {
-        let tabIndex: number = parseInt(line.getAttribute('tabIndex')) + 1;
-        line.setAttribute('tabIndex', tabIndex.toString());
+        let tabIndex: number = parseInt(line.getAttribute('tabIndex'));
         while (line.nextElementSibling) {
             tabIndex += 1;
             line = <HTMLElement>line.nextElementSibling;
@@ -244,7 +243,7 @@ export class Code {
         for (let n of inserted.reverse()){
             newLine.append(n);
         }
-        this.recalculateTabIndex(newLine);
+        this.recalculateTabIndex(node.parentElement);
         return <HTMLElement>newLine.firstChild;
     }
 

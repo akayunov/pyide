@@ -17,19 +17,7 @@ class Line(aiohttp.web.View):
         html = et.fromstring(message['outerHTML'])
         text_content = ''.join(html.itertext())
 
-        if path.suffix == '.txt':
-            if body['type'] == 'lineChange':
-                AST_PARSER[path]['content'].content[message['lineNumber']] = text_content.encode('utf8')
-                return aiohttp.web.json_response({
-                    'type': 'lineChange',
-                    'data': {
-                        'lineNumber': message['lineNumber'],
-                        'lineElements': [et.tostring(child, encoding="unicode") for child in next(TxtTokenizer().parse_string(0, text_content.encode('utf8'), return_string=False))] ,
-                        'fileName': message['fileName'],
-                        'lineText': text_content
-                    }
-                })
-        elif path.suffix == '.py':
+        if path.suffix == '.py':
             if body['type'] == 'lineChange':
                 AST_PARSER[path]['content'].content[message['lineNumber']] = text_content.encode('utf8')
                 return aiohttp.web.json_response({
@@ -59,6 +47,19 @@ class Line(aiohttp.web.View):
                     'data': {
                         'lineNumber': message['lineNumber'],
                         'lineElements': [],
+                        'fileName': message['fileName'],
+                        'lineText': text_content
+                    }
+                })
+        else:
+            # txt as default
+            if body['type'] == 'lineChange':
+                AST_PARSER[path]['content'].content[message['lineNumber']] = text_content.encode('utf8')
+                return aiohttp.web.json_response({
+                    'type': 'lineChange',
+                    'data': {
+                        'lineNumber': message['lineNumber'],
+                        'lineElements': [et.tostring(child, encoding="unicode") for child in next(TxtTokenizer().parse_string(0, text_content.encode('utf8'), return_string=False))] ,
                         'fileName': message['fileName'],
                         'lineText': text_content
                     }
