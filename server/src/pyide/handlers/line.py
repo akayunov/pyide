@@ -24,7 +24,7 @@ class Line(aiohttp.web.View):
                     'type': 'lineChange',
                     'data': {
                         'lineNumber': message['lineNumber'],
-                        'lineElements': [et.tostring(child, encoding="unicode") for child in next(PyTokenizer().parse_string(0, text_content.encode('utf8'), return_string=False))],
+                        'lineElements': [et.tostring(child, encoding="unicode") for child in next(PyTokenizer().parse_string(0, text_content.encode('utf8'), return_value_type=False))],
                         'fileName': message['fileName'],
                         'lineText': text_content
                     }
